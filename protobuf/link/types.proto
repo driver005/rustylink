@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package types;
+
+service Type {
+    rpc GetTypes(GetTypesRequest) returns (TypeResponce) {}
+}
+
+message GetTypesRequest {
+    optional bool include_array_types = 1;
+    optional bool include_system_schemas = 2;
+    repeated string included_schemas = 3;
+    repeated string excluded_schemas = 4;
+    optional int32 limit = 5;
+    optional int32 offset = 6;
+}
+
+message TypeResponce {
+    int32 id = 1;
+    string name = 2;
+    string schema = 3;
+    string format = 4;
+    repeated string enums = 5;
+    repeated Attribute attributes = 6;
+    optional string comment = 7;
+}
+
+message Attribute {
+    string name = 1;
+    int32 type_id = 2;
+}

@@ -1,0 +1,19 @@
+[package]
+name = "handler"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+# Local
+metadata = { path = "../metadata" }
+model = { path = "../model" }
+internal = { path = "../internal" }
+
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }

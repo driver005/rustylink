@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package publication;
+
+service Publication {
+    rpc GetPublications(GetPublicationsRequest) returns (PublicationResponce) {}
+    rpc GetPublication(GetPublicationRequest) returns (PublicationResponce) {}
+    rpc UpdatePublication(UpdatePublicationRequest) returns (PublicationResponce) {}
+    rpc CreatePublication(CreatePublicationRequest) returns (PublicationResponce) {}
+    rpc DeletePublication(DeletePublicationRequest) returns (PublicationResponce) {}
+}
+
+message GetPublicationsRequest {
+    optional int32 limit = 1;
+    optional int32 offset = 2;
+}
+
+message GetPublicationRequest {
+    string id = 1;
+}
+
+message UpdatePublicationRequest {
+    string id = 1;
+    optional string name = 2;
+    optional string owner = 3;
+    optional bool publish_insert = 4;
+    optional bool publish_update = 5;
+    optional bool publish_delete = 6;
+    optional bool publish_truncate = 7;
+    repeated string tables = 8;
+}
+
+message CreatePublicationRequest {
+    string name = 1;
+    optional bool publish_insert = 2;
+    optional bool publish_update = 3;
+    optional bool publish_delete = 4;
+    optional bool publish_truncate = 5;
+    repeated string tables = 6;
+}
+
+message DeletePublicationRequest {
+    string id = 1;
+}
+
+message PublicationResponce {
+    int32 id = 1;
+    string name = 2;
+    string owner = 3;
+    bool publish_insert = 4;
+    bool publish_update = 5;
+    bool publish_delete = 6;
+    bool publish_truncate = 7;
+    repeated PublicationTable tables = 8;
+}
+
+message PublicationTable {
+    int32 id = 1;
+    string name = 2;
+    string schema = 3;
+}

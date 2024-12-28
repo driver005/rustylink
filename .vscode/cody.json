@@ -1,0 +1,9 @@
+{
+  "fix_error": {
+    "prompt": "fix error",
+    "context": {
+      "selection": true
+    },
+    "mode": "edit"
+  }
+}

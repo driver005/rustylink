@@ -1,0 +1,272 @@
+syntax = "proto3";
+message BinaryFilterInput {
+optional bytes eq = 1;
+optional bytes ne = 2;
+optional bytes gt = 3;
+optional bytes gte = 4;
+optional bytes lt = 5;
+optional bytes lte = 6;
+repeated bytes is_in = 7;
+repeated bytes is_not_in = 8;
+optional bytes is_null = 9;
+optional bytes is_not_null = 10;
+optional bytes contains = 11;
+optional bytes starts_with = 12;
+optional bytes ends_with = 13;
+optional bytes like = 14;
+optional bytes not_like = 15;
+repeated bytes between = 16;
+repeated bytes not_between = 17;}
+message BooleanFilterInput {
+optional bool eq = 1;
+optional bool ne = 2;
+optional bool gt = 3;
+optional bool gte = 4;
+optional bool lt = 5;
+optional bool lte = 6;
+repeated bool is_in = 7;
+repeated bool is_not_in = 8;
+optional bool is_null = 9;
+optional bool is_not_null = 10;}
+message CursorInput {
+optional string cursor = 1;
+uint64 limit = 2;}
+message DoubleFilterInput {
+optional double eq = 1;
+optional double ne = 2;
+optional double gt = 3;
+optional double gte = 4;
+optional double lt = 5;
+optional double lte = 6;
+repeated double is_in = 7;
+repeated double is_not_in = 8;
+optional double is_null = 9;
+optional double is_not_null = 10;
+repeated double between = 11;
+repeated double not_between = 12;}
+message FloatFilterInput {
+optional float eq = 1;
+optional float ne = 2;
+optional float gt = 3;
+optional float gte = 4;
+optional float lt = 5;
+optional float lte = 6;
+repeated float is_in = 7;
+repeated float is_not_in = 8;
+optional float is_null = 9;
+optional float is_not_null = 10;
+repeated float between = 11;
+repeated float not_between = 12;}
+message Int32FilterInput {
+optional int32 eq = 1;
+optional int32 ne = 2;
+optional int32 gt = 3;
+optional int32 gte = 4;
+optional int32 lt = 5;
+optional int32 lte = 6;
+repeated int32 is_in = 7;
+repeated int32 is_not_in = 8;
+optional int32 is_null = 9;
+optional int32 is_not_null = 10;
+repeated int32 between = 11;
+repeated int32 not_between = 12;}
+message Int64FilterInput {
+optional int64 eq = 1;
+optional int64 ne = 2;
+optional int64 gt = 3;
+optional int64 gte = 4;
+optional int64 lt = 5;
+optional int64 lte = 6;
+repeated int64 is_in = 7;
+repeated int64 is_not_in = 8;
+optional int64 is_null = 9;
+optional int64 is_not_null = 10;
+repeated int64 between = 11;
+repeated int64 not_between = 12;}
+message OffsetInput {
+uint64 limit = 1;
+uint64 offset = 2;}
+enum OrderByEnum {
+ASC = 0;
+DESC = 1;}
+message PageInfo {
+bool hasPreviousPage = 1;
+bool hasNextPage = 2;
+optional string startCursor = 3;
+optional string endCursor = 4;}
+message PageInput {
+uint64 limit = 1;
+uint64 page = 2;}
+message PaginationInfo {
+uint64 pages = 1;
+uint64 current = 2;
+uint64 offset = 3;
+uint64 total = 4;}
+message PaginationInput {
+optional CursorInput cursor = 1;
+optional PageInput page = 2;
+optional OffsetInput offset = 3;}
+service Service {
+rpc user(UserInput) returns (UserConnection) {};
+rpc userCreateOne(UserInsertInput) returns (UserBasic) {};
+rpc userCreateBatch(UserInsertInput) returns (UserBasic) {};
+rpc userUpdate(UserUpdateInput) returns (UserBasic) {};
+rpc userDelete(UserFilterInput) returns (UserBasic) {};}
+message Sint32FilterInput {
+optional sint32 eq = 1;
+optional sint32 ne = 2;
+optional sint32 gt = 3;
+optional sint32 gte = 4;
+optional sint32 lt = 5;
+optional sint32 lte = 6;
+repeated sint32 is_in = 7;
+repeated sint32 is_not_in = 8;
+optional sint32 is_null = 9;
+optional sint32 is_not_null = 10;
+repeated sint32 between = 11;
+repeated sint32 not_between = 12;}
+message Sint64FilterInput {
+optional sint64 eq = 1;
+optional sint64 ne = 2;
+optional sint64 gt = 3;
+optional sint64 gte = 4;
+optional sint64 lt = 5;
+optional sint64 lte = 6;
+repeated sint64 is_in = 7;
+repeated sint64 is_not_in = 8;
+optional sint64 is_null = 9;
+optional sint64 is_not_null = 10;
+repeated sint64 between = 11;
+repeated sint64 not_between = 12;}
+message StringFilterInput {
+optional string eq = 1;
+optional string ne = 2;
+optional string gt = 3;
+optional string gte = 4;
+optional string lt = 5;
+optional string lte = 6;
+repeated string is_in = 7;
+repeated string is_not_in = 8;
+optional string is_null = 9;
+optional string is_not_null = 10;
+optional string contains = 11;
+optional string starts_with = 12;
+optional string ends_with = 13;
+optional string like = 14;
+optional string not_like = 15;
+repeated string between = 16;
+repeated string not_between = 17;}
+message Uint32FilterInput {
+optional uint32 eq = 1;
+optional uint32 ne = 2;
+optional uint32 gt = 3;
+optional uint32 gte = 4;
+optional uint32 lt = 5;
+optional uint32 lte = 6;
+repeated uint32 is_in = 7;
+repeated uint32 is_not_in = 8;
+optional uint32 is_null = 9;
+optional uint32 is_not_null = 10;
+repeated uint32 between = 11;
+repeated uint32 not_between = 12;}
+message Uint64FilterInput {
+optional uint64 eq = 1;
+optional uint64 ne = 2;
+optional uint64 gt = 3;
+optional uint64 gte = 4;
+optional uint64 lt = 5;
+optional uint64 lte = 6;
+repeated uint64 is_in = 7;
+repeated uint64 is_not_in = 8;
+optional uint64 is_null = 9;
+optional uint64 is_not_null = 10;
+repeated uint64 between = 11;
+repeated uint64 not_between = 12;}
+message User {
+string id = 1;
+string email = 2;
+optional string firstName = 3;
+optional string lastName = 4;
+optional string passwordHash = 5;
+optional string apiToken = 6;
+string createdAt = 7;
+string updatedAt = 8;
+optional string deletedAt = 9;
+optional UserRoleEnumEnum role = 11;}
+message UserBasic {
+string id = 1;
+string email = 2;
+optional string firstName = 3;
+optional string lastName = 4;
+optional string passwordHash = 5;
+optional string apiToken = 6;
+string createdAt = 7;
+string updatedAt = 8;
+optional string deletedAt = 9;
+optional UserRoleEnumEnum role = 11;}
+message UserConnection {
+PageInfo pageInfo = 1;
+optional PaginationInfo paginationInfo = 2;
+repeated User nodes = 3;
+repeated UserEdge edges = 4;}
+message UserEdge {
+string cursor = 1;
+User node = 2;}
+message UserFilterInput {
+optional StringFilterInput id = 1;
+optional StringFilterInput email = 2;
+optional StringFilterInput firstName = 3;
+optional StringFilterInput lastName = 4;
+optional StringFilterInput passwordHash = 5;
+optional StringFilterInput apiToken = 6;
+optional StringFilterInput createdAt = 7;
+optional StringFilterInput updatedAt = 8;
+optional StringFilterInput deletedAt = 9;
+optional UserRoleEnumEnumFilterInput role = 11;
+repeated UserFilterInput and = 12;
+repeated UserFilterInput or = 13;}
+message UserInput {
+optional UserFilterInput filters = 1;
+optional UserOrderInput orderBy = 2;
+optional PaginationInput pagination = 3;}
+message UserInsertInput {
+string id = 1;
+string email = 2;
+optional string firstName = 3;
+optional string lastName = 4;
+optional string passwordHash = 5;
+optional string apiToken = 6;
+string createdAt = 7;
+string updatedAt = 8;
+optional string deletedAt = 9;
+optional UserRoleEnumEnum role = 11;}
+message UserOrderInput {
+optional OrderByEnum id = 1;
+optional OrderByEnum email = 2;
+optional OrderByEnum firstName = 3;
+optional OrderByEnum lastName = 4;
+optional OrderByEnum passwordHash = 5;
+optional OrderByEnum apiToken = 6;
+optional OrderByEnum createdAt = 7;
+optional OrderByEnum updatedAt = 8;
+optional OrderByEnum deletedAt = 9;
+optional OrderByEnum metadata = 10;
+optional OrderByEnum role = 11;}
+enum UserRoleEnumEnum {
+ADMIN = 0;
+DEVELOPER = 1;
+MEMBER = 2;}
+message UserRoleEnumEnumFilterInput {
+optional UserRoleEnumEnum eq = 1;
+optional UserRoleEnumEnum ne = 2;
+optional UserRoleEnumEnum gt = 3;
+optional UserRoleEnumEnum gte = 4;
+optional UserRoleEnumEnum lt = 5;
+optional UserRoleEnumEnum lte = 6;
+repeated UserRoleEnumEnum is_in = 7;
+repeated UserRoleEnumEnum is_not_in = 8;
+optional UserRoleEnumEnum is_null = 9;
+optional UserRoleEnumEnum is_not_null = 10;}
+message UserUpdateInput {
+UserUpdateInput data = 1;
+optional UserFilterInput filter = 2;}

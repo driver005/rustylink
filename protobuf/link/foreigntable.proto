@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package foreigntable;
+
+import "protobuf/link/column.proto";
+
+service ForeignTable {
+    rpc GetForeignTables(GetForeignTablesRequest) returns (ForeignTableResponce) {}
+    rpc GetForeignTable(GetForeignTableRequest) returns (ForeignTableResponce) {}
+}
+
+message GetForeignTableRequest {
+    int32 id = 1;
+}
+
+message GetForeignTablesRequest {
+    optional bool include_columns = 1;
+    repeated string included_schemas = 2;
+    repeated string excluded_schemas = 3;
+    optional int32 limit = 4;
+    optional int32 offset = 5;
+}
+
+message ForeignTableResponce {
+    int32 id = 1;
+    string schema = 2;
+    string name = 3;
+    optional string comment = 4;
+    repeated column.ColumnResponce columns = 5;
+}

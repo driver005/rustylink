@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+package column;
+
+// import "google/protobuf/wrappers.proto";
+import "protobuf/link/core.proto";
+
+service Column {
+    rpc GetColumns(GetColumnsRequest) returns (ColumnResponce) {}
+    rpc GetColumnsTableIdordinalPosition(GetColumnsTableIdordinalPositionRequest) returns (ColumnResponce) {}
+    rpc UpdateColumn(UpdateColumnRequest) returns (ColumnResponce) {}
+    rpc CreateColumn(CreateColumnRequest) returns (ColumnResponce) {}
+    rpc DeleteColumn(DeleteColumnRequest) returns (ColumnResponce) {}
+    rpc GetColumnPrivileges(GetColumnPrivilegesRequest) returns (ColumnPrivilegesResponse) {}
+    rpc GrantColumnPrivilege(GrantColumnPrivilegeRequest) returns (ColumnPrivilegesResponse) {}
+    rpc RevokeColumnPrivilege(RevokeColumnPrivilegeRequest) returns (ColumnPrivilegesResponse) {}
+}
+
+enum IdentityGeneration {
+    ALWAYS = 0;
+    BY_DEFAULT = 1;
+}
+
+enum DefaultValueFormat {
+    EXPRESSION = 0;
+    LITERAL = 1;
+}
+
+message GetColumnsRequest {
+    optional string table_id = 1;
+    optional bool include_system_schemas = 2;
+    repeated string included_schemas = 3;
+    repeated string excluded_schemas = 4;
+    optional int32 limit = 5;
+    optional int32 offset = 6;
+}
+
+message GetColumnsTableIdordinalPositionRequest {
+    optional bool include_system_schemas = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+    string ordinalPosition = 4;
+    string tableId = 5;
+}
+
+message UpdateColumnRequest {
+    string id = 1;
+    optional string name = 2;
+    optional string type = 3;
+    optional bool drop_default = 4;
+    optional string default_value = 5;
+    optional DefaultValueFormat default_value_format = 6;
+    optional bool is_identity = 7;
+    optional IdentityGeneration identity_generation = 8;
+    optional bool is_nullable = 9;
+    optional bool is_unique = 10;
+    optional string comment = 11;
+    optional string check = 12;
+}
+
+message CreateColumnRequest {
+    int32 table_id = 1;
+    string name = 2;
+    string type = 3;
+    optional string default_value = 4;
+    optional DefaultValueFormat default_value_format = 5;
+    optional bool is_identity = 6;
+    optional IdentityGeneration identity_generation = 7;
+    optional bool is_nullable = 8;
+    optional bool is_primary_key = 9;
+    optional bool is_unique = 10;
+    optional string comment = 11;
+    optional string check = 12;
+}
+
+
+message DeleteColumnRequest {
+    string id = 1;
+    optional bool cascade = 2;
+}
+
+message GetColumnPrivilegesRequest {
+    optional bool include_system_schemas = 1;
+    repeated string included_schemas = 2;
+    repeated string excluded_schemas = 3;
+    optional int32 limit = 4;
+    optional int32 offset = 5;
+}
+
+
+message GrantColumnPrivilegeRequest {
+    string column_id = 1;
+    string grantee = 2;
+    optional core.PrivilegeType privilege_type = 3;
+    bool is_grantable = 4;
+}
+
+message RevokeColumnPrivilegeRequest {
+    string column_id = 1;
+    string grantee = 2;
+    optional core.PrivilegeType privilege_type = 3;
+}
+
+//Responce
+
+
+message ColumnResponce {
+    int32 table_id = 1;
+    string schema = 2;
+    string table = 3;
+    string id = 4; // Regex pattern can't be directly represented in protobuf
+    int32 ordinal_position = 5;
+    string name = 6;
+    string default_value = 7; // Using Any to represent unknown type
+    string data_type = 8;
+    string format = 9;
+    bool is_identity = 10;
+    optional IdentityGeneration identity_generation = 11;
+    bool is_generated = 12;
+    bool is_nullable = 13;
+    bool is_updatable = 14;
+    bool is_unique = 15;
+    repeated string enums= 16;
+    optional string check = 17;
+    optional string comment = 18;
+}
+
+
+message ColumnPrivilegesResponse {
+    string column_id = 1;
+    string relation_schema = 2;
+    string relation_name = 3;
+    string column_name = 4;
+    repeated core.Privilege privileges = 5;
+}
+
+
+

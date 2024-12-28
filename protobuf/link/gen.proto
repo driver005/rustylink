@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package Creategres_meta;
+
+import "google/protobuf/empty.proto";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+service CreategresMetaService {
+    
+    rpc GetConfig(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc GetConfigVersion(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    
+    
+    
+    
+    
+    
+    
+    rpc GetGeneratorsGo(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc GetGeneratorsSwift(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc GetGeneratorsTypescript(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+}

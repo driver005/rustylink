@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package schema;
+
+service Schema {
+    rpc GetSchemas(GetSchemasRequest) returns (SchemaResponce) {}
+    rpc GetSchema(GetSchemaRequest) returns (SchemaResponce) {}
+    rpc UpdateSchema(UpdateSchemaRequest) returns (SchemaResponce) {}
+    rpc CreateSchemas(CreateSchemasRequest) returns (SchemaResponce) {}
+    rpc DeleteSchema(DeleteSchemaRequest) returns (SchemaResponce) {}
+}
+
+message GetSchemaRequest {
+    int32 id = 1;
+}
+
+message GetSchemasRequest {
+    optional bool include_system_schemas = 1;
+    optional int32 limit = 2;
+    optional int32 offset = 3;
+}
+
+message UpdateSchemaRequest {
+    int32 id = 1;
+    optional string name = 2;
+    optional string owner = 3;
+}
+
+message CreateSchemasRequest {
+    string name = 1;
+    optional string owner = 2;
+}
+
+message DeleteSchemaRequest {
+    optional bool cascade = 1;
+    int32 id = 2;
+}
+
+message SchemaResponce {
+    int32 id = 1;
+    string name = 2;
+    string owner = 3;
+}

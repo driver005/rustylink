@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package function;
+
+service Function {
+    rpc GetFunctions(GetFunctionsRequest) returns (FunctionResponce) {}
+    rpc GetFunction(GetFunctionRequest) returns (FunctionResponce) {}
+    rpc UpdateFunction(UpdateFunctionRequest) returns (FunctionResponce) {}
+    rpc CreateFunctions(CreateFunctionRequest) returns (FunctionResponce) {}
+    rpc DeleteFunction(DeleteFunctionRequest) returns (FunctionResponce) {}
+}
+
+enum Behavior {
+    UNSPECIFIED = 0;
+    IMMUTABLE = 1;
+    STABLE = 2;
+    VOLATILE = 3;
+}
+
+enum Mode {
+    IN = 0;
+    OUT = 1;
+    INOUT = 2;
+    VARIADIC = 3;
+    TABLE = 4;
+}
+
+message GetFunctionsRequest {
+    optional bool include_system_schemas = 1;
+    repeated string included_schemas = 2;
+    repeated string excluded_schemas = 3;
+    optional int32 limit = 4;
+    optional int32 offset = 5;
+}
+
+message GetFunctionRequest {
+    string id = 1;
+}
+
+message UpdateFunctionRequest {
+    string id = 1;
+    optional string name = 2;
+    optional string schema = 3;
+    optional string definition = 4;
+}
+
+message CreateFunctionRequest {
+    string name = 1;
+    string definition = 2;
+    repeated string args = 3;
+    optional Behavior behavior = 4;
+    map<string, string> config_params = 5;
+    optional string schema = 6;
+    optional string language = 7;
+    optional string return_type = 8;
+    optional bool security_definer = 9;
+}
+
+message DeleteFunctionRequest {
+    string id = 1;
+    optional bool cascade = 2;
+}
+
+message FunctionResponce {
+    int32 id = 1;
+    string schema = 2;
+    string name = 3;
+    string language = 4;
+    string definition = 5;
+    string complete_statement = 6;
+    repeated Argument args = 7;
+    string argument_types = 8;
+    string identity_argument_types = 9;
+    int32 return_type_id = 10;
+    string return_type = 11;
+    optional int32 return_type_relation_id = 12;
+    bool is_set_returning_function = 13;
+    optional Behavior behavior = 14;
+    bool security_definer = 15;
+    map<string, string> config_params = 16;
+}
+
+message Argument {
+    optional Mode mode = 1;
+    string name = 2;
+    int64 type_id = 3;
+    bool has_default = 4;
+}

@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package extension;
+
+service Extension {
+    rpc GetExtensions(GetExtensionsRequest) returns (ExtensionResponce) {}
+    rpc GetExtension(GetExtensionRequest) returns (ExtensionResponce) {}
+    rpc UpdateExtension(UpdateExtensionRequest) returns (ExtensionResponce) {}
+    rpc CreateExtension(CreateExtensionRequest) returns (ExtensionResponce) {}
+    rpc DeleteExtension(DeleteExtensionRequest) returns (ExtensionResponce) {}
+}
+
+message GetExtensionsRequest {
+    optional string limit = 1;
+    optional string offset = 2;
+}
+
+message GetExtensionRequest {
+    string name = 1;
+}
+
+message UpdateExtensionRequest {
+    string name = 1;
+    bool update = 2;
+    optional string version = 3;
+    optional string schema = 4;
+}
+
+message CreateExtensionRequest {
+    string name = 1;
+    optional string schema = 2;
+    optional string version = 3;
+    optional bool cascade = 4;
+}
+
+message DeleteExtensionRequest {
+    string name = 1;
+    optional bool cascade = 2;
+}
+
+message ExtensionResponce {
+    string name = 1;
+    optional string schema = 2;
+    string default_version = 3;
+    optional string installed_version = 4;
+    optional string comment = 5;
+}

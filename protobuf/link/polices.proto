@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package policies;
+
+service Policies {
+    rpc GetPolicies(GetPoliciesRequest) returns (PolicyResponce) {}
+    rpc GetPolicie(GetPolicieRequest) returns (PolicyResponce) {}
+    rpc UpdatePolicie(UpdatePolicieRequest) returns (PolicyResponce) {}
+    rpc CreatePolicie(CreatePolicieRequest) returns (PolicyResponce) {}
+    rpc DeletePolicie(DeletePolicieRequest) returns (PolicyResponce) {}
+}
+
+enum Action {
+    PERMISSIVE = 0;
+    RESTRICTIVE = 1;
+}
+
+enum Command {
+    SELECT = 0;
+    INSERT = 1;
+    UPDATE = 2;
+    DELETE = 3;
+    ALL = 4;
+}
+
+message GetPoliciesRequest {
+    optional bool include_system_schemas = 1;
+    repeated string included_schemas = 2;
+    repeated string excluded_schemas = 3;
+    optional int32 limit = 4;
+    optional int32 offset = 5;
+}
+
+message GetPolicieRequest {
+    string id = 1;
+}
+
+message UpdatePolicieRequest {
+    string id = 1;
+    optional string name = 2;
+    optional string definition = 3;
+    optional string check = 4;
+    repeated string roles = 5;
+}
+
+message CreatePolicieRequest {
+    string name = 1;
+    string table = 2;
+    optional string schema = 3;
+    optional string definition = 4;
+    optional string check = 5;
+    optional string action = 6;
+    optional string command = 7;
+    repeated string roles = 8;
+}
+
+message DeletePolicieRequest {
+    string id = 1;
+}
+
+message PolicyResponce {
+    int32 id = 1;
+    string schema = 2;
+    string table = 3;
+    int32 table_id = 4;
+    string name = 5;
+    optional Action action = 6;
+    repeated string roles = 7;
+    optional Command command = 8;
+    optional string definition = 9;
+    optional string check = 10;
+}
