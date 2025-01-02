@@ -2,8 +2,9 @@ use std::collections::{HashMap, VecDeque};
 
 use metadata::{Error, Result};
 
+#[derive(Debug, Clone)]
 pub struct MemQueue {
-	deque: HashMap<String, VecDeque<String>>,
+	pub deque: HashMap<String, VecDeque<String>>,
 }
 
 impl MemQueue {
@@ -17,8 +18,15 @@ impl MemQueue {
 		println!("{:?}", self.deque);
 	}
 
-	pub fn get_queue_size(&mut self) -> usize {
+	pub fn get_queue_size(&self) -> usize {
 		self.deque.len()
+	}
+
+	pub fn get_queue_size_by_name(&self, name: &str) -> usize {
+		match self.deque.get(name) {
+			Some(q) => q.len(),
+			None => 0,
+		}
 	}
 
 	pub fn create_queue(&mut self, name: &str) {

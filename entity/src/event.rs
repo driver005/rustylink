@@ -5,30 +5,28 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "event")]
 pub struct Model {
-	#[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
-	pub id: String,
-	#[sea_orm(column_type = "Text")]
-	pub task_configuration: String,
-	#[sea_orm(column_type = "Text")]
+	#[sea_orm(primary_key, auto_increment = false)]
+	pub id: Uuid,
 	pub sink: String,
 	pub async_complete: Option<bool>,
+	pub task_model_id: Option<Uuid>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
 	#[sea_orm(
-		belongs_to = "super::taskconfig::Entity",
-		from = "Column::TaskConfiguration",
-		to = "super::taskconfig::Column::TaskId",
+		belongs_to = "super::task_model::Entity",
+		from = "Column::TaskModelId",
+		to = "super::task_model::Column::TaskId",
 		on_update = "NoAction",
 		on_delete = "NoAction"
 	)]
-	Taskconfig,
+	TaskModel,
 }
 
-impl Related<super::taskconfig::Entity> for Entity {
+impl Related<super::task_model::Entity> for Entity {
 	fn to() -> RelationDef {
-		Relation::Taskconfig.def()
+		Relation::TaskModel.def()
 	}
 }
 

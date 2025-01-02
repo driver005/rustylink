@@ -10,6 +10,7 @@ license.workspace = true
 metadata = { path = "../metadata" }
 queue = { path = "../queue" }
 
+actix-web = { workspace = true }
 chrono = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -24,3 +25,4 @@ async-trait = { workspace = true }
 default = ["handler"]
 handler = []
 worker = []
+api = []

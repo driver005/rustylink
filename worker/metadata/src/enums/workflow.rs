@@ -48,26 +48,3 @@ impl WorkflowStatus {
 		matches!(self, WorkflowStatus::Completed)
 	}
 }
-
-#[derive(
-	Debug,
-	Clone,
-	Copy,
-	Hash,
-	PartialEq,
-	Eq,
-	EnumString,
-	Display,
-	Serialize,
-	Deserialize,
-	EnumIter,
-	DeriveActiveEnum,
-)]
-#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
-#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "idempotency_strategy")]
-pub enum IdempotencyStrategy {
-	#[sea_orm(string_value = "FAIL")]
-	Fail,
-	#[sea_orm(string_value = "RUNNING_EXISTING")]
-	ReturnExisting,
-}

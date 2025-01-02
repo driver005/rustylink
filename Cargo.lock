@@ -3744,6 +3744,7 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 name = "task"
 version = "0.1.0"
 dependencies = [
+ "actix-web",
  "async-trait",
  "chrono",
  "metadata",
@@ -4171,6 +4172,7 @@ dependencies = [
  "metadata",
  "queue",
  "sea-orm",
+ "sea-schema",
  "serde_json",
  "task",
 ]

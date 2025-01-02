@@ -1,5 +1,5 @@
 use metadata::Error;
-use sea_orm::{entity::prelude::*, IntoActiveModel };
+use sea_orm::entity::prelude::*;
 use std::sync::Arc;
 
 use crate::TaskConfig;
@@ -12,13 +12,22 @@ pub struct Model {
 	#[sea_orm(primary_key, auto_increment = false)]
 	pub id: Uuid,
 	pub include_tasks: bool,
+	// Reference task model id
+	pub task_model_id: Option<Uuid>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-	#[sea_orm(has_many = "crate::model::Entity")]
+	#[sea_orm(
+		belongs_to = "crate::data::model::Entity",
+		from = "Column::TaskModelId",
+		to = "crate::data::model::Column::TaskId",
+		on_update = "NoAction",
+		on_delete = "NoAction"
+	)]
 	Taskmodel,
 }
+
 
 impl Related<crate::model::Entity> for Entity {
 	fn to() -> RelationDef {
@@ -48,7 +57,7 @@ impl TryFrom<Arc<TaskConfig>> for Model {
 			include_tasks: owned
 				.get_input_parameter_required("include_tasks")?
 				.as_bool()
-				.ok_or_else(|| Error::IllegalArgument("evaluator_type is missing".to_string()))?,
+				.ok_or_else(|| Error::IllegalArgument("evaluator_type is missing".to_string()))?,task_model_id: None,
 		})
 	}
 }

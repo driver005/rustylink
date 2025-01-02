@@ -13,3 +13,4 @@ metadata = { path = "../metadata" }
 sea-orm = { workspace = true }
 serde_json = { workspace = true }
 actix-web = { workspace = true }
+sea-schema = { workspace = true }

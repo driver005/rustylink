@@ -1,6 +1,7 @@
-use metadata::{enums::task::TaskTypeEnum, TaskDef, TaskType};
+use metadata::TaskType;
 use queue::MemQueue;
 use sea_orm::{ActiveEnum, ConnectionTrait, Database, DbConn, EntityTrait, Schema};
+use sea_schema::postgres::discovery::SchemaDiscovery;
 use task::{
 	buissness::Entity as BuissnessRule,
 	config::Entity as TaskConfigEntity,
@@ -14,7 +15,9 @@ use task::{
 	inline::Entity as Inline,
 	join::Entity as Join,
 	jwt::Entity as GetSignedJwt,
+	log::Entity as TaskExecutionLog,
 	model::Entity as TaskModel,
+	poll::Entity as PollData,
 	secret::Entity as UpdateSecret,
 	simple::Entity as Simple,
 	sql::Entity as SqlTask,
@@ -27,7 +30,7 @@ use task::{
 	wait::Entity as Wait,
 	webhook::wait::Entity as WaitForWebhook,
 	workflow::{get::Entity as GetWorkflow, terminate::Entity as TerminateWorkflow},
-	Context, TaskConfig, TaskDefinition,
+	Context, TaskConfig, TaskDefinition, TaskStorage,
 };
 
 async fn create_table<E>(db: &DbConn, entity: E)
@@ -66,6 +69,10 @@ pub async fn create_tables(db: &DbConn) {
 	create_enum::<metadata::WorkflowStatus>(db).await;
 	create_enum::<metadata::IdempotencyStrategy>(db).await;
 	create_table(db, TaskDefinitionEntity).await;
+	create_table(db, TaskConfigEntity).await;
+	create_table(db, TaskModel).await;
+	create_table(db, TaskExecutionLog).await;
+	create_table(db, PollData).await;
 	create_table(db, BuissnessRule).await;
 	create_table(db, DoWhile).await;
 	create_table(db, Dynamic).await;
@@ -85,14 +92,12 @@ pub async fn create_tables(db: &DbConn) {
 	create_table(db, StartWorkflow).await;
 	create_table(db, SubWorkflow).await;
 	create_table(db, Switch).await;
-	create_table(db, TaskConfigEntity).await;
 	create_table(db, TerminateTask).await;
 	create_table(db, TerminateWorkflow).await;
 	create_table(db, UpdateSecret).await;
 	create_table(db, UpdateTask).await;
 	create_table(db, Wait).await;
 	create_table(db, WaitForWebhook).await;
-	create_table(db, TaskModel).await;
 }
 
 #[actix_web::main]
@@ -102,6 +107,13 @@ async fn main() {
 		.expect("Fail to initialize database connection");
 
 	create_tables(&database).await;
+
+	// let schema_discovery =
+	// 	SchemaDiscovery::new(database.get_postgres_connection_pool().clone(), "public");
+
+	// let schema = schema_discovery.discover().await;
+
+	// println!("{:#?}", schema);
 
 	let mut context = Context {
 		db: database.clone(),
@@ -113,7 +125,7 @@ async fn main() {
 
 	let task_def = TaskDefinition::new("test_def".to_string());
 
-	task_def.clone().save(&mut context).await;
+	task_def.clone().insert(&mut context).await;
 
 	let work_task = TaskConfig::new(
 		"test".to_string(),
@@ -126,9 +138,8 @@ async fn main() {
 	);
 
 	match work_task.to_task(&mut context).await {
-		Ok(t) => {
+		Ok(mut t) => {
 			let m = t.execute(&mut context).await.unwrap();
-			m.save(&mut context).await.unwrap();
 			context.queue.print();
 		}
 		Err(e) => {

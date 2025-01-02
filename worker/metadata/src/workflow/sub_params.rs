@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct SubWorkflowParams {
 	pub name: String,
 	pub version: u32,
+	pub priority: i8,
 	pub task_to_domain: Option<serde_json::Value>,
 	pub idempotency_key: Option<String>,
 	pub idempotency_strategy: Option<IdempotencyStrategy>,

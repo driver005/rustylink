@@ -1,12 +1,13 @@
 #[cfg(feature = "worker")]
 use crate::TaskExecutor;
 #[cfg(feature = "handler")]
-use crate::{Context, TaskConfig, TaskMapper, TaskModel};
+use crate::{Context, TaskConfig, TaskMapper, TaskModel, TaskStorage};
 use metadata::{Error, Result, TaskStatus, TaskType};
 use sea_orm::{entity::prelude::*, IntoActiveModel};
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, DeriveEntityModel)]
 #[sea_orm(table_name = "http")]
 pub struct Model {
 	#[sea_orm(ignore)]
@@ -24,11 +25,19 @@ pub struct Model {
 	pub body: Option<serde_json::Value>,
 	pub encode: Option<bool>,
 	pub async_complete: Option<bool>,
+	// Reference task model id
+	pub task_model_id: Option<Uuid>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-	#[sea_orm(has_many = "crate::model::Entity")]
+	#[sea_orm(
+		belongs_to = "crate::data::model::Entity",
+		from = "Column::TaskModelId",
+		to = "crate::data::model::Column::TaskId",
+		on_update = "NoAction",
+		on_delete = "NoAction"
+	)]
 	Taskmodel,
 }
 
@@ -43,12 +52,22 @@ impl ActiveModelBehavior for ActiveModel {}
 #[cfg(feature = "handler")]
 #[async_trait::async_trait]
 impl TaskMapper for Model {
-	fn get_task_type(&self) -> &TaskType {
-		&TaskType::Http
+	fn get_task_type() -> TaskType {
+		TaskType::Http
 	}
 
-	fn map_task(&self, context: &Context, task: &mut TaskModel) -> Result<()> {
-		let task_def = self.get_task_def(context, &self.task_configuration.name)?;
+	fn get_primary_key(&self) -> Uuid {
+		self.id
+	}
+
+	fn add_to_queue(&self, context: &Context) -> Result<()> {
+		context.get_queue().push(&Self::get_task_type().to_string(), self.id.to_string())
+	}
+
+	async fn map_task(&self, context: &Context, task: &mut TaskModel) -> Result<()> {
+		let task_def = self
+			.get_task_def(context, self.task_configuration.task_reference_name.to_owned())
+			.await?;
 
 		task.task_type = TaskType::Http;
 		task.status = TaskStatus::Scheduled;
@@ -59,35 +78,83 @@ impl TaskMapper for Model {
 		task.isolation_group_id = task_def.isolation_group_id.clone();
 		task.execution_name_space = task_def.execution_name_space.clone();
 
+        task.to_owned().insert(context).await?;
+
 		Ok(())
 	}
 
-	async fn execute(&self, context: &mut Context) -> Result<TaskModel> {
+	async fn execute(&mut self, context: &mut Context) -> Result<TaskModel> {
 		let mut task_model = self.new_task(&self.task_configuration)?;
 
-		self.map_task(context, &mut task_model)?;
+		self.map_task(context, &mut task_model).await?;
 
-		task_model.http_id = Some(self.id);
+		self.task_model_id = Some(task_model.task_id);
 
 		self.to_owned().save(context).await?;
 
-		context.queue.push(&self.get_task_type().to_string(), self.id.to_string())?;
-
 		Ok(task_model)
 	}
+}
 
-	async fn save(self, context: &mut Context) -> Result<()> {
+#[cfg(feature = "handler")]
+#[async_trait::async_trait]
+impl TaskStorage for Model {
+	type Entity = Entity;
+	type Model = Self;
+	type PrimaryKey = Uuid;
+	type ActiveModel = ActiveModel;
+
+	async fn insert(self, context: &Context) -> Result<Self::Model> {
 		ActiveModel::insert(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn update(self, context: &Context) -> Result<Self::Model> {
+		ActiveModel::update(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn save(self, context: &Context) -> Result<Self::ActiveModel> {
+		ActiveModel::save(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn delete(self, context: &Context) -> Result<()> {
+		ActiveModel::delete(self.into_active_model(), &context.db)
 			.await
 			.map_err(|err| Error::DbError(err))?;
 
 		Ok(())
 	}
+
+	fn find() -> Select<Self::Entity> {
+		Entity::find()
+	}
+
+	async fn find_by_id(context: &Context, task_id: Self::PrimaryKey) -> Result<Self::Model> {
+		let task = Entity::find_by_id(task_id)
+			.one(&context.db)
+			.await
+			.map_err(|err| Error::DbError(err))?;
+
+		if let Some(m) = task {
+			Ok(m)
+		} else {
+			Err(Error::NotFound(format!(
+				"Could not find {} task with id: {}",
+				Self::get_task_type(),
+				task_id
+			)))
+		}
+	}
 }
 
 #[cfg(feature = "worker")]
 impl TaskExecutor for Model {
-	async fn execute(&self, context: &mut Context) -> Result<TaskModel> {
+	async fn execute(&mut self, context: &mut Context) -> Result<TaskModel> {
 		todo!()
 	}
 }
@@ -130,6 +197,7 @@ impl TryFrom<Arc<TaskConfig>> for Model {
 			async_complete: owned
 				.get_input_parameter_optinal("async_complete")
 				.and_then(|v| v.as_bool()),
+			task_model_id: None,
 		})
 	}
 }

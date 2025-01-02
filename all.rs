@@ -1,262 +1,373 @@
-type Any = serde_json::Value;
+use std::{collections::HashMap, sync::Arc};
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct TaskModel {
-	pub task_id: String,
-	pub task_type: TaskType,
-	pub status: TaskStatus,
-	pub reference_task_name: String,
-	pub retry_count: Option<u32>,
-	pub seq: i32,
-	pub correlation_id: Option<String>,
-	pub poll_count: i32,
-	pub task_def_name: String,
-	pub scheduled_time: DateTime<Utc>,
-	pub start_time: DateTime<Utc>,
-	pub end_time: Option<DateTime<Utc>>,
-	pub update_time: Option<DateTime<Utc>>,
-	pub start_delay_in_seconds: u64,
-	pub retried_task_id: Option<String>,
-	pub retried: bool,
-	pub executed: bool,
-	pub callback_from_worker: bool,
-	pub response_timeout_seconds: Option<u64>,
-	pub workflow_instance_id: Option<String>,
-	pub workflow_type: Option<String>,
-	pub reason_for_incompletion: Option<String>,
-	pub callback_after_seconds: u64,
-	pub worker_id: Option<String>,
-	pub workflow_task: Arc<TaskConfig>,
-	pub domain: Option<String>,
-	pub input_message: Option<Any>,
-	pub output_message: Option<Any>,
-	pub rate_limit_per_frequency: Option<u32>,
-	pub rate_limit_frequency_in_seconds: Option<u32>,
-	pub external_input_payload_storage_path: Option<String>,
-	pub external_output_payload_storage_path: Option<String>,
-	pub workflow_priority: u8,
-	pub execution_name_space: Option<String>,
-	pub isolation_group_id: Option<String>,
-	pub iteration: i32,
-	pub sub_workflow_id: Option<String>,
-	pub subworkflow_changed: bool,
-	pub wait_timeout: Option<i64>,
+use metadata::{
+	ExternalStorageLocation, PollData, Result, SearchResult, Task, TaskExecLog, TaskResult,
+	TaskStatus, TaskSummary,
+};
+use sea_orm::ModelTrait;
+use uuid::Uuid;
 
-	pub buissness_rule: Option<BuissnessRule>,
-	pub do_while: Option<DoWhile>,
-	pub dynamic: Option<Dynamic>,
-	pub dynamic_fork: Option<DynamicFork>,
-	pub event: Option<Event>,
-	pub fork: Option<Fork>,
-	pub get_signed_jwt: Option<GetSignedJwt>,
-	pub http: Option<Http>,
-	pub inline: Option<Inline>,
-	pub join: Option<Join>,
-	pub json_transform: Option<JsonTransform>,
-	pub set_variable: Option<SetVariable>,
-	pub simple: Option<Simple>,
-	pub sql_task: Option<SqlTask>,
-	pub start_workflow: Option<StartWorkflow>,
-	pub sub_workflow: Option<SubWorkflow>,
-	pub switch: Option<Switch>,
-	pub task_update: Option<TaskUpdate>,
-	pub terminate_task: Option<TerminateTask>,
-	pub terminate_workflow: Option<TerminateWorkflow>,
-	pub update_secret: Option<UpdateSecret>,
-	pub wait: Option<Wait>,
-	pub wait_for_webhook: Option<WaitForWebhook>,
+use crate::{Context, TaskModel};
+
+/// Trait defining task-related operations for workflow management
+pub trait TaskService {
+	/// Add a task to a task type queue
+	///
+	/// # Arguments
+	///
+	/// * `task_type` - Task name
+	/// * `task_id` - ID of the task
+	fn add_task_to_queue(&mut self, queue_name: &str, task_id: String) -> Result<()>;
+
+	/// Remove a task from a task type queue
+	///
+	/// # Arguments
+	///
+	/// * `task_type` - Task name
+	/// * `task_id` - ID of the task
+	fn remove_task_from_queue(&mut self, queue_name: &str, task_id: String) -> Result<()>;
+
+	// /// Remove a task from a queue by task ID
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `task_id` - ID of the task
+	// fn remove_task_from_queue_by_id(&mut self, task_id: String) -> Result<()>;
+
+	/// Requeue pending tasks
+	///
+	/// # Arguments
+	///
+	/// * `task_type` - Task name
+	///
+	/// # Returns
+	///
+	/// A string indicating the number of tasks requeued
+	fn requeue_task_in_queue(&mut self, queue_name: &str, task_id: String) -> Result<()>;
+
+	/// Poll for a task of a certain type
+	///
+	/// # Arguments
+	///
+	/// * `task_type` - Task name
+	/// * `worker_id` - Id of the worker
+	/// * `domain` - Domain of the workflow
+	///
+	/// # Returns
+	///
+	/// The polled Task, if available
+	fn poll(&mut self, queue_name: &str) -> Result<String>;
+
+	/// Batch poll for tasks of a certain type
+	///
+	/// # Arguments
+	///
+	/// * `task_type` - Task name
+	/// * `worker_id` - Id of the worker
+	/// * `domain` - Domain of the workflow
+	/// * `count` - Number of tasks to poll
+	/// * `timeout` - Timeout for polling in milliseconds
+	///
+	/// # Returns
+	///
+	/// A vector of polled Tasks
+	fn batch_poll(&mut self, queue_name: &str, count: usize) -> Result<Vec<String>>;
+
+	// /// Get the last poll data for a given task type
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `task_type` - Task name
+	// ///
+	// /// # Returns
+	// ///
+	// /// A vector of PollData
+	// fn get_poll_data(&self, task_type: &str) -> Vec<PollData>;
+
+	// /// Get the last poll data for all task types
+	// ///
+	// /// # Returns
+	// ///
+	// /// A vector of PollData for all task types
+	// fn get_all_poll_data(&self) -> Vec<PollData>;
+
+	/// Get task type queue sizes
+	///
+	/// # Arguments
+	///
+	/// * `task_types` - List of task types
+	///
+	/// # Returns
+	///
+	/// A HashMap of task type to queue size
+	fn get_task_queue_sizes(&self, task_types: &[String]) -> HashMap<String, usize>;
+
+	/// Get the queue size for a specific task type
+	///
+	/// # Arguments
+	///
+	/// * `task_type` - Task type
+	/// * `domain` - Domain (optional)
+	/// * `isolation_group_id` - Isolation group ID (optional)
+	/// * `execution_namespace` - Execution namespace (optional)
+	///
+	/// # Returns
+	///
+	/// The queue size
+	fn get_task_queue_size(
+		&self,
+		task_type: &str,
+		// domain: Option<&str>,
+		// isolation_group_id: Option<&str>,
+		// execution_namespace: Option<&str>,
+	) -> usize;
+
+	// /// Get in-progress tasks (paginated)
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `task_type` - Task name
+	// /// * `start_key` - Start index of pagination
+	// /// * `count` - Number of entries to retrieve
+	// ///
+	// /// # Returns
+	// ///
+	// /// A vector of in-progress Tasks
+	// fn get_tasks(&self, task_type: &str, start_key: &str, count: u32) -> Vec<Task>;
+
+	/// Get a task by its ID
+	///
+	/// # Arguments
+	///
+	/// * `task_id` - Id of the task
+	///
+	/// # Returns
+	///
+	/// The Task, if found
+	fn get_task(&self, task_id: &Uuid) -> Option<TaskModel>;
+
+	/// Update a task
+	///
+	/// # Arguments
+	///
+	/// * `task_result` - The TaskResult to update with
+	///
+	/// # Returns
+	///
+	/// The ID of the updated task
+	fn update_task(&self, task: &TaskModel) -> Result<String, String>;
+
+	// /// Log task execution details
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `task_id` - Id of the task
+	// /// * `log` - Details to log
+	// fn log(&self, task_id: &str, log: &str);
+
+	// /// Get task execution logs
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `task_id` - Id of the task
+	// ///
+	// /// # Returns
+	// ///
+	// /// A vector of TaskExecLog
+	// fn get_task_logs(&self, task_id: &str) -> Vec<TaskExecLog>;
+
+	// /// Get detailed information about all queues
+	// ///
+	// /// # Returns
+	// ///
+	// /// A nested HashMap structure with queue details
+	// fn all_verbose(&self) -> HashMap<String, HashMap<String, HashMap<String,  i64>>>;
+
+	/// Get summary information about all queues
+	///
+	/// # Returns
+	///
+	/// A HashMap of queue names to their sizes
+	fn get_all_queue_details(&self) -> HashMap<String, usize>;
+
+	// /// Acknowledge that a task is received
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `task_id` - Id of the task
+	// /// * `worker_id` - Id of the worker
+	// ///
+	// /// # Returns
+	// ///
+	// /// A string indicating if the task was received
+	// fn ack_task_received(&self, task_id: &str, worker_id: &str) -> String;
+
+	// /// Acknowledge that a task is received (without worker id)
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `task_id` - Id of the task
+	// ///
+	// /// # Returns
+	// ///
+	// /// A boolean indicating if the task was received
+	// fn ack_task_received_no_worker(&self, task_id: &str) -> bool;
+
+	// /// Get a pending task for a given workflow
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `workflow_id` - Id of the workflow
+	// /// * `task_reference_name` - Task reference name
+	// ///
+	// /// # Returns
+	// ///
+	// /// The pending Task, if available
+	// fn get_pending_task_for_workflow(
+	// 	&self,
+	// 	workflow_id: &str,
+	// 	task_reference_name: &str,
+	// ) -> Option<Task>;
+
+	// /// Search for tasks
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `start` - Start index of pagination
+	// /// * `size` - Number of entries
+	// /// * `sort` - Sorting type (ASC|DESC)
+	// /// * `free_text` - Text to search
+	// /// * `query` - Query to search
+	// ///
+	// /// # Returns
+	// ///
+	// /// A SearchResult containing TaskSummary items
+	// fn search(
+	// 	&self,
+	// 	start: u32,
+	// 	size: u32,
+	// 	sort: &str,
+	// 	free_text: &str,
+	// 	query: &str,
+	// ) -> SearchResult<TaskSummary>;
+
+	// /// Search for tasks (version 2)
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `start` - Start index of pagination
+	// /// * `size` - Number of entries
+	// /// * `sort` - Sorting type (ASC|DESC)
+	// /// * `free_text` - Text to search
+	// /// * `query` - Query to search
+	// ///
+	// /// # Returns
+	// ///
+	// /// A SearchResult containing Task items
+	// fn search_v2(
+	// 	&self,
+	// 	start: u32,
+	// 	size: u32,
+	// 	sort: &str,
+	// 	free_text: &str,
+	// 	query: &str,
+	// ) -> SearchResult<Task>;
+
+	// /// Get the external storage location for task output payload
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `path` - The path for which the external storage location is to be populated
+	// /// * `operation` - The operation to be performed (read or write)
+	// /// * `payload_type` - The type of payload (input or output)
+	// ///
+	// /// # Returns
+	// ///
+	// /// An ExternalStorageLocation containing the URI and path
+	// fn get_external_storage_location(
+	// 	&self,
+	// 	path: &str,
+	// 	operation: &str,
+	// 	payload_type: &str,
+	// ) -> ExternalStorageLocation;
+
+	// /// Update a task with specific parameters
+	// ///
+	// /// # Arguments
+	// ///
+	// /// * `workflow_id` - ID of the workflow
+	// /// * `task_ref_name` - Task reference name
+	// /// * `status` - New status of the task
+	// /// * `worker_id` - ID of the worker
+	// /// * `output` - Output data of the task
+	// ///
+	// /// # Returns
+	// ///
+	// /// A string indicating the result of the update operation
+	// fn update_task_with_params(
+	// 	&self,
+	// 	workflow_id: &str,
+	// 	task_ref_name: &str,
+	// 	status: TaskStatus,
+	// 	worker_id: &str,
+	// 	output: &serde_json::Value,
+	// ) -> String;
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct BuissnessRule {
-	pub task_configuration: Arc<TaskConfig>,
-	pub rule_file_location: String,
-	pub execution_strategy: String,
-	pub input_column: HashMap<String, serde_json::Value>,
-	pub output_column: Vec<String>,
-}
+// struct TaskServiceImpl {
+// 	context: Context,
+// }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct DoWhile {
-	pub task_configuration: Arc<TaskConfig>,
-	pub evaluator_type: String,
-	pub loop_condition: String,
-	pub loop_over: Vec<TaskConfig>,
-}
+// impl TaskService for TaskServiceImpl {
+// 	fn add_task_to_queue(&mut self, queue_name: &str, task_id: String) -> Result<()> {
+// 		self.context.queue.push(queue_name, task_id)
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Dynamic {
-	pub task_configuration: Arc<TaskConfig>,
-	pub dynamic_task_name_param: String,
-}
+// 	fn remove_task_from_queue(&mut self, queue_name: &str, task_id: String) -> Result<()> {
+// 		self.context.queue.remove_by_value(queue_name, task_id)
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum DynamicFork {
-	DifferentTask {
-		dynamic_fork_tasks_param: String,
-		dynamic_fork_tasks_input_param_name: String,
-	},
-	SameTask {
-		fork_task_name: String,
-		fork_task_inputs: HashMap<String, serde_json::Value>,
-	},
-	SameTaskSubWorkflow {
-		fork_task_workflow: String,
-		fork_task_workflow_version: String,
-		fork_task_inputs: HashMap<String, serde_json::Value>,
-	},
-}
+// 	fn requeue_task_in_queue(&mut self, queue_name: &str, task_id: String) -> Result<()> {
+// 		self.context.queue.postpone(queue_name, task_id)
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Event {
-	pub task_configuration: Arc<TaskConfig>,
-	pub sink: String,
-	pub async_complete: Option<bool>,
-}
+// 	fn poll(&mut self, queue_name: &str) -> Result<String> {
+// 		self.context.queue.pop(queue_name)
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Fork {
-	pub task_configuration: Arc<TaskConfig>,
-	pub fork_tasks: Vec<Vec<TaskConfig>>,
-}
+// 	fn batch_poll(&mut self, queue_name: &str, count: usize) -> Result<Vec<String>> {
+// 		self.context.queue.batch_poll(queue_name, count)
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct GetSignedJwt {
-	pub task_configuration: Arc<TaskConfig>,
-	pub subject: String,
-	pub issuer: String,
-	pub private_key: String,
-	pub private_key_id: String,
-	pub audience: String,
-	pub ttl_in_seconds: u64,
-	pub scopes: String,
-	pub algorithm: String,
-}
+// 	fn get_task_queue_sizes(&self, task_types: &[String]) -> HashMap<String, usize> {
+// 		let mut queue_sizes = HashMap::new();
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Http {
-	pub task_configuration: Arc<TaskConfig>,
-	pub uri: String,
-	pub method: String,
-	pub accept: Option<String>,
-	pub content_type: Option<String>,
-	pub termination_condition: Option<String>,
-	pub polling_interval: Option<u64>,
-	pub polling_strategy: Option<String>,
-	pub headers: Option<HashMap<String, serde_json::Value>>,
-	pub body: Option<HashMap<String, serde_json::Value>>,
-	pub encode: Option<bool>,
-	pub async_complete: Option<bool>,
-}
+// 		for task_type in task_types {
+// 			let queue_size = self.context.queue.get_queue_size_by_name(task_type);
+// 			queue_sizes.insert(task_type.to_string(), queue_size);
+// 		}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Inline {
-	pub task_configuration: Arc<TaskConfig>,
-	pub evaluator_type: String,
-	pub expression: String,
-}
+// 		queue_sizes
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Join {
-	pub task_configuration: Arc<TaskConfig>,
-	pub join_on: Vec<String>,
-	pub expression: Option<String>,
-}
+// 	fn get_task_queue_size(&self, task_type: &str) -> usize {
+// 		self.context.queue.get_queue_size_by_name(task_type)
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct JsonTransform {
-	pub task_configuration: Arc<TaskConfig>,
-	pub query_expression: String,
-}
+// 	fn get_all_queue_details(&self) -> HashMap<String, usize> {
+// 		self.context
+// 			.queue
+// 			.deque
+// 			.iter()
+// 			.map(|(name, value)| (name.to_string(), value.len()))
+// 			.collect()
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct SetVariable {
-	pub task_configuration: Arc<TaskConfig>,
-}
+// 	fn get_task(&self, task_id: &Uuid) -> Option<TaskModel> {
+// 		todo!()
+// 	}
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Simple {
-	pub task_configuration: Arc<TaskConfig>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct SqlTask {
-	pub task_configuration: Arc<TaskConfig>,
-	pub integration_name: String,
-	pub statement: String,
-	pub operation_type: String,
-	pub parameters: Vec<String>,
-	pub expected_output_count: Option<u64>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct StartWorkflow {
-	pub task_configuration: Arc<TaskConfig>,
-	pub name: String,
-	pub version: Option<u64>,
-	pub correlation_id: Option<String>,
-	pub idempotency_key: Option<String>,
-	pub idempotency_strategy: Option<IdempotencyStrategy>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct SubWorkflow {
-	pub task_configuration: Arc<TaskConfig>,
-	pub name: String,
-	pub version: u32,
-	pub task_to_domain: Option<HashMap<String, String>>,
-	pub idempotency_key: Option<String>,
-	pub idempotency_strategy: Option<IdempotencyStrategy>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Switch {
-	pub task_configuration: Arc<TaskConfig>,
-	pub evaluator_type: String,
-	pub expression: String,
-	pub decision_cases: HashMap<String, Vec<TaskConfig>>,
-	pub default_case: Option<Vec<TaskConfig>>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct TaskUpdate {
-	pub task_configuration: Arc<TaskConfig>,
-	pub task_status: TaskStatus,
-	pub workflow_id: Option<String>,
-	pub task_ref_name: Option<String>,
-	pub task_id: Option<String>,
-	pub merge_output: Option<bool>,
-	pub task_output: Option<HashMap<String, serde_json::Value>>,
-}
-#[derive(Debug, Clone, PartialEq)]
-pub struct TerminateTask {
-	pub task_configuration: Arc<TaskConfig>,
-	pub termination_status: TaskTerminationStatus,
-	pub termination_reason: Option<String>,
-	pub workflow_output: Option<HashMap<String, serde_json::Value>>,
-}
-#[derive(Debug, Clone, PartialEq)]
-pub struct TerminateWorkflow {
-	pub task_configuration: Arc<TaskConfig>,
-	pub workflow_id: Vec<String>,
-	pub trigger_failure_workflow: bool,
-	pub termination_reason: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct UpdateSecret {
-	pub task_configuration: Arc<TaskConfig>,
-	pub secret_key: String,
-	pub secret_value: String,
-}
-#[derive(Debug, Clone, PartialEq)]
-pub struct Wait {
-	pub task_configuration: Arc<TaskConfig>,
-	pub until: Option<DateTime<Utc>>,
-	pub duration: Option<String>,
-}
-#[derive(Debug, Clone, PartialEq)]
-pub struct WaitForWebhook {
-	pub task_configuration: Arc<TaskConfig>,
-	pub matches: HashMap<String, serde_json::Value>,
-}
+// 	fn update_task(&self, task: &TaskModel) -> Result<String, String> {
+// 		todo!()
+// 	}
+// }

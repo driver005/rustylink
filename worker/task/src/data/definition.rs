@@ -1,9 +1,8 @@
+use crate::{Context, TaskStorage};
 use chrono::{DateTime, Utc};
 use metadata::{Error, Result, RetryLogic, SchemaDef, TimeoutPolicy};
 use sea_orm::{entity::prelude::*, IntoActiveModel};
 use serde::{Deserialize, Serialize};
-
-use crate::Context;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, DeriveEntityModel)]
 #[sea_orm(table_name = "task_definition")]
@@ -40,7 +39,7 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-	#[sea_orm(has_many = "crate::model::Entity")]
+	#[sea_orm(has_one = "crate::data::model::Entity")]
 	Taskmodel,
 }
 
@@ -87,23 +86,57 @@ impl Model {
 			modified_by: None,
 		}
 	}
+}
 
-	pub async fn save(self, context: &mut Context) -> Result<()> {
-		let existing = Entity::find()
-			.filter(Column::Name.eq(self.name.clone()))
-			.one(&context.db)
-			.await
-			.map_err(|err| Error::DbError(err))?;
+#[cfg(feature = "handler")]
+#[async_trait::async_trait]
+impl TaskStorage for Model {
+	type Entity = Entity;
+	type Model = Self;
+	type PrimaryKey = String;
+	type ActiveModel = ActiveModel;
 
-		if existing.is_some() {
-			return Err(Error::Conflict(format!("Task definition already exists: {}", self.name)));
-		}
-
+	async fn insert(self, context: &Context) -> Result<Self::Model> {
 		ActiveModel::insert(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn update(self, context: &Context) -> Result<Self::Model> {
+		ActiveModel::update(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn save(self, context: &Context) -> Result<Self::ActiveModel> {
+		ActiveModel::save(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn delete(self, context: &Context) -> Result<()> {
+		ActiveModel::delete(self.into_active_model(), &context.db)
 			.await
 			.map_err(|err| Error::DbError(err))?;
 
 		Ok(())
+	}
+
+	fn find() -> Select<Self::Entity> {
+		Entity::find()
+	}
+
+	async fn find_by_id(context: &Context, task_id: Self::PrimaryKey) -> Result<Self::Model> {
+		let task = Entity::find_by_id(task_id.clone())
+			.one(&context.db)
+			.await
+			.map_err(|err| Error::DbError(err))?;
+
+		if let Some(m) = task {
+			Ok(m)
+		} else {
+			Err(Error::NotFound(format!("Could not find task definition with id: {}", task_id)))
+		}
 	}
 }
 

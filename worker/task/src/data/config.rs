@@ -1,12 +1,11 @@
-use super::{
+use crate::{
 	BuissnessRule, DoWhile, Dynamic, DynamicFork, Event, Fork, GetSignedJwt, Http, Inline, Join,
 	JsonTransform, SetVariable, Simple, StartWorkflow, SubWorkflow, Switch, TerminateTask,
 	TerminateWorkflow, UpdateSecret, UpdateTask, Wait, WaitForWebhook,
 };
-use crate::{Context, SqlTask, TaskMapper};
-use metadata::{Error, Result, SubWorkflowParams, TaskType};
-use sea_orm::FromJsonQueryResult;
-use sea_orm::{entity::prelude::*, IntoActiveModel};
+use crate::{Context, SqlTask, TaskMapper, TaskStorage};
+use metadata::{Error, EvaluatorType, Result, SubWorkflowParams, TaskType};
+use sea_orm::{entity::prelude::*, FromJsonQueryResult, IntoActiveModel};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::sync::Arc;
@@ -32,7 +31,7 @@ pub struct Model {
 	#[serde(default)]
 	pub permissive: bool,
 	pub loop_condition: Option<String>,
-	pub loop_over: Option<Vec<Uuid>>,
+	pub loop_over: Option<serde_json::Value>,
 	pub dynamic_task_name_param: Option<String>,
 	pub dynamic_fork_tasks_param: Option<String>,
 	pub dynamic_fork_tasks_input_param_name: Option<String>,
@@ -41,8 +40,8 @@ pub struct Model {
 	pub join_status: Option<String>,
 	pub sub_workflow_param: Option<SubWorkflowParams>,
 	pub decision_cases: Option<serde_json::Value>,
-	pub default_case: Option<Vec<Uuid>>,
-	pub evaluator_type: Option<String>,
+	pub default_case: Option<serde_json::Value>,
+	pub evaluator_type: Option<EvaluatorType>,
 	pub expression: Option<String>,
 	pub sink: Option<String>,
 	pub trigger_failure_workflow: Option<bool>,
@@ -63,7 +62,10 @@ pub struct CacheConfig {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+	#[sea_orm(has_one = "crate::data::model::Entity")]
+	Taskmodel,
+}
 
 impl ActiveModelBehavior for ActiveModel {}
 
@@ -168,132 +170,183 @@ impl Model {
 		self.input_parameters.get(name)
 	}
 
-	async fn save(self, context: &mut Context) -> Result<()> {
+	pub async fn to_task(&self, context: &mut Context) -> Result<Box<dyn TaskMapper>> {
+		let task_config = Arc::new(self.clone());
+
+		self.to_owned().insert(context).await?;
+
+		let mut task: Box<dyn TaskMapper + Send> = match self.task_type {
+			TaskType::Simple => {
+				let simple_task = Simple::new(Arc::clone(&task_config));
+				Box::new(simple_task)
+			}
+			TaskType::Dynamic => {
+				let dynamic_task: Dynamic = task_config.try_into()?;
+				Box::new(dynamic_task)
+			}
+			TaskType::ForkJoin => {
+				let fork_join_task: Fork = task_config.try_into()?;
+				Box::new(fork_join_task)
+			}
+			TaskType::ForkJoinDynamic => {
+				let dynamic_fork_join_task: DynamicFork = task_config.try_into()?;
+				Box::new(dynamic_fork_join_task)
+			}
+			TaskType::Switch => {
+				let switch_task: Switch = task_config.try_into()?;
+				Box::new(switch_task)
+			}
+			TaskType::Join => {
+				let join_task: Join = task_config.try_into()?;
+				Box::new(join_task)
+			}
+			TaskType::DoWhile => {
+				let do_while_task: DoWhile = task_config.try_into()?;
+				Box::new(do_while_task)
+			}
+			TaskType::SubWorkflow => {
+				let sub_workflow_task: SubWorkflow = task_config.try_into()?;
+				Box::new(sub_workflow_task)
+			}
+			TaskType::StartWorkflow => {
+				let start_workflow_task: StartWorkflow = task_config.try_into()?;
+				Box::new(start_workflow_task)
+			}
+			TaskType::Event => {
+				let event_task: Event = task_config.try_into()?;
+				Box::new(event_task)
+			}
+			TaskType::Wait => {
+				let wait_task: Wait = task_config.try_into()?;
+				Box::new(wait_task)
+			}
+			TaskType::Human => {
+				// let human_task: Human = task_config.try_into()?;
+				// Box::new(human_task)
+				return Err(Error::illegal_argument("not implmentet"));
+			}
+			TaskType::UserDefined => {
+				// let user_defined_task: UserDefined = task_config.try_into()?;
+				// Box::new(user_defined_task)
+				return Err(Error::illegal_argument("not implmentet"));
+			}
+			TaskType::Http => {
+				let http_task: Http = task_config.try_into()?;
+				Box::new(http_task)
+			}
+			TaskType::Inline => {
+				let inline_task: Inline = task_config.try_into()?;
+				Box::new(inline_task)
+			}
+			TaskType::ExclusiveJoin => {
+				// let exclusive_join_task: Join = task_config.try_into()?;
+				// Box::new(exclusive_join_task)
+				return Err(Error::illegal_argument("not implmentet"));
+			}
+			TaskType::TerminateTask => {
+				let terminate_task: TerminateTask = task_config.try_into()?;
+				Box::new(terminate_task)
+			}
+			TaskType::TerminateWorkflow => {
+				let terminate_workflow_task: TerminateWorkflow = task_config.try_into()?;
+				Box::new(terminate_workflow_task)
+			}
+			TaskType::KafkaPublish => {
+				// let kafka_publish_task: KafkaPublish = task_config.try_into()?;
+				// Box::new(kafka_publish_task)
+				return Err(Error::illegal_argument("not implmentet"));
+			}
+			TaskType::JsonJqTransform => {
+				let json_jq_transform_task: JsonTransform = task_config.try_into()?;
+				Box::new(json_jq_transform_task)
+			}
+			TaskType::SetVariable => {
+				let set_variable_task: SetVariable = SetVariable::new(Arc::clone(&task_config));
+				Box::new(set_variable_task)
+			}
+			TaskType::UpdateTask => {
+				let update_task: UpdateTask = task_config.try_into()?;
+				Box::new(update_task)
+			}
+			TaskType::WaitForWebhook => {
+				let wait_for_webhook_task: WaitForWebhook = task_config.try_into()?;
+				Box::new(wait_for_webhook_task)
+			}
+			TaskType::BuissnessRule => {
+				let buissness_rule_task: BuissnessRule = task_config.try_into()?;
+				Box::new(buissness_rule_task)
+			}
+			TaskType::GetSignedJwt => {
+				let get_signed_jwt_task: GetSignedJwt = task_config.try_into()?;
+				Box::new(get_signed_jwt_task)
+			}
+			TaskType::UpdateSecret => {
+				let update_secret_task: UpdateSecret = task_config.try_into()?;
+				Box::new(update_secret_task)
+			}
+			TaskType::SqlTask => {
+				let sql_task: SqlTask = task_config.try_into()?;
+				Box::new(sql_task)
+			}
+		};
+
+		task.execute(context).await?;
+
+		Ok(task)
+	}
+}
+
+#[cfg(feature = "handler")]
+#[async_trait::async_trait]
+impl TaskStorage for Model {
+	type Entity = Entity;
+	type Model = Self;
+	type PrimaryKey = Uuid;
+	type ActiveModel = ActiveModel;
+
+	async fn insert(self, context: &Context) -> Result<Self::Model> {
 		ActiveModel::insert(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn update(self, context: &Context) -> Result<Self::Model> {
+		ActiveModel::update(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn save(self, context: &Context) -> Result<Self::ActiveModel> {
+		ActiveModel::save(self.into_active_model(), &context.db)
+			.await
+			.map_err(|err| Error::DbError(err))
+	}
+
+	async fn delete(self, context: &Context) -> Result<()> {
+		ActiveModel::delete(self.into_active_model(), &context.db)
 			.await
 			.map_err(|err| Error::DbError(err))?;
 
 		Ok(())
 	}
 
-	pub async fn to_task(&self, context: &mut Context) -> Result<Box<dyn TaskMapper>> {
-		let task_config = Arc::new(self.clone());
+	fn find() -> Select<Self::Entity> {
+		Entity::find()
+	}
 
-		self.to_owned().save(context).await?;
+	async fn find_by_id(context: &Context, task_id: Self::PrimaryKey) -> Result<Self::Model> {
+		let task = Entity::find_by_id(task_id)
+			.one(&context.db)
+			.await
+			.map_err(|err| Error::DbError(err))?;
 
-		match self.task_type {
-			TaskType::Simple => {
-				let simple_task = Simple::new(Arc::clone(&task_config));
-				Ok(Box::new(simple_task))
-			}
-			TaskType::Dynamic => {
-				let dynamic_task: Dynamic = task_config.try_into()?;
-				Ok(Box::new(dynamic_task))
-			}
-			TaskType::ForkJoin => {
-				let fork_join_task: Fork = task_config.try_into()?;
-				Ok(Box::new(fork_join_task))
-			}
-			TaskType::ForkJoinDynamic => {
-				let dynamic_fork_join_task: DynamicFork = task_config.try_into()?;
-				Ok(Box::new(dynamic_fork_join_task))
-			}
-			TaskType::Switch => {
-				let switch_task: Switch = task_config.try_into()?;
-				Ok(Box::new(switch_task))
-			}
-			TaskType::Join => {
-				let join_task: Join = task_config.try_into()?;
-				Ok(Box::new(join_task))
-			}
-			TaskType::DoWhile => {
-				let do_while_task: DoWhile = task_config.try_into()?;
-				Ok(Box::new(do_while_task))
-			}
-			TaskType::SubWorkflow => {
-				let sub_workflow_task: SubWorkflow = task_config.try_into()?;
-				Ok(Box::new(sub_workflow_task))
-			}
-			TaskType::StartWorkflow => {
-				let start_workflow_task: StartWorkflow = task_config.try_into()?;
-				Ok(Box::new(start_workflow_task))
-			}
-			TaskType::Event => {
-				let event_task: Event = task_config.try_into()?;
-				Ok(Box::new(event_task))
-			}
-			TaskType::Wait => {
-				let wait_task: Wait = task_config.try_into()?;
-				Ok(Box::new(wait_task))
-			}
-			TaskType::Human => {
-				// let human_task: Human = task_config.try_into()?;
-				// Ok(Box::new(human_task))
-				Err(Error::illegal_argument("not implmentet"))
-			}
-			TaskType::UserDefined => {
-				// let user_defined_task: UserDefined = task_config.try_into()?;
-				// Ok(Box::new(user_defined_task))
-				Err(Error::illegal_argument("not implmentet"))
-			}
-			TaskType::Http => {
-				let http_task: Http = task_config.try_into()?;
-				Ok(Box::new(http_task))
-			}
-			TaskType::Inline => {
-				let inline_task: Inline = task_config.try_into()?;
-				Ok(Box::new(inline_task))
-			}
-			TaskType::ExclusiveJoin => {
-				// let exclusive_join_task: Join = task_config.try_into()?;
-				// Ok(Box::new(exclusive_join_task))
-				Err(Error::illegal_argument("not implmentet"))
-			}
-			TaskType::TerminateTask => {
-				let terminate_task: TerminateTask = task_config.try_into()?;
-				Ok(Box::new(terminate_task))
-			}
-			TaskType::TerminateWorkflow => {
-				let terminate_workflow_task: TerminateWorkflow = task_config.try_into()?;
-				Ok(Box::new(terminate_workflow_task))
-			}
-			TaskType::KafkaPublish => {
-				// let kafka_publish_task: KafkaPublish = task_config.try_into()?;
-				// Ok(Box::new(kafka_publish_task))
-				Err(Error::illegal_argument("not implmentet"))
-			}
-			TaskType::JsonJqTransform => {
-				let json_jq_transform_task: JsonTransform = task_config.try_into()?;
-				Ok(Box::new(json_jq_transform_task))
-			}
-			TaskType::SetVariable => {
-				let set_variable_task: SetVariable = SetVariable::new(Arc::clone(&task_config));
-				Ok(Box::new(set_variable_task))
-			}
-			TaskType::UpdateTask => {
-				let update_task: UpdateTask = task_config.try_into()?;
-				Ok(Box::new(update_task))
-			}
-			TaskType::WaitForWebhook => {
-				let wait_for_webhook_task: WaitForWebhook = task_config.try_into()?;
-				Ok(Box::new(wait_for_webhook_task))
-			}
-			TaskType::BuissnessRule => {
-				let buissness_rule_task: BuissnessRule = task_config.try_into()?;
-				Ok(Box::new(buissness_rule_task))
-			}
-			TaskType::GetSignedJwt => {
-				let get_signed_jwt_task: GetSignedJwt = task_config.try_into()?;
-				Ok(Box::new(get_signed_jwt_task))
-			}
-			TaskType::UpdateSecret => {
-				let update_secret_task: UpdateSecret = task_config.try_into()?;
-				Ok(Box::new(update_secret_task))
-			}
-			TaskType::SqlTask => {
-				let sql_task: SqlTask = task_config.try_into()?;
-				Ok(Box::new(sql_task))
-			}
+		if let Some(m) = task {
+			Ok(m)
+		} else {
+			return Err(Error::NotFound(format!(
+				"Could not find task config with id: {}",
+				task_id
+			)));
 		}
 	}
 }
