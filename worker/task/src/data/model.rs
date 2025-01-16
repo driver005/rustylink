@@ -121,9 +121,9 @@ pub enum Relation {
 	SqlTask,
 	#[sea_orm(has_one = "crate::operation::workflow::get::Entity")]
 	GetWorkflow,
-	#[sea_orm(has_one = "crate::operation::start::Entity")]
+	#[sea_orm(has_one = "crate::operation::workflow::start::Entity")]
 	StartWorkflow,
-	#[sea_orm(has_one = "crate::operation::sub::Entity")]
+	#[sea_orm(has_one = "crate::operation::workflow::sub::Entity")]
 	SubWorkflow,
 	#[sea_orm(has_one = "crate::operation::switch::Entity")]
 	Switch,
@@ -230,12 +230,12 @@ impl Related<crate::operation::workflow::get::Entity> for Entity {
 		Relation::GetWorkflow.def()
 	}
 }
-impl Related<crate::operation::start::Entity> for Entity {
+impl Related<crate::operation::workflow::start::Entity> for Entity {
 	fn to() -> RelationDef {
 		Relation::StartWorkflow.def()
 	}
 }
-impl Related<crate::operation::sub::Entity> for Entity {
+impl Related<crate::operation::workflow::sub::Entity> for Entity {
 	fn to() -> RelationDef {
 		Relation::SubWorkflow.def()
 	}

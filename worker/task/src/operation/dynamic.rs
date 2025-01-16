@@ -16,9 +16,10 @@ pub struct Model {
 	pub id: Uuid,
 	// The input parameter key whose value is used to schedule the task.
 	// For example, "taskToExecute", which will then be specified as an input parameter in the Dynamic task.
-	pub dynamic_task_name_param: String,
+	// pub dynamic_task_name_param: String,
+
 	// The name of the task that will be executed
-	pub task_refrence_name: String,
+	pub dynamic_task_name: String,
 	// The name of the sub-workflow that will be executed if the taskToExecute is set to SUB_WORKFLOW
 	pub sub_workflow_name: Option<String>,
 	// The version of the sub-workflow that will be executed if the taskToExecute is set to SUB_WORKFLOW
@@ -174,15 +175,15 @@ impl TryFrom<Arc<TaskConfig>> for Model {
 			&& (sub_workflow_name.is_some() || sub_workflow_version.is_some())
 		{
 			return Err(Error::IllegalArgument(
-                "sub_workflow_name and sub_workflow_version can only be used with task_refrence_name = SUB_WORKFLOW".to_string(),
+                "sub_workflow_name and sub_workflow_version can only be used with dynamic_task_name_param = SUB_WORKFLOW".to_string(),
             ));
 		}
+		// TODO: validate dynamic_task_name
 
 		Ok(Self {
 			task_configuration,
 			id: Uuid::new_v4(),
-			dynamic_task_name_param: dynamic_task_name_param.clone(),
-			task_refrence_name: owned
+			dynamic_task_name: owned
 				.get_input_parameter_required(&dynamic_task_name_param)?
 				.to_string(),
 			sub_workflow_name,

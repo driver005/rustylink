@@ -107,9 +107,10 @@ impl TaskMapper for Model {
 						)?;
 					}
 				} else {
-					return Err(Error::NotFound(
-						"decision cases has needs to be a array of one or more tasks".to_string(),
-					));
+					return Err(Error::NotFound(format!(
+						"decision_case has to be a array of one or more tasks for task with id: {}",
+						self.id.to_string()
+					)));
 				}
 			}
 			None => {
@@ -130,11 +131,16 @@ impl TaskMapper for Model {
 							)?;
 						}
 					} else {
-						return Err(Error::NotFound(
-							"decision cases has needs to be a array of one or more tasks"
-								.to_string(),
-						));
+						return Err(Error::NotFound(format!(
+                            "default_case has to be a array of one or more tasks for task with id: {}",
+                            self.id.to_string()
+                        )));
 					}
+				} else {
+					return Err(Error::NotFound(format!(
+						"default_case is missing for task with id: {}",
+						self.id.to_string()
+					)));
 				}
 			}
 		};

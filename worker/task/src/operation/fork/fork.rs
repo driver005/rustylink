@@ -15,7 +15,10 @@ pub struct Model {
 	task_configuration: Arc<TaskConfig>,
 	#[sea_orm(primary_key, auto_increment = false)]
 	pub id: Uuid,
-	pub fork_tasks: Vec<Uuid>,
+	// An array of task lists. Each list represents a fork branch that will run in parallel, and each list contains a sequence of task definitions.
+	pub fork_tasks: serde_json::Value,
+	// The list of tasks to be executed in the Fork task.
+	pub task_ids: Vec<Uuid>,
 	// Reference task model id
 	pub task_model_id: Option<Uuid>,
 }
@@ -62,7 +65,7 @@ impl TaskMapper for Model {
 		task.start_time = current_time;
 		task.end_time = Some(current_time);
 
-        task.to_owned().insert(context).await?;
+		task.to_owned().insert(context).await?;
 
 		Ok(())
 	}
@@ -73,6 +76,24 @@ impl TaskMapper for Model {
 		self.map_task(context, &mut task_model).await?;
 
 		self.task_model_id = Some(task_model.task_id);
+
+		if let Some(fork_task_config) = self.fork_tasks.as_array() {
+			for fork_task in fork_task_config.iter() {
+				let task_config = serde_json::from_value::<TaskConfig>(fork_task.to_owned())?;
+				let task = task_config.to_task(context).await?;
+
+				self.task_ids.push(task.get_primary_key());
+
+				context
+					.get_queue()
+					.push(&Self::get_task_type().to_string(), task.get_primary_key().to_string())?;
+			}
+		} else {
+			return Err(Error::NotFound(format!(
+				"fork_tasks has to be a array of one or more tasks for task with id: {}",
+				self.id.to_string()
+			)));
+		}
 
 		self.to_owned().save(context).await?;
 
@@ -152,6 +173,7 @@ impl TryFrom<Arc<TaskConfig>> for Model {
 			fork_tasks: owned
 				.fork_tasks
 				.ok_or_else(|| Error::IllegalArgument("fork_tasks is missing".to_string()))?,
+			task_ids: vec![],
 			task_model_id: None,
 		})
 	}

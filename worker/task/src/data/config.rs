@@ -10,6 +10,8 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::sync::Arc;
 
+use super::TaskDefinition;
+
 /// Represents a task definition as part of a workflow
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, DeriveEntityModel)]
 #[sea_orm(table_name = "task_config")]
@@ -35,7 +37,7 @@ pub struct Model {
 	pub dynamic_task_name_param: Option<String>,
 	pub dynamic_fork_tasks_param: Option<String>,
 	pub dynamic_fork_tasks_input_param_name: Option<String>,
-	pub fork_tasks: Option<Vec<Uuid>>,
+	pub fork_tasks: Option<serde_json::Value>,
 	pub join_on: Option<Vec<String>>,
 	pub join_status: Option<String>,
 	pub sub_workflow_param: Option<SubWorkflowParams>,
@@ -46,7 +48,7 @@ pub struct Model {
 	pub sink: Option<String>,
 	pub trigger_failure_workflow: Option<bool>,
 	pub script_expression: Option<String>,
-	pub task_definition_id: Option<Uuid>,
+	pub task_definition: Option<String>,
 	// pub task_definition: Option<TaskDef>,
 	pub rate_limited: Option<bool>,
 	pub default_exclusive_join_task: Option<Vec<String>>,
@@ -90,7 +92,7 @@ impl Default for Model {
 			join_on: None,
 			sink: None,
 			optional: false,
-			task_definition_id: None,
+			task_definition: None,
 			rate_limited: None,
 			default_exclusive_join_task: None,
 			async_complete: false,
@@ -145,7 +147,7 @@ impl Model {
 			join_on: None,
 			sink: None,
 			optional: false,
-			task_definition_id: None,
+			task_definition: None,
 			rate_limited: None,
 			default_exclusive_join_task: None,
 			loop_condition: None,
@@ -347,6 +349,45 @@ impl TaskStorage for Model {
 				"Could not find task config with id: {}",
 				task_id
 			)));
+		}
+	}
+}
+
+impl From<TaskDefinition> for Model {
+	fn from(task_def: TaskDefinition) -> Self {
+		Model {
+			id: Uuid::new_v4(),
+			name: task_def.name.clone(),
+			task_reference_name: format!("{}_ref", task_def.name),
+			task_type: TaskType::Simple,
+			description: task_def.description.clone(),
+			optional: false,                           // Default value
+			input_parameters: serde_json::Value::Null, // Initialize as null
+			async_complete: false,                     // Default value
+			start_delay: 0,                            // Default value
+			permissive: task_def.enforce_schema,       // Use enforce_schema as permissive
+			loop_condition: None,                      // Default value
+			loop_over: None,                           // Default value
+			dynamic_task_name_param: None,
+			dynamic_fork_tasks_param: None,
+			dynamic_fork_tasks_input_param_name: None,
+			fork_tasks: None,
+			join_on: None,
+			join_status: None,
+			sub_workflow_param: None,
+			decision_cases: None,
+			default_case: None,
+			evaluator_type: None,
+			expression: None,
+			sink: None,
+			trigger_failure_workflow: None,
+			script_expression: None,
+			task_definition: Some(task_def.name), // Link to the task definition
+			rate_limited: Some(task_def.rate_limit_per_frequency.is_some()),
+			default_exclusive_join_task: None,
+			retry_count: Some(task_def.retry_count),
+			on_state_change: None,
+			cache_config: None,
 		}
 	}
 }

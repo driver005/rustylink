@@ -47,6 +47,12 @@ impl From<ParseIntError> for Error {
 	}
 }
 
+impl From<sea_orm::DbErr> for Error {
+	fn from(e: sea_orm::DbErr) -> Self {
+		Error::DbError(e)
+	}
+}
+
 impl Error {
 	// Conflict error constructors
 	pub fn illegal_argument(reason: &str) -> Self {

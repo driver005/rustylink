@@ -87,9 +87,9 @@ impl TaskMapper for Model {
 
 		self.task_model_id = Some(task_model.task_id);
 
-		if let Some(loob_task_config) = self.loop_over.as_array() {
-			for decision_case in loob_task_config.iter() {
-				let task_config = serde_json::from_value::<TaskConfig>(decision_case.to_owned())?;
+		if let Some(loob_tasks) = self.loop_over.as_array() {
+			for loob_task in loob_tasks.iter() {
+				let task_config = serde_json::from_value::<TaskConfig>(loob_task.to_owned())?;
 				let task = task_config.to_task(context).await?;
 
 				self.task_ids.push(task.get_primary_key());
@@ -99,9 +99,10 @@ impl TaskMapper for Model {
 					.push(&Self::get_task_type().to_string(), task.get_primary_key().to_string())?;
 			}
 		} else {
-			return Err(Error::NotFound(
-				"decision cases has needs to be a array of one or more tasks".to_string(),
-			));
+			return Err(Error::NotFound(format!(
+				"loop_over has to be a array of one or more tasks for task with id: {}",
+				self.id.to_string()
+			)));
 		}
 
 		self.to_owned().save(context).await?;

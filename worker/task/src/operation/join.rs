@@ -1,3 +1,4 @@
+use crate::model;
 #[cfg(feature = "worker")]
 use crate::TaskExecutor;
 #[cfg(feature = "handler")]
@@ -15,7 +16,9 @@ pub struct Model {
 	task_configuration: Arc<TaskConfig>,
 	#[sea_orm(primary_key, auto_increment = false)]
 	pub id: Uuid,
+	// A list of task reference names that the Join task will wait for completion before proceeding with the next task.
 	pub join_on: Vec<String>,
+	// The join script, which controls how the Join task completes if specified.
 	pub expression: Option<String>,
 	// Reference task model id
 	pub task_model_id: Option<Uuid>,
@@ -73,6 +76,33 @@ impl TaskMapper for Model {
 		self.map_task(context, &mut task_model).await?;
 
 		self.task_model_id = Some(task_model.task_id);
+
+		let mut output_object = serde_json::Value::Object(serde_json::Map::new());
+
+		for join in self.join_on.iter() {
+			let join_task_model = TaskModel::find()
+				.filter(model::Column::TaskDefName.eq(join))
+				.one(&context.db)
+				.await?;
+
+			match join_task_model {
+				Some(join_task) => {
+					if let Some(output) = join_task.output_message {
+						if let serde_json::Value::Object(ref mut map) = output_object {
+							map.insert(join.clone(), output);
+						}
+					}
+				}
+				None => {
+					return Err(Error::NotFound(format!(
+						"could not find task with task_def_name: {} to join",
+						join
+					)))
+				}
+			}
+		}
+
+		task_model.output_message = Some(output_object);
 
 		self.to_owned().save(context).await?;
 
