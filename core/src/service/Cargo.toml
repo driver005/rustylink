@@ -1,0 +1,36 @@
+[package]
+name = "service"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "test"
+path = "bin/test.rs"
+
+[dependencies]
+tokio = { workspace = true }
+tonic = { workspace = true }
+tonic-build = { workspace = true }
+tower-service = { workspace = true }
+futures = { workspace = true }
+
+macros = { path = "../macros" }
+dynamic = { path = "../dynamic" }
+apy = { path = "../apy" }
+serde = { workspace = true }
+actix-web = { workspace = true }
+sea-orm = { workspace = true }
+lazy_static = { workspace = true }
+dotenv = "0.15.0"
+
+[build-dependencies]
+#local
+generator = { path = "../generator" }
+
+sea-orm = { workspace = true }
+lazy_static = { workspace = true }
+tokio = { workspace = true }
+
+dotenv = "0.15.0"

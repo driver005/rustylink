@@ -1,0 +1,1746 @@
+[Object { name: "BuissnessRule", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "ruleFileLocation": Field { name: "ruleFileLocation", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "executionStrategy": Field { name: "executionStrategy", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "BuissnessRuleEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("BuissnessRule")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "BuissnessRuleConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("BuissnessRule")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("BuissnessRuleEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "BuissnessRuleBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "ruleFileLocation": Field { name: "ruleFileLocation", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "executionStrategy": Field { name: "executionStrategy", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DoWhile", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "evaluatorType": Field { name: "evaluatorType", description: None, arguments: {}, ty: NonNull(Named("EvaluatorTypeEnum")), deprecation: NoDeprecated
+            },
+            "loopCondition": Field { name: "loopCondition", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DoWhileEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("DoWhile")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DoWhileConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("DoWhile")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("DoWhileEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DoWhileBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "evaluatorType": Field { name: "evaluatorType", description: None, arguments: {}, ty: NonNull(Named("EvaluatorTypeEnum")), deprecation: NoDeprecated
+            },
+            "loopCondition": Field { name: "loopCondition", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Dynamic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "dynamicTaskName": Field { name: "dynamicTaskName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "subWorkflowName": Field { name: "subWorkflowName", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "subWorkflowVersion": Field { name: "subWorkflowVersion", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DynamicEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Dynamic")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DynamicConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Dynamic")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("DynamicEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DynamicBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "dynamicTaskName": Field { name: "dynamicTaskName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "subWorkflowName": Field { name: "subWorkflowName", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "subWorkflowVersion": Field { name: "subWorkflowVersion", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DynamicFork", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "forkType": Field { name: "forkType", description: None, arguments: {}, ty: NonNull(Named("ForkTypeEnum")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "forkTaskName": Field { name: "forkTaskName", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "forkTaskWorkflow": Field { name: "forkTaskWorkflow", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "forkTaskWorkflowVersion": Field { name: "forkTaskWorkflowVersion", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DynamicForkEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("DynamicFork")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DynamicForkConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("DynamicFork")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("DynamicForkEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "DynamicForkBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "forkType": Field { name: "forkType", description: None, arguments: {}, ty: NonNull(Named("ForkTypeEnum")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "forkTaskName": Field { name: "forkTaskName", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "forkTaskWorkflow": Field { name: "forkTaskWorkflow", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "forkTaskWorkflowVersion": Field { name: "forkTaskWorkflowVersion", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Event", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "sink": Field { name: "sink", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "asyncComplete": Field { name: "asyncComplete", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "EventEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Event")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "EventConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Event")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("EventEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "EventBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "sink": Field { name: "sink", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "asyncComplete": Field { name: "asyncComplete", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Fork", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "ForkEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Fork")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "ForkConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Fork")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("ForkEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "ForkBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "GetSignedJwt", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "subject": Field { name: "subject", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "issuer": Field { name: "issuer", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "privateKey": Field { name: "privateKey", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "privateKeyId": Field { name: "privateKeyId", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "audience": Field { name: "audience", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "ttlInSeconds": Field { name: "ttlInSeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "scopes": Field { name: "scopes", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "algorithm": Field { name: "algorithm", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "GetSignedJwtEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("GetSignedJwt")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "GetSignedJwtConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("GetSignedJwt")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("GetSignedJwtEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "GetSignedJwtBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "subject": Field { name: "subject", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "issuer": Field { name: "issuer", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "privateKey": Field { name: "privateKey", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "privateKeyId": Field { name: "privateKeyId", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "audience": Field { name: "audience", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "ttlInSeconds": Field { name: "ttlInSeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "scopes": Field { name: "scopes", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "algorithm": Field { name: "algorithm", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "GetWorkflow", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "includeTasks": Field { name: "includeTasks", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "GetWorkflowEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("GetWorkflow")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "GetWorkflowConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("GetWorkflow")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("GetWorkflowEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "GetWorkflowBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "includeTasks": Field { name: "includeTasks", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Http", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "uri": Field { name: "uri", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "method": Field { name: "method", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "accept": Field { name: "accept", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "contentType": Field { name: "contentType", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "terminationCondition": Field { name: "terminationCondition", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "pollingInterval": Field { name: "pollingInterval", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "pollingStrategy": Field { name: "pollingStrategy", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "encode": Field { name: "encode", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "asyncComplete": Field { name: "asyncComplete", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "HttpEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Http")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "HttpConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Http")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("HttpEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "HttpBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "uri": Field { name: "uri", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "method": Field { name: "method", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "accept": Field { name: "accept", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "contentType": Field { name: "contentType", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "terminationCondition": Field { name: "terminationCondition", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "pollingInterval": Field { name: "pollingInterval", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "pollingStrategy": Field { name: "pollingStrategy", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "encode": Field { name: "encode", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "asyncComplete": Field { name: "asyncComplete", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Human", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskType": Field { name: "taskType", description: None, arguments: {}, ty: NonNull(Named("TaskTypeEnum")), deprecation: NoDeprecated
+            },
+            "status": Field { name: "status", description: None, arguments: {}, ty: NonNull(Named("TaskStatusEnum")), deprecation: NoDeprecated
+            },
+            "startTime": Field { name: "startTime", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "assignmentCompletionStrategy": Field { name: "assignmentCompletionStrategy", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "displayName": Field { name: "displayName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "HumanEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Human")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "HumanConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Human")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("HumanEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "HumanBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskType": Field { name: "taskType", description: None, arguments: {}, ty: NonNull(Named("TaskTypeEnum")), deprecation: NoDeprecated
+            },
+            "status": Field { name: "status", description: None, arguments: {}, ty: NonNull(Named("TaskStatusEnum")), deprecation: NoDeprecated
+            },
+            "startTime": Field { name: "startTime", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "assignmentCompletionStrategy": Field { name: "assignmentCompletionStrategy", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "displayName": Field { name: "displayName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Inline", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "evaluatorType": Field { name: "evaluatorType", description: None, arguments: {}, ty: NonNull(Named("EvaluatorTypeEnum")), deprecation: NoDeprecated
+            },
+            "expression": Field { name: "expression", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "InlineEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Inline")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "InlineConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Inline")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("InlineEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "InlineBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "evaluatorType": Field { name: "evaluatorType", description: None, arguments: {}, ty: NonNull(Named("EvaluatorTypeEnum")), deprecation: NoDeprecated
+            },
+            "expression": Field { name: "expression", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Join", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "expression": Field { name: "expression", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "JoinEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Join")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "JoinConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Join")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("JoinEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "JoinBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "expression": Field { name: "expression", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "JsonTransform", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "queryExpression": Field { name: "queryExpression", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "JsonTransformEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("JsonTransform")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "JsonTransformConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("JsonTransform")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("JsonTransformEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "JsonTransformBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "queryExpression": Field { name: "queryExpression", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "PollData", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "createdOn": Field { name: "createdOn", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "modifiedOn": Field { name: "modifiedOn", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "queueName": Field { name: "queueName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "domain": Field { name: "domain", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "jsonData": Field { name: "jsonData", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "PollDataEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("PollData")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "PollDataConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("PollData")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("PollDataEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "PollDataBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "createdOn": Field { name: "createdOn", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "modifiedOn": Field { name: "modifiedOn", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "queueName": Field { name: "queueName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "domain": Field { name: "domain", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "jsonData": Field { name: "jsonData", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SetVariable", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SetVariableEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("SetVariable")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SetVariableConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("SetVariable")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("SetVariableEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SetVariableBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Simple", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SimpleEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Simple")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SimpleConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Simple")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("SimpleEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SimpleBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Sql", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "integrationName": Field { name: "integrationName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "statement": Field { name: "statement", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "operationType": Field { name: "operationType", description: None, arguments: {}, ty: NonNull(Named("OperationTypeEnum")), deprecation: NoDeprecated
+            },
+            "expectedOutputCount": Field { name: "expectedOutputCount", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SqlEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Sql")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SqlConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Sql")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("SqlEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SqlBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "integrationName": Field { name: "integrationName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "statement": Field { name: "statement", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "operationType": Field { name: "operationType", description: None, arguments: {}, ty: NonNull(Named("OperationTypeEnum")), deprecation: NoDeprecated
+            },
+            "expectedOutputCount": Field { name: "expectedOutputCount", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "StartWorkflow", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "name": Field { name: "name", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "version": Field { name: "version", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "correlationId": Field { name: "correlationId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "idempotencyKey": Field { name: "idempotencyKey", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "idempotencyStrategy": Field { name: "idempotencyStrategy", description: None, arguments: {}, ty: Named("IdempotencyStrategyEnum"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "StartWorkflowEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("StartWorkflow")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "StartWorkflowConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("StartWorkflow")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("StartWorkflowEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "StartWorkflowBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "name": Field { name: "name", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "version": Field { name: "version", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "correlationId": Field { name: "correlationId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "idempotencyKey": Field { name: "idempotencyKey", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "idempotencyStrategy": Field { name: "idempotencyStrategy", description: None, arguments: {}, ty: Named("IdempotencyStrategyEnum"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SubWorkflow", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "name": Field { name: "name", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "version": Field { name: "version", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "priority": Field { name: "priority", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "idempotencyKey": Field { name: "idempotencyKey", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "idempotencyStrategy": Field { name: "idempotencyStrategy", description: None, arguments: {}, ty: Named("IdempotencyStrategyEnum"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SubWorkflowEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("SubWorkflow")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SubWorkflowConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("SubWorkflow")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("SubWorkflowEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SubWorkflowBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "name": Field { name: "name", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "version": Field { name: "version", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "priority": Field { name: "priority", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "idempotencyKey": Field { name: "idempotencyKey", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "idempotencyStrategy": Field { name: "idempotencyStrategy", description: None, arguments: {}, ty: Named("IdempotencyStrategyEnum"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Switch", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "evaluatorType": Field { name: "evaluatorType", description: None, arguments: {}, ty: NonNull(Named("EvaluatorTypeEnum")), deprecation: NoDeprecated
+            },
+            "expression": Field { name: "expression", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SwitchEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Switch")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SwitchConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Switch")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("SwitchEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "SwitchBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "evaluatorType": Field { name: "evaluatorType", description: None, arguments: {}, ty: NonNull(Named("EvaluatorTypeEnum")), deprecation: NoDeprecated
+            },
+            "expression": Field { name: "expression", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskConfig", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "name": Field { name: "name", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskReferenceName": Field { name: "taskReferenceName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskType": Field { name: "taskType", description: None, arguments: {}, ty: NonNull(Named("TaskTypeEnum")), deprecation: NoDeprecated
+            },
+            "description": Field { name: "description", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "optional": Field { name: "optional", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "asyncComplete": Field { name: "asyncComplete", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "startDelay": Field { name: "startDelay", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "permissive": Field { name: "permissive", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "loopCondition": Field { name: "loopCondition", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "dynamicTaskNameParam": Field { name: "dynamicTaskNameParam", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "dynamicForkTasksParam": Field { name: "dynamicForkTasksParam", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "dynamicForkTasksInputParamName": Field { name: "dynamicForkTasksInputParamName", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "joinStatus": Field { name: "joinStatus", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "evaluatorType": Field { name: "evaluatorType", description: None, arguments: {}, ty: Named("EvaluatorTypeEnum"), deprecation: NoDeprecated
+            },
+            "expression": Field { name: "expression", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "sink": Field { name: "sink", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "triggerFailureWorkflow": Field { name: "triggerFailureWorkflow", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "scriptExpression": Field { name: "scriptExpression", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskDefinition": Field { name: "taskDefinition", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "rateLimited": Field { name: "rateLimited", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "retryCount": Field { name: "retryCount", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("TaskModelFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("TaskModelOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("TaskModelConnection")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskConfigEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("TaskConfig")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskConfigConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TaskConfig")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TaskConfigEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskConfigBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "name": Field { name: "name", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskReferenceName": Field { name: "taskReferenceName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskType": Field { name: "taskType", description: None, arguments: {}, ty: NonNull(Named("TaskTypeEnum")), deprecation: NoDeprecated
+            },
+            "description": Field { name: "description", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "optional": Field { name: "optional", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "asyncComplete": Field { name: "asyncComplete", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "startDelay": Field { name: "startDelay", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "permissive": Field { name: "permissive", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "loopCondition": Field { name: "loopCondition", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "dynamicTaskNameParam": Field { name: "dynamicTaskNameParam", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "dynamicForkTasksParam": Field { name: "dynamicForkTasksParam", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "dynamicForkTasksInputParamName": Field { name: "dynamicForkTasksInputParamName", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "joinStatus": Field { name: "joinStatus", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "evaluatorType": Field { name: "evaluatorType", description: None, arguments: {}, ty: Named("EvaluatorTypeEnum"), deprecation: NoDeprecated
+            },
+            "expression": Field { name: "expression", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "sink": Field { name: "sink", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "triggerFailureWorkflow": Field { name: "triggerFailureWorkflow", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "scriptExpression": Field { name: "scriptExpression", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskDefinition": Field { name: "taskDefinition", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "rateLimited": Field { name: "rateLimited", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "retryCount": Field { name: "retryCount", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskDefinition", description: None, fields: {
+            "name": Field { name: "name", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "description": Field { name: "description", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "retryCount": Field { name: "retryCount", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "timeoutSeconds": Field { name: "timeoutSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "timeoutPolicy": Field { name: "timeoutPolicy", description: None, arguments: {}, ty: NonNull(Named("TimeoutPolicyEnum")), deprecation: NoDeprecated
+            },
+            "retryLogic": Field { name: "retryLogic", description: None, arguments: {}, ty: NonNull(Named("RetryLogicEnum")), deprecation: NoDeprecated
+            },
+            "retryDelaySeconds": Field { name: "retryDelaySeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "responseTimeoutSeconds": Field { name: "responseTimeoutSeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "concurrentExecLimit": Field { name: "concurrentExecLimit", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "rateLimitPerFrequency": Field { name: "rateLimitPerFrequency", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "rateLimitFrequencyInSeconds": Field { name: "rateLimitFrequencyInSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "isolationGroupId": Field { name: "isolationGroupId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "executionNameSpace": Field { name: "executionNameSpace", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "ownerEmail": Field { name: "ownerEmail", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "pollTimeoutSeconds": Field { name: "pollTimeoutSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "backoffScaleFactor": Field { name: "backoffScaleFactor", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "baseType": Field { name: "baseType", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "enforceSchema": Field { name: "enforceSchema", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "createdOn": Field { name: "createdOn", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "createdBy": Field { name: "createdBy", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "modifiedOn": Field { name: "modifiedOn", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "modifiedBy": Field { name: "modifiedBy", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("TaskModelFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("TaskModelOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("TaskModelConnection")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskDefinitionEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("TaskDefinition")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskDefinitionConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TaskDefinition")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TaskDefinitionEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskDefinitionBasic", description: None, fields: {
+            "name": Field { name: "name", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "description": Field { name: "description", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "retryCount": Field { name: "retryCount", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "timeoutSeconds": Field { name: "timeoutSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "timeoutPolicy": Field { name: "timeoutPolicy", description: None, arguments: {}, ty: NonNull(Named("TimeoutPolicyEnum")), deprecation: NoDeprecated
+            },
+            "retryLogic": Field { name: "retryLogic", description: None, arguments: {}, ty: NonNull(Named("RetryLogicEnum")), deprecation: NoDeprecated
+            },
+            "retryDelaySeconds": Field { name: "retryDelaySeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "responseTimeoutSeconds": Field { name: "responseTimeoutSeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "concurrentExecLimit": Field { name: "concurrentExecLimit", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "rateLimitPerFrequency": Field { name: "rateLimitPerFrequency", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "rateLimitFrequencyInSeconds": Field { name: "rateLimitFrequencyInSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "isolationGroupId": Field { name: "isolationGroupId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "executionNameSpace": Field { name: "executionNameSpace", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "ownerEmail": Field { name: "ownerEmail", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "pollTimeoutSeconds": Field { name: "pollTimeoutSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "backoffScaleFactor": Field { name: "backoffScaleFactor", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "baseType": Field { name: "baseType", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "enforceSchema": Field { name: "enforceSchema", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "createdOn": Field { name: "createdOn", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "createdBy": Field { name: "createdBy", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "modifiedOn": Field { name: "modifiedOn", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "modifiedBy": Field { name: "modifiedBy", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskExecutionLog", description: None, fields: {
+            "logId": Field { name: "logId", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskId": Field { name: "taskId", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "log": Field { name: "log", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "createdTime": Field { name: "createdTime", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskExecutionLogEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("TaskExecutionLog")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskExecutionLogConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TaskExecutionLog")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TaskExecutionLogEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskExecutionLogBasic", description: None, fields: {
+            "logId": Field { name: "logId", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskId": Field { name: "taskId", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "log": Field { name: "log", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "createdTime": Field { name: "createdTime", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskModel", description: None, fields: {
+            "taskId": Field { name: "taskId", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskType": Field { name: "taskType", description: None, arguments: {}, ty: NonNull(Named("TaskTypeEnum")), deprecation: NoDeprecated
+            },
+            "status": Field { name: "status", description: None, arguments: {}, ty: NonNull(Named("TaskStatusEnum")), deprecation: NoDeprecated
+            },
+            "referenceTaskName": Field { name: "referenceTaskName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "retryCount": Field { name: "retryCount", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "seq": Field { name: "seq", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "correlationId": Field { name: "correlationId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "pollCount": Field { name: "pollCount", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "taskDefName": Field { name: "taskDefName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskConfigId": Field { name: "taskConfigId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "scheduledTime": Field { name: "scheduledTime", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "startTime": Field { name: "startTime", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "endTime": Field { name: "endTime", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "updateTime": Field { name: "updateTime", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "startDelayInSeconds": Field { name: "startDelayInSeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "retriedTaskId": Field { name: "retriedTaskId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "retried": Field { name: "retried", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "executed": Field { name: "executed", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "callbackFromWorker": Field { name: "callbackFromWorker", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "responseTimeoutSeconds": Field { name: "responseTimeoutSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "workflowInstanceId": Field { name: "workflowInstanceId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "workflowType": Field { name: "workflowType", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "reasonForIncompletion": Field { name: "reasonForIncompletion", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "callbackAfterSeconds": Field { name: "callbackAfterSeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "workerId": Field { name: "workerId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "domain": Field { name: "domain", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "rateLimitPerFrequency": Field { name: "rateLimitPerFrequency", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "rateLimitFrequencyInSeconds": Field { name: "rateLimitFrequencyInSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "externalInputPayloadStoragePath": Field { name: "externalInputPayloadStoragePath", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "externalOutputPayloadStoragePath": Field { name: "externalOutputPayloadStoragePath", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "workflowPriority": Field { name: "workflowPriority", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "executionNameSpace": Field { name: "executionNameSpace", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "isolationGroupId": Field { name: "isolationGroupId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "iteration": Field { name: "iteration", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "subworkflowChanged": Field { name: "subworkflowChanged", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "waitTimeout": Field { name: "waitTimeout", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "buissnessRule": Field { name: "buissnessRule", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("BuissnessRuleFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("BuissnessRuleOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("BuissnessRuleConnection")), deprecation: NoDeprecated
+            },
+            "doWhile": Field { name: "doWhile", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("DoWhileFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("DoWhileOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("DoWhileConnection")), deprecation: NoDeprecated
+            },
+            "dynamic": Field { name: "dynamic", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("DynamicFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("DynamicOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("DynamicConnection")), deprecation: NoDeprecated
+            },
+            "dynamicFork": Field { name: "dynamicFork", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("DynamicForkFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("DynamicForkOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("DynamicForkConnection")), deprecation: NoDeprecated
+            },
+            "event": Field { name: "event", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("EventFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("EventOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("EventConnection")), deprecation: NoDeprecated
+            },
+            "fork": Field { name: "fork", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("ForkFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("ForkOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("ForkConnection")), deprecation: NoDeprecated
+            },
+            "getSignedJwt": Field { name: "getSignedJwt", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("GetSignedJwtFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("GetSignedJwtOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("GetSignedJwtConnection")), deprecation: NoDeprecated
+            },
+            "getWorkflow": Field { name: "getWorkflow", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("GetWorkflowFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("GetWorkflowOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("GetWorkflowConnection")), deprecation: NoDeprecated
+            },
+            "http": Field { name: "http", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("HttpFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("HttpOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("HttpConnection")), deprecation: NoDeprecated
+            },
+            "human": Field { name: "human", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("HumanFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("HumanOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("HumanConnection")), deprecation: NoDeprecated
+            },
+            "inline": Field { name: "inline", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("InlineFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("InlineOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("InlineConnection")), deprecation: NoDeprecated
+            },
+            "join": Field { name: "join", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("JoinFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("JoinOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("JoinConnection")), deprecation: NoDeprecated
+            },
+            "jsonTransform": Field { name: "jsonTransform", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("JsonTransformFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("JsonTransformOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("JsonTransformConnection")), deprecation: NoDeprecated
+            },
+            "setVariable": Field { name: "setVariable", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("SetVariableFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("SetVariableOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("SetVariableConnection")), deprecation: NoDeprecated
+            },
+            "simple": Field { name: "simple", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("SimpleFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("SimpleOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("SimpleConnection")), deprecation: NoDeprecated
+            },
+            "sql": Field { name: "sql", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("SqlFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("SqlOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("SqlConnection")), deprecation: NoDeprecated
+            },
+            "startWorkflow": Field { name: "startWorkflow", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("StartWorkflowFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("StartWorkflowOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("StartWorkflowConnection")), deprecation: NoDeprecated
+            },
+            "subWorkflow": Field { name: "subWorkflow", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("SubWorkflowFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("SubWorkflowOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("SubWorkflowConnection")), deprecation: NoDeprecated
+            },
+            "switch": Field { name: "switch", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("SwitchFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("SwitchOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("SwitchConnection")), deprecation: NoDeprecated
+            },
+            "taskConfig": Field { name: "taskConfig", description: None, arguments: {}, ty: Named("TaskConfig"), deprecation: NoDeprecated
+            },
+            "taskDefinition": Field { name: "taskDefinition", description: None, arguments: {}, ty: Named("TaskDefinition"), deprecation: NoDeprecated
+            },
+            "taskExecutionLog": Field { name: "taskExecutionLog", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("TaskExecutionLogFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("TaskExecutionLogOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("TaskExecutionLogConnection")), deprecation: NoDeprecated
+            },
+            "terminateTask": Field { name: "terminateTask", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("TerminateTaskFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("TerminateTaskOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("TerminateTaskConnection")), deprecation: NoDeprecated
+            },
+            "terminateWorkflow": Field { name: "terminateWorkflow", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("TerminateWorkflowFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("TerminateWorkflowOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("TerminateWorkflowConnection")), deprecation: NoDeprecated
+            },
+            "updateSecret": Field { name: "updateSecret", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("UpdateSecretFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("UpdateSecretOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("UpdateSecretConnection")), deprecation: NoDeprecated
+            },
+            "updateTask": Field { name: "updateTask", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("UpdateTaskFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("UpdateTaskOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("UpdateTaskConnection")), deprecation: NoDeprecated
+            },
+            "wait": Field { name: "wait", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("WaitFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("WaitOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("WaitConnection")), deprecation: NoDeprecated
+            },
+            "waitForWebhook": Field { name: "waitForWebhook", description: None, arguments: {
+                    "filters": InputValue { name: "filters", description: None, ty: Named("WaitForWebhookFilterInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "orderBy": InputValue { name: "orderBy", description: None, ty: Named("WaitForWebhookOrderInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    },
+                    "pagination": InputValue { name: "pagination", description: None, ty: Named("PaginationInput"), default_value: None, inaccessible: false, tags: [], directives: [], deprecation: NoDeprecated
+                    }
+                }, ty: NonNull(Named("WaitForWebhookConnection")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskModelEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("TaskModel")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskModelConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TaskModel")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TaskModelEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TaskModelBasic", description: None, fields: {
+            "taskId": Field { name: "taskId", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskType": Field { name: "taskType", description: None, arguments: {}, ty: NonNull(Named("TaskTypeEnum")), deprecation: NoDeprecated
+            },
+            "status": Field { name: "status", description: None, arguments: {}, ty: NonNull(Named("TaskStatusEnum")), deprecation: NoDeprecated
+            },
+            "referenceTaskName": Field { name: "referenceTaskName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "retryCount": Field { name: "retryCount", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "seq": Field { name: "seq", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "correlationId": Field { name: "correlationId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "pollCount": Field { name: "pollCount", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "taskDefName": Field { name: "taskDefName", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskConfigId": Field { name: "taskConfigId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "scheduledTime": Field { name: "scheduledTime", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "startTime": Field { name: "startTime", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "endTime": Field { name: "endTime", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "updateTime": Field { name: "updateTime", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "startDelayInSeconds": Field { name: "startDelayInSeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "retriedTaskId": Field { name: "retriedTaskId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "retried": Field { name: "retried", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "executed": Field { name: "executed", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "callbackFromWorker": Field { name: "callbackFromWorker", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "responseTimeoutSeconds": Field { name: "responseTimeoutSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "workflowInstanceId": Field { name: "workflowInstanceId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "workflowType": Field { name: "workflowType", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "reasonForIncompletion": Field { name: "reasonForIncompletion", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "callbackAfterSeconds": Field { name: "callbackAfterSeconds", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "workerId": Field { name: "workerId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "domain": Field { name: "domain", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "rateLimitPerFrequency": Field { name: "rateLimitPerFrequency", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "rateLimitFrequencyInSeconds": Field { name: "rateLimitFrequencyInSeconds", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            },
+            "externalInputPayloadStoragePath": Field { name: "externalInputPayloadStoragePath", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "externalOutputPayloadStoragePath": Field { name: "externalOutputPayloadStoragePath", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "workflowPriority": Field { name: "workflowPriority", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "executionNameSpace": Field { name: "executionNameSpace", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "isolationGroupId": Field { name: "isolationGroupId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "iteration": Field { name: "iteration", description: None, arguments: {}, ty: NonNull(Named("Int")), deprecation: NoDeprecated
+            },
+            "subworkflowChanged": Field { name: "subworkflowChanged", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "waitTimeout": Field { name: "waitTimeout", description: None, arguments: {}, ty: Named("Int"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TerminateTask", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "terminationStatus": Field { name: "terminationStatus", description: None, arguments: {}, ty: NonNull(Named("TaskTerminationStatusEnum")), deprecation: NoDeprecated
+            },
+            "terminationReason": Field { name: "terminationReason", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TerminateTaskEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("TerminateTask")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TerminateTaskConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TerminateTask")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TerminateTaskEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TerminateTaskBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "terminationStatus": Field { name: "terminationStatus", description: None, arguments: {}, ty: NonNull(Named("TaskTerminationStatusEnum")), deprecation: NoDeprecated
+            },
+            "terminationReason": Field { name: "terminationReason", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TerminateWorkflow", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "terminationReason": Field { name: "terminationReason", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "triggerFailureWorkflow": Field { name: "triggerFailureWorkflow", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TerminateWorkflowEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("TerminateWorkflow")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TerminateWorkflowConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TerminateWorkflow")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("TerminateWorkflowEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "TerminateWorkflowBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "terminationReason": Field { name: "terminationReason", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "triggerFailureWorkflow": Field { name: "triggerFailureWorkflow", description: None, arguments: {}, ty: NonNull(Named("Boolean")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "UpdateSecret", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "secretKey": Field { name: "secretKey", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "secretValue": Field { name: "secretValue", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "UpdateSecretEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("UpdateSecret")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "UpdateSecretConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("UpdateSecret")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("UpdateSecretEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "UpdateSecretBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "secretKey": Field { name: "secretKey", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "secretValue": Field { name: "secretValue", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "UpdateTask", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskStatus": Field { name: "taskStatus", description: None, arguments: {}, ty: NonNull(Named("TaskStatusEnum")), deprecation: NoDeprecated
+            },
+            "workflowId": Field { name: "workflowId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskRefName": Field { name: "taskRefName", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskId": Field { name: "taskId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "mergeOutput": Field { name: "mergeOutput", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "UpdateTaskEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("UpdateTask")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "UpdateTaskConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("UpdateTask")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("UpdateTaskEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "UpdateTaskBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskStatus": Field { name: "taskStatus", description: None, arguments: {}, ty: NonNull(Named("TaskStatusEnum")), deprecation: NoDeprecated
+            },
+            "workflowId": Field { name: "workflowId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskRefName": Field { name: "taskRefName", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskId": Field { name: "taskId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "mergeOutput": Field { name: "mergeOutput", description: None, arguments: {}, ty: Named("Boolean"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "Wait", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "until": Field { name: "until", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "duration": Field { name: "duration", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "WaitEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("Wait")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "WaitConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("Wait")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("WaitEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "WaitBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "until": Field { name: "until", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "duration": Field { name: "duration", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "WaitForWebhook", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            },
+            "taskModel": Field { name: "taskModel", description: None, arguments: {}, ty: Named("TaskModel"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "WaitForWebhookEdge", description: None, fields: {
+            "cursor": Field { name: "cursor", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "node": Field { name: "node", description: None, arguments: {}, ty: NonNull(Named("WaitForWebhook")), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "WaitForWebhookConnection", description: None, fields: {
+            "pageInfo": Field { name: "pageInfo", description: None, arguments: {}, ty: NonNull(Named("PageInfo")), deprecation: NoDeprecated
+            },
+            "paginationInfo": Field { name: "paginationInfo", description: None, arguments: {}, ty: Named("PaginationInfo"), deprecation: NoDeprecated
+            },
+            "nodes": Field { name: "nodes", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("WaitForWebhook")))), deprecation: NoDeprecated
+            },
+            "edges": Field { name: "edges", description: None, arguments: {}, ty: NonNull(List(NonNull(Named("WaitForWebhookEdge")))), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }, Object { name: "WaitForWebhookBasic", description: None, fields: {
+            "id": Field { name: "id", description: None, arguments: {}, ty: NonNull(Named("String")), deprecation: NoDeprecated
+            },
+            "taskModelId": Field { name: "taskModelId", description: None, arguments: {}, ty: Named("String"), deprecation: NoDeprecated
+            }
+        }, implements: {}, keys: [], extends: false, shareable: false, resolvable: true, inaccessible: false, interface_object: false, tags: [], directives: []
+    }
+]

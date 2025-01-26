@@ -1,0 +1,29 @@
+[package]
+name = "apy"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+dynamic = { path = "../dynamic" }
+macros = { path = "../macros" }
+
+async-graphql = { workspace = true }
+sea-orm = { workspace = true }
+itertools = { workspace = true }
+heck = { workspace = true }
+thiserror = { workspace = true }
+fnv = { workspace = true }
+
+[features]
+default = ["with-json", "with-chrono", "with-uuid"]
+with-json = ["sea-orm/with-json"]
+with-chrono = ["sea-orm/with-chrono", "async-graphql/chrono"]
+with-time = ["sea-orm/with-time", "async-graphql/time"]
+with-uuid = ["sea-orm/with-uuid"]
+with-decimal = ["sea-orm/with-rust_decimal", "async-graphql/decimal"]
+with-bigdecimal = ["sea-orm/with-bigdecimal", "async-graphql/bigdecimal"]
+with-postgres-array = ["sea-orm/postgres-array"]
+# with-ipnetwork = ["sea-orm/with-ipnetwork"]
+# with-mac_address = ["sea-orm/with-mac_address"]

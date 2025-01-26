@@ -1,0 +1,24 @@
+[package]
+name = "dynamic"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+binary = { path = "../binary"}
+
+sea-orm = { workspace = true }
+actix-web = { workspace = true }
+futures-util = { workspace = true }
+indexmap = { workspace = true }
+fnv = { workspace = true }
+thiserror = { workspace = true }
+bytes = { workspace = true }
+prost = { workspace = true }
+async-graphql = { workspace = true }
+heck = { workspace = true }
+hex = { workspace = true }
+lazy_static = { workspace = true }
+tonic = { workspace = true }
+async-graphql-actix-web = { workspace = true }
