@@ -1,4 +1,4 @@
-use dynamic::prelude::{GraphQLResolverContext, ProtoResolverContext, ResolverContext};
+use dynamic::prelude::ResolverContext;
 use std::collections::BTreeMap;
 
 /// Entities and GraphQLField guards configuration.

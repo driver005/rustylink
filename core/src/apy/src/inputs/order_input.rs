@@ -1,10 +1,7 @@
 use std::ops::Add;
 
 use crate::{BuilderContext, EntityObjectBuilder};
-use dynamic::prelude::{
-	Field, GraphQLTypeRef, Object, ObjectAccessorTrait, ProtoTypeRef, TypeRef, TypeRefTrait,
-	ValueAccessorTrait, ValueAccessors,
-};
+use dynamic::prelude::*;
 use sea_orm::{EntityTrait, Iterable};
 
 /// The configuration structure for OrderInputBuilder
@@ -47,16 +44,19 @@ impl OrderInputBuilder {
 		let object_name = entity_object_builder.type_name::<T>();
 		let name = self.type_name(&object_name);
 
-		T::Column::iter().enumerate().fold(Object::new(name), |object, (index, column)| {
-			object.field(Field::input(
-				entity_object_builder.column_name::<T>(&column),
-				index.add(1) as u32,
-				TypeRef::new(
-					GraphQLTypeRef::named(&self.context.order_by_enum.type_name),
-					ProtoTypeRef::named(&self.context.order_by_enum.type_name),
-				),
-			))
-		})
+		T::Column::iter().enumerate().fold(
+			Object::new(name, IO::Input),
+			|object, (index, column)| {
+				object.field(Field::input(
+					entity_object_builder.column_name::<T>(&column),
+					index.add(1) as u32,
+					TypeRef::new(
+						GraphQLTypeRef::named(&self.context.order_by_enum.type_name),
+						ProtoTypeRef::named(&self.context.order_by_enum.type_name),
+					),
+				))
+			},
+		)
 	}
 
 	pub fn parse_object<'a, T>(

@@ -1,8 +1,4 @@
-use dynamic::prelude::{
-	DataContext, Error, Field, FieldFuture, FieldValue, FieldValueTrait, GraphQLTypeRef,
-	ListAccessorTrait, ObjectAccessorTrait, ProtoObjectAccessor, ProtoTypeRef, TypeRef,
-	TypeRefTrait, ValueAccessorTrait,
-};
+use dynamic::prelude::*;
 use sea_orm::{
 	ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, TransactionTrait,
 };
@@ -52,7 +48,7 @@ impl EntityCreateBatchMutationBuilder {
 	}
 
 	/// used to get the create mutation field for a SeaORM entity
-	pub fn to_field<T, A>(&self) -> Field
+	pub fn to_field<'a, T, A>(&'a self) -> Field
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
@@ -80,7 +76,7 @@ impl EntityCreateBatchMutationBuilder {
 				ProtoTypeRef::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
 			),
 			move |ctx| {
-				FieldFuture::new(async move {
+				FieldFuture::new(ctx.api_type.clone(), async move {
 					let guard_flag = if let Some(guard) = guard {
 						(*guard)(&ctx)
 					} else {
@@ -105,14 +101,13 @@ impl EntityCreateBatchMutationBuilder {
 					};
 
 					let mut results: Vec<_> = Vec::new();
-					for input in ctx
+					let binding = ctx
 						.args
 						.get(&context.entity_create_batch_mutation.data_field)
 						.unwrap()
-						.list()?
-						.to_iter()
-					{
-						let input_object = &input.object()?;
+						.list()?;
+					for input in binding.to_iter().collect::<Vec<_>>() {
+						let input_object = input.object()?;
 						for (column, _) in input_object.to_iter() {
 							let field_guard = field_guards.get(&format!(
 								"{}.{}",
@@ -134,7 +129,7 @@ impl EntityCreateBatchMutationBuilder {
 							}
 						}
 
-						let active_model = prepare_active_model::<T, A, ProtoObjectAccessor>(
+						let active_model = prepare_active_model::<T, A>(
 							&entity_input_builder,
 							&entity_object_builder,
 							input_object,

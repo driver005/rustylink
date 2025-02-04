@@ -14,6 +14,14 @@ impl Error {
 			message: message.into(),
 		}
 	}
+
+	pub(crate) fn to_graphql(self) -> GraphQLError {
+		GraphQLError::new(self.message)
+	}
+
+	pub(crate) fn to_proto(self) -> ProtoError {
+		ProtoError::new(self.message)
+	}
 }
 
 impl<T: Display + Send + Sync> From<T> for Error {

@@ -1,20 +1,11 @@
-use dynamic::{
-	prelude::{
-		DataContext, Error, Field, FieldFuture, FieldValue, FieldValueTrait, GraphQLError,
-		GraphQLField, GraphQLFieldFuture, GraphQLFieldValue, GraphQLInputValue, GraphQLTypeRef,
-		GraphQLValueAccessor, ProtoError, ProtoField, ProtoFieldFuture, ProtoFieldValue,
-		ProtoTypeRef, ProtoValueAccessor, TypeRef, TypeRefTrait,
-	},
-	ObjectAccessorTrait,
-};
-use heck::ToLowerCamelCase;
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter};
-
 use crate::{
 	apply_order, apply_pagination, get_filter_conditions, BuilderContext, ConnectionObjectBuilder,
 	EntityObjectBuilder, FilterInputBuilder, GuardAction, OrderInputBuilder,
 	PaginationInputBuilder,
 };
+use dynamic::prelude::*;
+use heck::ToLowerCamelCase;
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter};
 
 /// The configuration structure for EntityQueryFieldBuilder
 pub struct EntityQueryFieldConfig {
@@ -60,92 +51,8 @@ impl EntityQueryFieldBuilder {
 		self.context.entity_query_field.type_name.as_ref()(&object_name)
 	}
 
-	/// used to get the Query object field for a SeaORM entity
-	pub fn to_graphql_field<T>(&self) -> GraphQLField
-	where
-		T: EntityTrait,
-		<T as EntityTrait>::Model: Sync,
-	{
-		let connection_object_builder = ConnectionObjectBuilder {
-			context: self.context,
-		};
-		let filter_input_builder = FilterInputBuilder {
-			context: self.context,
-		};
-		let order_input_builder = OrderInputBuilder {
-			context: self.context,
-		};
-		let pagination_input_builder = PaginationInputBuilder {
-			context: self.context,
-		};
-		let entity_object = EntityObjectBuilder {
-			context: self.context,
-		};
-
-		let object_name = entity_object.type_name::<T>();
-		let type_name = connection_object_builder.type_name(&object_name);
-
-		let guard = self.context.guards_graphql.entity_guards.get(&object_name);
-
-		let context: &'static BuilderContext = self.context;
-		GraphQLField::new(self.type_name::<T>(), GraphQLTypeRef::named_nn(type_name), move |ctx| {
-			let context: &'static BuilderContext = context;
-			GraphQLFieldFuture::new(async move {
-				let guard_flag = if let Some(guard) = guard {
-					(*guard)(&ctx)
-				} else {
-					GuardAction::Allow
-				};
-
-				if let GuardAction::Block(reason) = guard_flag {
-					return match reason {
-						Some(reason) => Err::<Option<_>, GraphQLError>(GraphQLError::new(reason)),
-						None => Err::<Option<_>, GraphQLError>(GraphQLError::new(
-							"Entity guard triggered.",
-						)),
-					};
-				}
-
-				let filters = ctx.args.get(&context.entity_query_field.filters);
-				let filters = get_filter_conditions::<T, GraphQLValueAccessor>(context, filters);
-				let order_by = ctx.args.get(&context.entity_query_field.order_by);
-				let order_by = OrderInputBuilder {
-					context,
-				}
-				.parse_object::<T, GraphQLValueAccessor>(order_by);
-				let pagination = ctx.args.get(&context.entity_query_field.pagination);
-				let pagination = PaginationInputBuilder {
-					context,
-				}
-				.parse_object(pagination);
-
-				let stmt = T::find();
-				let stmt = stmt.filter(filters);
-				let stmt = apply_order(stmt, order_by);
-
-				let db = ctx.data::<DatabaseConnection>()?;
-
-				let connection = apply_pagination::<T>(db, stmt, pagination).await?;
-
-				Ok(Some(GraphQLFieldValue::owned_any(connection)))
-			})
-		})
-		.argument(GraphQLInputValue::new(
-			&self.context.entity_query_field.filters,
-			GraphQLTypeRef::named(filter_input_builder.type_name(&object_name)),
-		))
-		.argument(GraphQLInputValue::new(
-			&self.context.entity_query_field.order_by,
-			GraphQLTypeRef::named(order_input_builder.type_name(&object_name)),
-		))
-		.argument(GraphQLInputValue::new(
-			&self.context.entity_query_field.pagination,
-			GraphQLTypeRef::named(pagination_input_builder.type_name()),
-		))
-	}
-
 	/// used to get the Query message field for a SeaORM entity
-	pub fn to_proto_field<T>(&self) -> Field
+	pub fn to_field<T>(&self) -> Field
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
@@ -175,10 +82,10 @@ impl EntityQueryFieldBuilder {
 		Field::output(
 			self.type_name::<T>(),
 			1u32,
-			TypeRef::new(GraphQLTypeRef::named_nn(type_name), ProtoTypeRef::named_nn(type_name)),
+			TypeRef::new(GraphQLTypeRef::named_nn(&type_name), ProtoTypeRef::named_nn(&type_name)),
 			move |ctx| {
 				let context: &'static BuilderContext = context;
-				FieldFuture::new(async move {
+				FieldFuture::new(ctx.api_type.clone(), async move {
 					let guard_flag = if let Some(guard) = guard {
 						(*guard)(&ctx)
 					} else {
@@ -193,12 +100,12 @@ impl EntityQueryFieldBuilder {
 					}
 
 					let filters = ctx.args.get(&context.entity_query_field.filters);
-					let filters = get_filter_conditions::<T, ProtoValueAccessor>(context, filters);
+					let filters = get_filter_conditions::<T>(context, filters);
 					let order_by = ctx.args.get(&context.entity_query_field.order_by);
 					let order_by = OrderInputBuilder {
 						context,
 					}
-					.parse_object::<T, ProtoValueAccessor>(order_by);
+					.parse_object::<T>(order_by);
 					let pagination = ctx.args.get(&context.entity_query_field.pagination);
 					let pagination = PaginationInputBuilder {
 						context,

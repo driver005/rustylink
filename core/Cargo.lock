@@ -395,7 +395,7 @@ dependencies = [
  "async-stream",
  "async-trait",
  "base64 0.22.1",
- "bigdecimal 0.4.7",
+ "bigdecimal",
  "bytes",
  "chrono",
  "fast_chemail",
@@ -622,19 +622,6 @@ version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6773ddc0eafc0e509fb60e48dff7f450f8e674a0686ae8605e8d9901bd5eefa"
 dependencies = [
- "num-bigint",
- "num-integer",
- "num-traits",
-]
-
-[[package]]
-name = "bigdecimal"
-version = "0.4.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f31f3af01c5c65a07985c804d3366560e6fa7883d640a122819b14ec327482c"
-dependencies = [
- "autocfg",
- "libm",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -1028,9 +1015,14 @@ dependencies = [
  "actix-web",
  "async-graphql",
  "async-graphql-actix-web",
+ "async-graphql-parser",
+ "async-graphql-value",
+ "async-stream",
+ "async-trait",
  "binary",
  "bytes",
  "fnv",
+ "futures",
  "futures-util",
  "heck 0.5.0",
  "hex",
@@ -1038,7 +1030,10 @@ dependencies = [
  "lazy_static",
  "prost",
  "sea-orm",
+ "serde",
+ "serde_json",
  "thiserror 2.0.11",
+ "tokio",
  "tonic",
 ]
 
@@ -2788,7 +2783,7 @@ checksum = "ea1fee0cf8528dbe6eda29d5798afc522a63b75e44c5b15721e6e64af9c7cc4b"
 dependencies = [
  "async-stream",
  "async-trait",
- "bigdecimal 0.3.1",
+ "bigdecimal",
  "chrono",
  "futures",
  "log",
@@ -2828,7 +2823,7 @@ version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4fd043b8117af233e221f73e3ea8dfbc8e8c3c928017c474296db45c649105c"
 dependencies = [
- "bigdecimal 0.3.1",
+ "bigdecimal",
  "chrono",
  "educe",
  "inherent",
@@ -2846,7 +2841,7 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "754965d4aee6145bec25d0898e5c931e6c22859789ce62fd85a42a15ed5a8ce3"
 dependencies = [
- "bigdecimal 0.3.1",
+ "bigdecimal",
  "chrono",
  "rust_decimal",
  "sea-query",
@@ -3099,7 +3094,7 @@ checksum = "24ba59a9342a3d9bab6c56c118be528b27c9b60e490080e9711a04dccac83ef6"
 dependencies = [
  "ahash 0.8.11",
  "atoi",
- "bigdecimal 0.3.1",
+ "bigdecimal",
  "byteorder",
  "bytes",
  "chrono",
@@ -3185,7 +3180,7 @@ checksum = "1ed31390216d20e538e447a7a9b959e06ed9fc51c37b514b46eb758016ecd418"
 dependencies = [
  "atoi",
  "base64 0.21.7",
- "bigdecimal 0.3.1",
+ "bigdecimal",
  "bitflags",
  "byteorder",
  "bytes",
@@ -3232,7 +3227,7 @@ checksum = "7c824eb80b894f926f89a0b9da0c7f435d27cdd35b8c655b114e58223918577e"
 dependencies = [
  "atoi",
  "base64 0.21.7",
- "bigdecimal 0.3.1",
+ "bigdecimal",
  "bitflags",
  "byteorder",
  "chrono",

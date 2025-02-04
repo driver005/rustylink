@@ -4,6 +4,7 @@ use crate::{
 };
 use async_graphql::Upload;
 use indexmap::IndexMap;
+use serde::de::DeserializeOwned;
 
 pub trait ValueAccessorTrait<'a> {
 	type Value;
@@ -28,6 +29,7 @@ pub trait ValueAccessorTrait<'a> {
 	fn string(&self) -> Result<&str, Self::Error>;
 	fn object(&self) -> Result<Self::ObjectAccessor, Self::Error>;
 	fn list(&self) -> Result<Self::ListAccessor, Self::Error>;
+	fn deserialize<T: DeserializeOwned>(&self) -> Result<T, Self::Error>;
 	fn as_value(&self) -> Self::Value;
 	fn upload(&self) -> Result<Upload, Self::Error>;
 }
@@ -38,7 +40,7 @@ pub trait ObjectAccessorTrait<'a> {
 	type ValueAccessor;
 
 	fn type_name(&self) -> &'static str;
-	fn get_accessor<'b>(&'b self) -> ObjectAccessors<'b>;
+	fn get_accessor(self) -> ObjectAccessors<'a>;
 
 	fn get(&'a self, name: &str) -> Option<Self::ValueAccessor>;
 	fn try_get(&'a self, name: &str) -> Result<Self::ValueAccessor, Self::Error>;
@@ -61,7 +63,7 @@ pub trait ListAccessorTrait<'a> {
 
 	fn len(&self) -> usize;
 	fn is_empty(&self) -> bool;
-	fn to_iter(&'a self) -> impl Iterator<Item = Self::ValueAccessor>;
+	fn to_iter(&'a self) -> Box<dyn Iterator<Item = Self::ValueAccessor> + 'a>;
 	fn get(&'a self, idx: usize) -> Option<Self::ValueAccessor>;
 	fn try_get(&'a self, idx: usize) -> Result<Self::ValueAccessor, Self::Error>;
 	fn as_slice(&self, start: usize, end: usize) -> Result<Self::ListAccessor, Self::Error>;

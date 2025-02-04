@@ -47,7 +47,7 @@ impl DeriveRelatedEntity {
 		let ident = &self.ident;
 		let entity_ident = &self.entity_ident;
 
-		let variant_implementations_graphql: Vec<TokenStream> = self
+		let variant_implementations: Vec<TokenStream> = self
 			.variants
 			.iter()
 			.map(|variant| {
@@ -71,45 +71,11 @@ impl DeriveRelatedEntity {
 
 				if let Some(def) = def {
 					Result::<_, syn::Error>::Ok(quote! {
-						Self::#enum_name => builder.get_graphql_relation::<#entity_ident, #target_entity>(#name, #def)
+						Self::#enum_name => builder.get_relation::<#entity_ident, #target_entity>(#name, #def)
 					})
 				} else {
 					Result::<_, syn::Error>::Ok(quote! {
-						Self::#enum_name => via_builder.get_graphql_relation::<#entity_ident, #target_entity>(#name)
-					})
-				}
-			})
-			.collect::<Result<Vec<_>, _>>()?;
-
-		let variant_implementations_proto: Vec<TokenStream> = self
-			.variants
-			.iter()
-			.map(|variant| {
-				let attr = related_attr::SeaOrm::from_attributes(&variant.attrs)?;
-
-				let enum_name = &variant.ident;
-
-				let target_entity =
-					attr.entity.as_ref().map(Self::parse_lit_string).ok_or_else(|| {
-						syn::Error::new_spanned(variant, "Missing value for 'entity'")
-					})??;
-
-				let def = match attr.def {
-					Some(def) => Some(Self::parse_lit_string(&def).map_err(|_| {
-						syn::Error::new_spanned(variant, "Missing value for 'def'")
-					})?),
-					None => None,
-				};
-
-				let name = enum_name.to_string().to_lower_camel_case();
-
-				if let Some(def) = def {
-					Result::<_, syn::Error>::Ok(quote! {
-						Self::#enum_name => builder.get_proto_relation::<#entity_ident, #target_entity>(#name, #def)
-					})
-				} else {
-					Result::<_, syn::Error>::Ok(quote! {
-						Self::#enum_name => via_builder.get_proto_relation::<#entity_ident, #target_entity>(#name)
+						Self::#enum_name => via_builder.get_relation::<#entity_ident, #target_entity>(#name)
 					})
 				}
 			})
@@ -117,19 +83,11 @@ impl DeriveRelatedEntity {
 
 		Ok(quote! {
 			impl apy::RelationBuilder for #ident {
-				fn get_graphql_relation(&self, context: & 'static apy::BuilderContext) -> dynamic::prelude::GraphQLField {
+				fn get_relation(&self, context: & 'static apy::BuilderContext) -> dynamic::prelude::Field {
 					let builder = apy::EntityObjectRelationBuilder { context };
 					let via_builder = apy::EntityObjectViaRelationBuilder { context };
 					match self {
-						#(#variant_implementations_graphql,)*
-						_ => panic!("No relations for this entity"),
-					}
-				}
-				fn get_proto_relation(&self, context: & 'static apy::BuilderContext) -> dynamic::prelude::ProtoField {
-					let builder = apy::EntityObjectRelationBuilder { context };
-					let via_builder = apy::EntityObjectViaRelationBuilder { context };
-					match self {
-						#(#variant_implementations_proto,)*
+						#(#variant_implementations,)*
 						_ => panic!("No relations for this entity"),
 					}
 				}

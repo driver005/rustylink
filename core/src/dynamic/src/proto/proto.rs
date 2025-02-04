@@ -1,8 +1,8 @@
 use super::{
 	add_type, get_type, BoxResolverFn, Error, Field, FieldFuture, ObjectAccessor, ResolverContext,
-	Result, Scalar, Type, Value, TYPES,
+	Result, Scalar, SchemaError, Type, Value, TYPES,
 };
-use crate::{context::Data, Registry, SchemaError};
+use crate::{ApiType, Data, Registry};
 use async_graphql::Name;
 use binary::proto::Decoder;
 use bytes::Bytes;
@@ -11,7 +11,7 @@ use std::{any::Any, borrow::Cow, fmt::Debug, sync::Arc};
 
 /// Dynamic schema builder
 pub struct ProtoBuilder {
-	data: Data,
+	pub data: Data,
 	proto_type: String,
 	entity_resolver: Option<BoxResolverFn>,
 }
@@ -112,7 +112,6 @@ impl Proto {
 		let mut decoder = Decoder::default();
 		let mut dst = vec![];
 		let mut arguments = IndexMap::new();
-		println!("name: {}", parent.type_name());
 		decoder.decode(buf, &mut dst)?;
 
 		for (tag, _, byt) in dst.drain(..) {
@@ -140,13 +139,13 @@ impl Proto {
 		mut buf: Vec<u8>,
 		name: &str,
 	) -> Result<Bytes> {
-		let mut ctx = crate::ContextBase::new();
+		let mut ctx = crate::ContextBase::new(ApiType::Proto);
 
 		ctx.execute_data = Some(&self.0.data);
 
 		async move {
 			match get_type(&self.registry().proto_type) {
-				Some(inner) => match inner.as_service() {
+				Some(inner) => match inner.as_message() {
 					Some(service) => match service.get_field(name) {
 						Some(field) => {
 							let arguments = self.to_object_accessor(&mut buf, field)?;

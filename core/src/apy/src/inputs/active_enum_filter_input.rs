@@ -1,7 +1,5 @@
 use crate::{ActiveEnumBuilder, BuilderContext, FilterInfo, FilterOperation, SeaResult};
-use dynamic::prelude::{
-	ListAccessorTrait, ObjectAccessorTrait, ObjectAccessors, ValueAccessorTrait, ValueAccessors,
-};
+use dynamic::prelude::*;
 use heck::ToUpperCamelCase;
 use sea_orm::{ActiveEnum, ColumnTrait, ColumnType, Condition, DynIden, EntityTrait};
 use std::collections::BTreeSet;

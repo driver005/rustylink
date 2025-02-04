@@ -1,9 +1,5 @@
-use dynamic::prelude::{
-	Field, GraphQLInputObject, GraphQLInputValue, GraphQLTypeRef, Object, ObjectAccessorTrait,
-	ObjectAccessors, ProtoTypeRef, TypeRef, TypeRefTrait, ValueAccessorTrait,
-};
-
 use crate::BuilderContext;
+use dynamic::prelude::*;
 
 /// used to hold information about cursor pagination
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -44,8 +40,8 @@ impl CursorInputBuilder {
 	}
 
 	/// used to get cursor pagination options message
-	pub fn object(&self) -> Object {
-		Object::new(&self.context.cursor_input.type_name)
+	pub fn input_object(&self) -> Object {
+		Object::new(&self.context.cursor_input.type_name, IO::Input)
 			.field(Field::input(
 				&self.context.cursor_input.cursor,
 				1u32,

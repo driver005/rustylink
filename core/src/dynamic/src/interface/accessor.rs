@@ -1,7 +1,7 @@
 use crate::{
-	graphql::{GraphQLListAccessor, GraphQLObjectAccessor, GraphQLValueAccessor},
 	prelude::{
-		GraphQLValue, ProtoListAccessor, ProtoObjectAccessor, ProtoValue, ProtoValueAccessor,
+		GraphQLListAccessor, GraphQLObjectAccessor, GraphQLValueAccessor, ProtoListAccessor,
+		ProtoObjectAccessor, ProtoValueAccessor,
 	},
 	ListAccessorTrait, ObjectAccessorTrait, ValueAccessorTrait,
 };
@@ -48,78 +48,122 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessors<'a> {
 
 	fn boolean(&self) -> Result<bool, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.boolean().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.boolean().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.boolean().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.boolean().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn enum_name(&self) -> Result<&str, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.enum_name().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.enum_name().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.enum_name().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.enum_name().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn i32(&self) -> Result<i32, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.i32().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.i32().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.i32().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.i32().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn i64(&self) -> Result<i64, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.i64().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.i64().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.i64().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.i64().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn u32(&self) -> Result<u32, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.u32().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.u32().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.u32().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.u32().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn u64(&self) -> Result<u64, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.u64().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.u64().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.u64().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.u64().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn si32(&self) -> Result<i32, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.si32().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.si32().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.si32().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.si32().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn si64(&self) -> Result<i64, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.si64().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.si64().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.si64().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.si64().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn f32(&self) -> Result<f32, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.f32().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.f32().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.f32().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.f32().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn f64(&self) -> Result<f64, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.f64().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.f64().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.f64().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.f64().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
 	fn string(&self) -> Result<&str, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.string().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.string().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.string().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.string().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 
@@ -127,11 +171,11 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessors<'a> {
 		match self {
 			ValueAccessors::GraphQL(accessor) => match accessor.object() {
 				Ok(accessor) => Ok(ObjectAccessors::graphql(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 			ValueAccessors::Proto(accessor) => match accessor.object() {
 				Ok(accessor) => Ok(ObjectAccessors::proto(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 		}
 	}
@@ -140,11 +184,11 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessors<'a> {
 		match self {
 			ValueAccessors::GraphQL(accessor) => match accessor.list() {
 				Ok(accessor) => Ok(ListAccessors::graphql(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 			ValueAccessors::Proto(accessor) => match accessor.list() {
 				Ok(accessor) => Ok(ListAccessors::proto(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 		}
 	}
@@ -158,8 +202,23 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessors<'a> {
 
 	fn upload(&self) -> Result<async_graphql::Upload, Self::Error> {
 		match self {
-			ValueAccessors::GraphQL(accessor) => accessor.upload().map_err(|err| err.into()),
-			ValueAccessors::Proto(accessor) => accessor.upload().map_err(|err| err.into()),
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.upload().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.upload().map_err(|err| Error::new(err.message))
+			}
+		}
+	}
+
+	fn deserialize<T: serde::de::DeserializeOwned>(&self) -> Result<T, Self::Error> {
+		match self {
+			ValueAccessors::GraphQL(accessor) => {
+				accessor.deserialize().map_err(|err| Error::new(err.message))
+			}
+			ValueAccessors::Proto(accessor) => {
+				accessor.deserialize().map_err(|err| Error::new(err.message))
+			}
 		}
 	}
 }
@@ -170,12 +229,28 @@ pub enum ObjectAccessors<'a> {
 }
 
 impl<'a> ObjectAccessors<'a> {
-	pub const fn graphql(value: GraphQLObjectAccessor<'a>) -> Self {
+	pub fn graphql(value: GraphQLObjectAccessor<'a>) -> Self {
 		Self::GraphQL(value)
 	}
 
-	pub const fn proto(value: ProtoObjectAccessor<'a>) -> Self {
+	pub fn proto(value: ProtoObjectAccessor<'a>) -> Self {
 		Self::Proto(value)
+	}
+
+	pub fn to_graphql(&'a self) -> &'a GraphQLObjectAccessor<'a> {
+		match self {
+			ObjectAccessors::GraphQL(object_accessor) => object_accessor,
+			ObjectAccessors::Proto(_) => panic!("could not get GraphQLObjectAccessor"),
+		}
+	}
+
+	pub fn to_proto(&'a self) -> &'a ProtoObjectAccessor<'a> {
+		match self {
+			ObjectAccessors::GraphQL(_) => {
+				panic!("could not get ProtoObjectAccessor")
+			}
+			ObjectAccessors::Proto(object_accessor) => object_accessor,
+		}
 	}
 }
 
@@ -188,8 +263,8 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessors<'a> {
 		"GraphQLObjectAccessor"
 	}
 
-	fn get_accessor<'b>(&'b self) -> ObjectAccessors<'b> {
-		todo!()
+	fn get_accessor(self) -> ObjectAccessors<'a> {
+		self
 	}
 
 	fn get(&'a self, name: &str) -> Option<Self::ValueAccessor> {
@@ -203,11 +278,11 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessors<'a> {
 		match self {
 			ObjectAccessors::GraphQL(accessor) => match accessor.try_get(name) {
 				Ok(accessor) => Ok(ValueAccessors::graphql(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 			ObjectAccessors::Proto(accessor) => match accessor.try_get(name) {
 				Ok(accessor) => Ok(ValueAccessors::proto(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 		}
 	}
@@ -336,11 +411,11 @@ impl<'a> ListAccessorTrait<'a> for ListAccessors<'a> {
 		match self {
 			ListAccessors::GraphQL(accessor) => match accessor.try_get(idx) {
 				Ok(accessor) => Ok(ValueAccessors::graphql(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 			ListAccessors::Proto(accessor) => match accessor.try_get(idx) {
 				Ok(accessor) => Ok(ValueAccessors::proto(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 		}
 	}
@@ -349,11 +424,11 @@ impl<'a> ListAccessorTrait<'a> for ListAccessors<'a> {
 		match self {
 			ListAccessors::GraphQL(accessor) => match accessor.as_slice(start, end) {
 				Ok(accessor) => Ok(ListAccessors::graphql(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 			ListAccessors::Proto(accessor) => match accessor.as_slice(start, end) {
 				Ok(accessor) => Ok(ListAccessors::proto(accessor)),
-				Err(err) => Err(err.into()),
+				Err(err) => Err(Error::new(err.message)),
 			},
 		}
 	}

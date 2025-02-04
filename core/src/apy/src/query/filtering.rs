@@ -1,13 +1,8 @@
+use crate::{BuilderContext, EntityObjectBuilder, FilterTypesMapHelper};
 use dynamic::prelude::{
-	GraphQLObjectAccessor, ListAccessorTrait, ListAccessors, ObjectAccessorTrait, ObjectAccessors,
-	ProtoObjectAccessor, ValueAccessorTrait, ValueAccessors,
+	ListAccessorTrait, ObjectAccessorTrait, ObjectAccessors, ValueAccessorTrait, ValueAccessors,
 };
 use sea_orm::{Condition, EntityTrait, Iterable};
-
-use crate::{
-	BuilderContext, EntityObjectBuilder, FilterTypesMapHelper, GraphQLFilterTypesMapHelper,
-	ProtoFilterTypesMapHelper,
-};
 
 /// utility function used to create the query filter condition
 /// for a SeaORM entity using query filter inputs
@@ -22,14 +17,7 @@ where
 	if let Some(filters) = filters {
 		let filters = filters.object().unwrap();
 
-		match filters.get_accessor() {
-			ObjectAccessors::GraphQL(graphql) => {
-				recursive_prepare_condition::<T, GraphQLObjectAccessor>(context, &graphql)
-			}
-			ObjectAccessors::Proto(proto) => {
-				recursive_prepare_condition::<T, ProtoObjectAccessor>(context, &proto)
-			}
-		}
+		recursive_prepare_condition::<T>(context, &filters)
 	} else {
 		Condition::all()
 	}

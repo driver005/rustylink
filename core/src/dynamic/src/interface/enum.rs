@@ -1,5 +1,7 @@
-use crate::prelude::{GraphQLEnum, GraphQLEnumItem, ProtoEnum, ProtoEnumItem};
-use crate::traits::EnumTrait;
+use crate::{
+	prelude::{GraphQLEnum, GraphQLEnumItem, GraphQLType, ProtoEnum, ProtoEnumItem, ProtoType},
+	EnumTrait,
+};
 
 pub struct EnumItems {
 	graphql: GraphQLEnumItem,
@@ -18,6 +20,16 @@ impl EnumItems {
 pub struct Enum {
 	graphql: GraphQLEnum,
 	proto: ProtoEnum,
+}
+
+impl Enum {
+	pub(crate) fn to_graphql(self) -> GraphQLType {
+		GraphQLType::Enum(self.graphql)
+	}
+
+	pub(crate) fn to_proto(self) -> ProtoType {
+		ProtoType::Enum(self.proto)
+	}
 }
 
 impl EnumTrait for Enum {

@@ -1,5 +1,7 @@
-use super::{BoxFieldFuture, Enum, FieldValue, Message, ObjectAccessor, Result, Scalar, Service};
-use crate::{Context, Registry, SchemaError};
+use super::{
+	BoxFieldFuture, Enum, FieldValue, Message, ObjectAccessor, Result, Scalar, SchemaError, Service,
+};
+use crate::{Context, Registry};
 use indexmap::IndexMap;
 use lazy_static::lazy_static;
 use std::sync::{Arc, RwLock};
@@ -45,8 +47,8 @@ impl Type {
 	}
 
 	#[inline]
-	pub(crate) fn as_service(&self) -> Option<&Service> {
-		if let Type::Service(obj) = self {
+	pub(crate) fn as_message(&self) -> Option<&Message> {
+		if let Type::Message(obj) = self {
 			Some(obj)
 		} else {
 			None

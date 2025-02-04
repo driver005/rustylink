@@ -1,5 +1,5 @@
-use super::{BoxFieldFuture, Error, Field, FieldValue, ObjectAccessor, Result, Value};
-use crate::{prelude::Name, Context, ProtobufField, ProtobufKind, Registry, SchemaError};
+use super::{BoxFieldFuture, Error, Field, FieldValue, ObjectAccessor, Result, SchemaError, Value};
+use crate::{prelude::Name, Context, ProtobufField, ProtobufKind, Registry};
 use binary::proto::Decoder;
 use indexmap::IndexMap;
 

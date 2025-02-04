@@ -1,10 +1,6 @@
-use dynamic::prelude::{
-	Field, FieldFuture, FieldValue, FieldValueTrait, GraphQLFieldValue, GraphQLTypeRef,
-	GraphQLValue, Object, ProtoFieldValue, ProtoTypeRef, ProtoValue, TypeRef, TypeRefTrait, Value,
-};
-use sea_orm::EntityTrait;
-
 use crate::{BuilderContext, EntityObjectBuilder};
+use dynamic::prelude::*;
+use sea_orm::EntityTrait;
 /// used to represent a data Edge for GraphQL pagination
 #[derive(Clone, Debug)]
 pub struct Edge<T>
@@ -62,7 +58,7 @@ impl EdgeObjectBuilder {
 		let object_name = entity_object_builder.type_name::<T>();
 		let name = self.type_name(&object_name);
 
-		Object::new(name)
+		Object::new(name, IO::Output)
 			.field(Field::output(
 				&self.context.edge_object.cursor,
 				1u32,
@@ -71,7 +67,7 @@ impl EdgeObjectBuilder {
 					ProtoTypeRef::named_nn(ProtoTypeRef::STRING),
 				),
 				|ctx| {
-					FieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let edge = ctx.parent_value.try_downcast_ref::<Edge<T>>()?;
 						Ok(Some(Value::new(
 							GraphQLValue::from(edge.cursor.as_str()),
@@ -84,16 +80,13 @@ impl EdgeObjectBuilder {
 				&self.context.edge_object.node,
 				2u32,
 				TypeRef::new(
-					GraphQLTypeRef::named_nn(object_name),
-					ProtoTypeRef::named_nn(object_name),
+					GraphQLTypeRef::named_nn(&object_name),
+					ProtoTypeRef::named_nn(&object_name),
 				),
 				|ctx| {
-					FieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let edge = ctx.parent_value.try_downcast_ref::<Edge<T>>()?;
-						Ok(Some(FieldValue::new(
-							GraphQLFieldValue::borrowed_any(&edge.node),
-							ProtoFieldValue::borrowed_any(&edge.node),
-						)))
+						Ok(Some(FieldValue::borrowed_any(&edge.node)))
 					})
 				},
 			))

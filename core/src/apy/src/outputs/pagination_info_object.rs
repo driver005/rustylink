@@ -1,9 +1,5 @@
-use dynamic::prelude::{
-	GraphQLField, GraphQLFieldFuture, GraphQLObject, GraphQLTypeRef, GraphQLValue, ProtoField,
-	ProtoFieldFuture, ProtoMessage, ProtoTypeRef, ProtoValue,
-};
-
 use crate::BuilderContext;
+use dynamic::prelude::*;
 
 /// used to hold offset pagination info
 #[derive(Clone, Debug)]
@@ -53,103 +49,78 @@ impl PaginationInfoObjectBuilder {
 		self.context.pagination_info_object.type_name.clone()
 	}
 
-	/// used to get GraphQL object for PaginationInfo
-	pub fn to_object(&self) -> GraphQLObject {
-		GraphQLObject::new(&self.context.pagination_info_object.type_name)
-			.field(GraphQLField::new(
-				&self.context.pagination_info_object.pages,
-				GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-				|ctx| {
-					GraphQLFieldFuture::new(async move {
-						let pagination_page_info =
-							ctx.parent_value.try_downcast_ref::<PaginationInfo>()?;
-						Ok(Some(GraphQLValue::from(pagination_page_info.pages)))
-					})
-				},
-			))
-			.field(GraphQLField::new(
-				&self.context.pagination_info_object.current,
-				GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-				|ctx| {
-					GraphQLFieldFuture::new(async move {
-						let pagination_page_info =
-							ctx.parent_value.try_downcast_ref::<PaginationInfo>()?;
-						Ok(Some(GraphQLValue::from(pagination_page_info.current)))
-					})
-				},
-			))
-			.field(GraphQLField::new(
-				&self.context.pagination_info_object.offset,
-				GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-				|ctx| {
-					GraphQLFieldFuture::new(async move {
-						let pagination_page_info =
-							ctx.parent_value.try_downcast_ref::<PaginationInfo>()?;
-						Ok(Some(GraphQLValue::from(pagination_page_info.offset)))
-					})
-				},
-			))
-			.field(GraphQLField::new(
-				&self.context.pagination_info_object.total,
-				GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-				|ctx| {
-					GraphQLFieldFuture::new(async move {
-						let pagination_page_info =
-							ctx.parent_value.try_downcast_ref::<PaginationInfo>()?;
-						Ok(Some(GraphQLValue::from(pagination_page_info.total)))
-					})
-				},
-			))
-	}
-
 	/// used to get GraphQL message for PaginationInfo
-	pub fn to_message(&self) -> ProtoMessage {
-		ProtoMessage::new(&self.context.pagination_info_object.type_name)
-			.field(ProtoField::output(
+	pub fn to_object(&self) -> Object {
+		Object::new(&self.context.pagination_info_object.type_name, IO::Output)
+			.field(Field::output(
 				&self.context.pagination_info_object.pages,
 				1u32,
-				ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
+				TypeRef::new(
+					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
+					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
+				),
 				|ctx| {
-					ProtoFieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let pagination_page_info =
 							ctx.parent_value.try_downcast_ref::<PaginationInfo>()?;
-						Ok(Some(ProtoValue::from(pagination_page_info.pages)))
+						Ok(Some(Value::new(
+							GraphQLValue::from(pagination_page_info.pages),
+							ProtoValue::from(pagination_page_info.pages),
+						)))
 					})
 				},
 			))
-			.field(ProtoField::output(
+			.field(Field::output(
 				&self.context.pagination_info_object.current,
 				2u32,
-				ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
+				TypeRef::new(
+					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
+					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
+				),
 				|ctx| {
-					ProtoFieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let pagination_page_info =
 							ctx.parent_value.try_downcast_ref::<PaginationInfo>()?;
-						Ok(Some(ProtoValue::from(pagination_page_info.current)))
+						Ok(Some(Value::new(
+							GraphQLValue::from(pagination_page_info.current),
+							ProtoValue::from(pagination_page_info.current),
+						)))
 					})
 				},
 			))
-			.field(ProtoField::output(
+			.field(Field::output(
 				&self.context.pagination_info_object.offset,
 				3u32,
-				ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
+				TypeRef::new(
+					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
+					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
+				),
 				|ctx| {
-					ProtoFieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let pagination_page_info =
 							ctx.parent_value.try_downcast_ref::<PaginationInfo>()?;
-						Ok(Some(ProtoValue::from(pagination_page_info.offset)))
+						Ok(Some(Value::new(
+							GraphQLValue::from(pagination_page_info.offset),
+							ProtoValue::from(pagination_page_info.offset),
+						)))
 					})
 				},
 			))
-			.field(ProtoField::output(
+			.field(Field::output(
 				&self.context.pagination_info_object.total,
 				4u32,
-				ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
+				TypeRef::new(
+					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
+					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
+				),
 				|ctx| {
-					ProtoFieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let pagination_page_info =
 							ctx.parent_value.try_downcast_ref::<PaginationInfo>()?;
-						Ok(Some(ProtoValue::from(pagination_page_info.total)))
+						Ok(Some(Value::new(
+							GraphQLValue::from(pagination_page_info.total),
+							ProtoValue::from(pagination_page_info.total),
+						)))
 					})
 				},
 			))

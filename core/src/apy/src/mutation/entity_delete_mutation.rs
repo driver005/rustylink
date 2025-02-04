@@ -1,14 +1,10 @@
-use dynamic::prelude::{
-	Field, FieldFuture, GraphQLTypeRef, GraphQLValue, ObjectAccessorTrait, ProtoTypeRef,
-	ProtoValue, TypeRef, TypeRefTrait, Value,
-};
-use sea_orm::{
-	ActiveModelTrait, DatabaseConnection, DeleteResult, EntityTrait, IntoActiveModel, QueryFilter,
-};
-
 use crate::{
 	get_filter_conditions, BuilderContext, EntityObjectBuilder, EntityQueryFieldBuilder,
 	FilterInputBuilder,
+};
+use dynamic::prelude::*;
+use sea_orm::{
+	ActiveModelTrait, DatabaseConnection, DeleteResult, EntityTrait, IntoActiveModel, QueryFilter,
 };
 
 /// The configuration structure of EntityDeleteMutationBuilder
@@ -77,7 +73,7 @@ impl EntityDeleteMutationBuilder {
 				ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
 			),
 			move |ctx| {
-				FieldFuture::new(async move {
+				FieldFuture::new(ctx.api_type.clone(), async move {
 					let db = ctx.data::<DatabaseConnection>()?;
 
 					let filters = ctx.args.get(&context.entity_delete_mutation.filter_field);

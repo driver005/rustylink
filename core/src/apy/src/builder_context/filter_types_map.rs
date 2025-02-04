@@ -2,13 +2,7 @@ use crate::{
 	prepare_enumeration_condition, ActiveEnumFilterInputBuilder, BuilderContext,
 	EntityObjectBuilder, SeaResult, TypesMapHelper,
 };
-use dynamic::{
-	prelude::{
-		Field, GraphQLTypeRef, Object, ObjectAccessorTrait, ObjectAccessors, ProtoTypeRef, TypeRef,
-		TypeRefTrait, ValueAccessorTrait,
-	},
-	ListAccessorTrait,
-};
+use dynamic::prelude::*;
 use sea_orm::{ColumnTrait, ColumnType, Condition, EntityTrait};
 use std::{
 	collections::{BTreeMap, BTreeSet},
@@ -472,29 +466,15 @@ pub enum ProtoFilterType {
 
 #[derive(Debug, Clone)]
 pub struct FilterType {
-	graphql: Option<GraphQlFilterType>,
-	proto: Option<ProtoFilterType>,
+	graphql: GraphQlFilterType,
+	proto: ProtoFilterType,
 }
 
 impl FilterType {
 	pub fn new(graphql: GraphQlFilterType, proto: ProtoFilterType) -> Self {
 		Self {
-			graphql: Some(graphql),
-			proto: Some(proto),
-		}
-	}
-
-	pub fn graphql(graphql: GraphQlFilterType) -> Self {
-		Self {
-			graphql: Some(graphql),
-			proto: None,
-		}
-	}
-
-	pub fn proto(proto: ProtoFilterType) -> Self {
-		Self {
-			graphql: None,
-			proto: Some(proto),
+			graphql,
+			proto,
 		}
 	}
 }
@@ -637,10 +617,18 @@ impl FilterTypesMapHelper {
 			ColumnType::Interval(_, _) => {
 				Some(FilterType::new(GraphQlFilterType::Text, ProtoFilterType::String))
 			}
-			ColumnType::Binary(_) => Some(FilterType::proto(ProtoFilterType::Binary)),
-			ColumnType::VarBinary(_) => Some(FilterType::proto(ProtoFilterType::Binary)),
-			ColumnType::Bit(_) => Some(FilterType::proto(ProtoFilterType::Binary)),
-			ColumnType::VarBit(_) => Some(FilterType::proto(ProtoFilterType::Binary)),
+			ColumnType::Binary(_) => {
+				Some(FilterType::new(GraphQlFilterType::String, ProtoFilterType::Binary))
+			}
+			ColumnType::VarBinary(_) => {
+				Some(FilterType::new(GraphQlFilterType::String, ProtoFilterType::Binary))
+			}
+			ColumnType::Bit(_) => {
+				Some(FilterType::new(GraphQlFilterType::String, ProtoFilterType::Binary))
+			}
+			ColumnType::VarBit(_) => {
+				Some(FilterType::new(GraphQlFilterType::String, ProtoFilterType::Binary))
+			}
 			ColumnType::Blob => None,
 			ColumnType::Boolean => {
 				Some(FilterType::new(GraphQlFilterType::Boolean, ProtoFilterType::Boolean))
@@ -692,119 +680,91 @@ impl FilterTypesMapHelper {
 		<T as EntityTrait>::Model: Sync,
 	{
 		let filter_info_graphql = match filter_type {
-			Some(filter_types) => match &filter_types.graphql {
-				Some(filter_type) => {
-					let filter_type_result = match filter_type {
-						GraphQlFilterType::Text => {
-							&self.context.filter_types.graphql.text_filter_info
-						}
-						GraphQlFilterType::String => {
-							&self.context.filter_types.graphql.string_filter_info
-						}
-						GraphQlFilterType::Integer => {
-							&self.context.filter_types.graphql.integer_filter_info
-						}
-						GraphQlFilterType::Float => {
-							&self.context.filter_types.graphql.float_filter_info
-						}
-						GraphQlFilterType::Boolean => {
-							&self.context.filter_types.graphql.boolean_filter_info
-						}
-						GraphQlFilterType::Id => &self.context.filter_types.graphql.id_filter_info,
-						GraphQlFilterType::Enumeration(_) => {
-							return prepare_enumeration_condition::<T>(filter, column, condition)
-						}
-						GraphQlFilterType::Custom(_) => {
-							let entity_object_builder = EntityObjectBuilder {
-								context,
-							};
+			Some(filter_type) => {
+				let filter_type_result = match filter_type.graphql {
+					GraphQlFilterType::Text => &self.context.filter_types.graphql.text_filter_info,
+					GraphQlFilterType::String => {
+						&self.context.filter_types.graphql.string_filter_info
+					}
+					GraphQlFilterType::Integer => {
+						&self.context.filter_types.graphql.integer_filter_info
+					}
+					GraphQlFilterType::Float => {
+						&self.context.filter_types.graphql.float_filter_info
+					}
+					GraphQlFilterType::Boolean => {
+						&self.context.filter_types.graphql.boolean_filter_info
+					}
+					GraphQlFilterType::Id => &self.context.filter_types.graphql.id_filter_info,
+					GraphQlFilterType::Enumeration(_) => {
+						return prepare_enumeration_condition::<T>(filter, column, condition)
+					}
+					GraphQlFilterType::Custom(_) => {
+						let entity_object_builder = EntityObjectBuilder {
+							context,
+						};
 
-							let entity_name = entity_object_builder.type_name::<T>();
-							let column_name = entity_object_builder.column_name::<T>(column);
+						let entity_name = entity_object_builder.type_name::<T>();
+						let column_name = entity_object_builder.column_name::<T>(column);
 
-							if let Some(filter_condition_fn) = context
-								.filter_types
-								.condition_functions
-								.get(&format!("{entity_name}.{column_name}"))
-							{
-								return filter_condition_fn(condition, filter);
-							} else {
-								// FIXME: add log warning to console
-								return Ok(condition);
-							}
+						if let Some(filter_condition_fn) = context
+							.filter_types
+							.condition_functions
+							.get(&format!("{entity_name}.{column_name}"))
+						{
+							return filter_condition_fn(condition, filter);
+						} else {
+							// FIXME: add log warning to console
+							return Ok(condition);
 						}
-					};
-					Some(filter_type_result)
-				}
-				None => None,
-			},
+					}
+				};
+				Some(filter_type_result)
+			}
 			None => None,
 		};
 
 		let filter_info_proto = match filter_type {
-			Some(filter_types) => match &filter_types.proto {
-				Some(filter_type) => {
-					let filter_type_result = match filter_type {
-						ProtoFilterType::Int32 => {
-							&self.context.filter_types.proto.int32_filter_info
-						}
-						ProtoFilterType::Int64 => {
-							&self.context.filter_types.proto.int64_filter_info
-						}
-						ProtoFilterType::UInt32 => {
-							&self.context.filter_types.proto.uint32_filter_info
-						}
-						ProtoFilterType::UInt64 => {
-							&self.context.filter_types.proto.uint64_filter_info
-						}
-						ProtoFilterType::SInt32 => {
-							&self.context.filter_types.proto.sint32_filter_info
-						}
-						ProtoFilterType::SInt64 => {
-							&self.context.filter_types.proto.sint64_filter_info
-						}
-						ProtoFilterType::Float => {
-							&self.context.filter_types.proto.float_filter_info
-						}
-						ProtoFilterType::Double => {
-							&self.context.filter_types.proto.double_filter_info
-						}
-						ProtoFilterType::Boolean => {
-							&self.context.filter_types.proto.boolean_filter_info
-						}
-						ProtoFilterType::String => {
-							&self.context.filter_types.proto.string_filter_info
-						}
-						ProtoFilterType::Binary => {
-							&self.context.filter_types.proto.binary_filter_info
-						}
-						ProtoFilterType::Enumeration(_) => {
-							return prepare_enumeration_condition::<T>(filter, column, condition)
-						}
-						ProtoFilterType::Custom(_) => {
-							let entity_object_builder = EntityObjectBuilder {
-								context,
-							};
+			Some(filter_type) => {
+				let filter_type_result = match filter_type.proto {
+					ProtoFilterType::Int32 => &self.context.filter_types.proto.int32_filter_info,
+					ProtoFilterType::Int64 => &self.context.filter_types.proto.int64_filter_info,
+					ProtoFilterType::UInt32 => &self.context.filter_types.proto.uint32_filter_info,
+					ProtoFilterType::UInt64 => &self.context.filter_types.proto.uint64_filter_info,
+					ProtoFilterType::SInt32 => &self.context.filter_types.proto.sint32_filter_info,
+					ProtoFilterType::SInt64 => &self.context.filter_types.proto.sint64_filter_info,
+					ProtoFilterType::Float => &self.context.filter_types.proto.float_filter_info,
+					ProtoFilterType::Double => &self.context.filter_types.proto.double_filter_info,
+					ProtoFilterType::Boolean => {
+						&self.context.filter_types.proto.boolean_filter_info
+					}
+					ProtoFilterType::String => &self.context.filter_types.proto.string_filter_info,
+					ProtoFilterType::Binary => &self.context.filter_types.proto.binary_filter_info,
+					ProtoFilterType::Enumeration(_) => {
+						return prepare_enumeration_condition::<T>(filter, column, condition)
+					}
+					ProtoFilterType::Custom(_) => {
+						let entity_object_builder = EntityObjectBuilder {
+							context,
+						};
 
-							let entity_name = entity_object_builder.type_name::<T>();
-							let column_name = entity_object_builder.column_name::<T>(column);
+						let entity_name = entity_object_builder.type_name::<T>();
+						let column_name = entity_object_builder.column_name::<T>(column);
 
-							if let Some(filter_condition_fn) = context
-								.filter_types
-								.condition_functions
-								.get(&format!("{entity_name}.{column_name}"))
-							{
-								return filter_condition_fn(condition, filter);
-							} else {
-								// FIXME: add log warning to console
-								return Ok(condition);
-							}
+						if let Some(filter_condition_fn) = context
+							.filter_types
+							.condition_functions
+							.get(&format!("{entity_name}.{column_name}"))
+						{
+							return filter_condition_fn(condition, filter);
+						} else {
+							// FIXME: add log warning to console
+							return Ok(condition);
 						}
-					};
-					Some(filter_type_result)
-				}
-				None => None,
-			},
+					}
+				};
+				Some(filter_type_result)
+			}
 			None => None,
 		};
 
@@ -1100,7 +1060,25 @@ impl FilterTypesMapHelper {
 	}
 
 	/// used to get all basic input filter objects
-	pub fn get_input_filters(&self) -> Vec<Object> {
+	pub fn get_graphql_input_filters(&self) -> Vec<GraphQLInputObject> {
+		vec![
+			self.generate_filter_input(&self.context.filter_types.graphql.text_filter_info),
+			self.generate_filter_input(&self.context.filter_types.graphql.string_filter_info),
+			self.generate_filter_input(&self.context.filter_types.graphql.integer_filter_info),
+			self.generate_filter_input(&self.context.filter_types.graphql.float_filter_info),
+			self.generate_filter_input(&self.context.filter_types.graphql.boolean_filter_info),
+			self.generate_filter_input(&self.context.filter_types.graphql.id_filter_info),
+		]
+		.into_iter()
+		.map(|val| match val.to_graphql() {
+			GraphQLType::InputObject(input_object) => input_object,
+			_ => panic!("type needs to be of type InputObject"),
+		})
+		.collect()
+	}
+
+	/// used to get all basic input filter objects
+	pub fn get_proto_input_filters(&self) -> Vec<ProtoMessage> {
 		vec![
 			self.generate_filter_input(&self.context.filter_types.proto.int32_filter_info),
 			self.generate_filter_input(&self.context.filter_types.proto.int64_filter_info),
@@ -1114,12 +1092,18 @@ impl FilterTypesMapHelper {
 			self.generate_filter_input(&self.context.filter_types.proto.string_filter_info),
 			self.generate_filter_input(&self.context.filter_types.proto.binary_filter_info),
 		]
+		.into_iter()
+		.map(|val| match val.to_proto() {
+			ProtoType::Message(message) => message,
+			_ => panic!("type needs to be of type Message"),
+		})
+		.collect()
 	}
 
 	/// used to convert a filter input info struct into input object
 	pub fn generate_filter_input(&self, filter_info: &FilterInfo) -> Object {
 		filter_info.supported_operations.iter().enumerate().fold(
-			Object::new(filter_info.type_name.to_string()),
+			Object::new(filter_info.type_name.to_string(), IO::Input),
 			|object, (index, cur)| {
 				let tag = index.add(1) as u32;
 				let field = match cur {
@@ -1272,102 +1256,85 @@ impl FilterTypesMapHelper {
 		filter_type: &FilterType,
 		context: &'static BuilderContext,
 	) -> Field {
-		let mut proto = None;
-		let mut graphql = None;
+		let graphql = match &filter_type.graphql {
+			GraphQlFilterType::Text => {
+				self.context.filter_types.graphql.text_filter_info.type_name.clone()
+			}
+			GraphQlFilterType::String => {
+				self.context.filter_types.graphql.string_filter_info.type_name.clone()
+			}
+			GraphQlFilterType::Integer => {
+				self.context.filter_types.graphql.integer_filter_info.type_name.clone()
+			}
+			GraphQlFilterType::Float => {
+				self.context.filter_types.graphql.float_filter_info.type_name.clone()
+			}
+			GraphQlFilterType::Boolean => {
+				self.context.filter_types.graphql.boolean_filter_info.type_name.clone()
+			}
+			GraphQlFilterType::Id => {
+				self.context.filter_types.graphql.id_filter_info.type_name.clone()
+			}
+			GraphQlFilterType::Enumeration(name) => {
+				let active_enum_filter_input_builder = ActiveEnumFilterInputBuilder {
+					context,
+				};
 
-		if let Some(filter_type) = &filter_type.graphql {
-			graphql = match filter_type {
-				GraphQlFilterType::Text => {
-					Some(self.context.filter_types.graphql.text_filter_info.type_name.clone())
-				}
-				GraphQlFilterType::String => {
-					Some(self.context.filter_types.graphql.text_filter_info.type_name.clone())
-				}
-				GraphQlFilterType::Integer => {
-					Some(self.context.filter_types.graphql.text_filter_info.type_name.clone())
-				}
-				GraphQlFilterType::Float => {
-					Some(self.context.filter_types.graphql.text_filter_info.type_name.clone())
-				}
-				GraphQlFilterType::Boolean => {
-					Some(self.context.filter_types.graphql.text_filter_info.type_name.clone())
-				}
-				GraphQlFilterType::Id => {
-					Some(self.context.filter_types.graphql.text_filter_info.type_name.clone())
-				}
-				GraphQlFilterType::Enumeration(name) => Some(name.clone()),
-				GraphQlFilterType::Custom(type_name) => {
-					let active_enum_filter_input_builder = ActiveEnumFilterInputBuilder {
-						context,
-					};
-					Some(active_enum_filter_input_builder.type_name_from_string(&type_name))
-				}
-			};
+				active_enum_filter_input_builder.type_name_from_string(&name)
+			}
+			GraphQlFilterType::Custom(type_name) => type_name.to_owned(),
 		};
 
-		if let Some(filter_type) = &filter_type.proto {
-			proto = match filter_type {
-				ProtoFilterType::Int32 => {
-					Some(self.context.filter_types.proto.int32_filter_info.type_name.clone())
-				}
-				ProtoFilterType::Int64 => {
-					Some(self.context.filter_types.proto.int64_filter_info.type_name.clone())
-				}
-				ProtoFilterType::UInt32 => {
-					Some(self.context.filter_types.proto.uint32_filter_info.type_name.clone())
-				}
-				ProtoFilterType::UInt64 => {
-					Some(self.context.filter_types.proto.uint64_filter_info.type_name.clone())
-				}
-				ProtoFilterType::SInt32 => {
-					Some(self.context.filter_types.proto.sint32_filter_info.type_name.clone())
-				}
-				ProtoFilterType::SInt64 => {
-					Some(self.context.filter_types.proto.sint64_filter_info.type_name.clone())
-				}
-				ProtoFilterType::Float => {
-					Some(self.context.filter_types.proto.float_filter_info.type_name.clone())
-				}
-				ProtoFilterType::Double => {
-					Some(self.context.filter_types.proto.double_filter_info.type_name.clone())
-				}
-				ProtoFilterType::Boolean => {
-					Some(self.context.filter_types.proto.boolean_filter_info.type_name.clone())
-				}
-				ProtoFilterType::String => {
-					Some(self.context.filter_types.proto.string_filter_info.type_name.clone())
-				}
-				ProtoFilterType::Binary => {
-					Some(self.context.filter_types.proto.binary_filter_info.type_name.clone())
-				}
-				ProtoFilterType::Enumeration(name) => Some(name.clone()),
-				ProtoFilterType::Custom(type_name) => {
-					let active_enum_filter_input_builder = ActiveEnumFilterInputBuilder {
-						context,
-					};
-					Some(active_enum_filter_input_builder.type_name_from_string(&type_name))
-				}
-			};
-		};
+		let proto = match &filter_type.proto {
+			ProtoFilterType::Int32 => {
+				self.context.filter_types.proto.int32_filter_info.type_name.clone()
+			}
+			ProtoFilterType::Int64 => {
+				self.context.filter_types.proto.int64_filter_info.type_name.clone()
+			}
+			ProtoFilterType::UInt32 => {
+				self.context.filter_types.proto.uint32_filter_info.type_name.clone()
+			}
+			ProtoFilterType::UInt64 => {
+				self.context.filter_types.proto.uint64_filter_info.type_name.clone()
+			}
+			ProtoFilterType::SInt32 => {
+				self.context.filter_types.proto.sint32_filter_info.type_name.clone()
+			}
+			ProtoFilterType::SInt64 => {
+				self.context.filter_types.proto.sint64_filter_info.type_name.clone()
+			}
+			ProtoFilterType::Float => {
+				self.context.filter_types.proto.float_filter_info.type_name.clone()
+			}
+			ProtoFilterType::Double => {
+				self.context.filter_types.proto.double_filter_info.type_name.clone()
+			}
+			ProtoFilterType::Boolean => {
+				self.context.filter_types.proto.boolean_filter_info.type_name.clone()
+			}
+			ProtoFilterType::String => {
+				self.context.filter_types.proto.string_filter_info.type_name.clone()
+			}
+			ProtoFilterType::Binary => {
+				self.context.filter_types.proto.binary_filter_info.type_name.clone()
+			}
+			ProtoFilterType::Enumeration(name) => {
+				let active_enum_filter_input_builder = ActiveEnumFilterInputBuilder {
+					context,
+				};
 
-		let type_ref_proto = if let Some(type_name) = proto {
-			Some(ProtoTypeRef::named(type_name))
-		} else {
-			None
-		};
-
-		let type_ref_graphql = if let Some(type_name) = graphql {
-			Some(GraphQLTypeRef::named(type_name))
-		} else {
-			None
+				active_enum_filter_input_builder.type_name_from_string(&name)
+			}
+			ProtoFilterType::Custom(type_name) => type_name.to_owned(),
 		};
 
 		Field::input(
 			column_name,
 			tag,
 			TypeRef {
-				proto: type_ref_proto,
-				graphql: type_ref_graphql,
+				proto: ProtoTypeRef::named(proto),
+				graphql: GraphQLTypeRef::named(graphql),
 			},
 		)
 	}

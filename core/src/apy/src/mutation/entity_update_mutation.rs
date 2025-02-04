@@ -2,10 +2,7 @@ use crate::{
 	get_filter_conditions, prepare_active_model, BuilderContext, EntityInputBuilder,
 	EntityObjectBuilder, EntityQueryFieldBuilder, FilterInputBuilder, GuardAction,
 };
-use dynamic::prelude::{
-	DataContext, Error, Field, FieldFuture, FieldValue, FieldValueTrait, GraphQLTypeRef,
-	ObjectAccessorTrait, ProtoTypeRef, TypeRef, TypeRefTrait, ValueAccessorTrait,
-};
+use dynamic::prelude::*;
 use sea_orm::{
 	ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, QueryFilter,
 	TransactionTrait,
@@ -87,7 +84,7 @@ impl EntityUpdateMutationBuilder {
 				ProtoTypeRef::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
 			),
 			move |ctx| {
-				FieldFuture::new(async move {
+				FieldFuture::new(ctx.api_type.clone(), async move {
 					let guard_flag = if let Some(guard) = guard {
 						(*guard)(&ctx)
 					} else {
@@ -116,7 +113,7 @@ impl EntityUpdateMutationBuilder {
 
 					let value_accessor =
 						ctx.args.get(&context.entity_update_mutation.data_field).unwrap();
-					let input_object = &value_accessor.object()?;
+					let input_object = value_accessor.object()?;
 
 					for (column, _) in input_object.to_iter() {
 						let field_guard = field_guards.get(&format!(

@@ -1,8 +1,7 @@
-use dynamic::prelude::{Enum, EnumItems, EnumTrait, GraphQLEnumItem, ProtoEnumItem};
+use crate::BuilderContext;
+use dynamic::prelude::*;
 use heck::ToUpperCamelCase;
 use sea_orm::{ActiveEnum, DynIden, Value};
-
-use crate::BuilderContext;
 
 /// The configuration structure for ActiveEnumBuilder
 pub struct ActiveEnumConfig {
@@ -57,6 +56,7 @@ impl ActiveEnumBuilder {
 			|enumeration, (index, variant)| {
 				let variant: Value = variant.into();
 				let variant: String = variant.to_string();
+
 				enumeration.item(EnumItems::new(
 					GraphQLEnumItem::new(self.variant_name(&enum_name, &variant)),
 					ProtoEnumItem::new(self.variant_name(&enum_name, &variant), index as u32),

@@ -13,6 +13,8 @@ axum-core = "0.4.3"
 axum-extra = { version = "0.9.0", features = ["protobuf"] }
 async-graphql-actix-web = { version = "7.0" }
 async-graphql = { version = "7.0", features = ["decimal", "chrono", "dataloader", "dynamic-schema"] }
+async-graphql-parser = "7"
+async-graphql-value = "7"
 
 # Tower middleware stack
 tower = { version = "0.4.13", features = ["util", "timeout", "buffer"] }
@@ -22,7 +24,8 @@ tower-service = "0.3.2"
 
 # Async runtime and utilities
 tokio = { version = "1.0", features = ["rt-multi-thread", "macros", "io-std"] }
-futures = "0.3.26"
+futures = "0.3"
+async-stream = "0.3"
 
 # Database
 sea-orm = { version = "1", features = ["macros", "chrono", "with-uuid", "runtime-tokio-rustls", "postgres-array", "sqlx-all"] }

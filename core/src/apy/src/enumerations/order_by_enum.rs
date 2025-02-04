@@ -1,6 +1,5 @@
-use dynamic::prelude::{Enum, EnumItems, EnumTrait, GraphQLEnumItem, ProtoEnum, ProtoEnumItem};
-
 use crate::BuilderContext;
+use dynamic::prelude::*;
 
 /// The configuration structure for OrderByEnumBuilder
 pub struct OrderByEnumConfig {

@@ -1,5 +1,5 @@
-use super::{Result, Value};
-use crate::{ProtobufKind, Registry, SchemaError};
+use super::{Result, SchemaError, Value};
+use crate::{ProtobufKind, Registry};
 use std::{
 	fmt::{self, Debug},
 	sync::Arc,

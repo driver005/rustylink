@@ -1,11 +1,6 @@
-use dynamic::prelude::{
-	Field, GraphQLTypeRef, Object, ObjectAccessorTrait, ObjectAccessors, ProtoTypeRef, TypeRef,
-	TypeRefTrait, ValueAccessorTrait, ValueAccessors,
-};
-
-use crate::{BuilderContext, CursorInputBuilder, OffsetInputBuilder, PageInputBuilder};
-
 use super::{CursorInput, OffsetInput, PageInput};
+use crate::{BuilderContext, CursorInputBuilder, OffsetInputBuilder, PageInputBuilder};
+use dynamic::prelude::*;
 
 /// used to hold information about which pagination
 /// strategy will be applied on the query
@@ -51,7 +46,7 @@ impl PaginationInputBuilder {
 
 	/// used to get pagination input message
 	pub fn input_object(&self) -> Object {
-		Object::new(&self.context.pagination_input.type_name)
+		Object::new(&self.context.pagination_input.type_name, IO::Input)
 			.field(Field::input(
 				&self.context.pagination_input.cursor,
 				1u32,

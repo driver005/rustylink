@@ -1,29 +1,48 @@
-use super::{Error, ObjectAccessors, TypeRef};
-use crate::interface::{Result, Value};
-use crate::prelude::{GraphQLFieldValue, ProtoFieldValue};
-use crate::traits::{FieldValueTrait, TypeRefTrait};
-use crate::ObjectAccessorTrait;
-use async_graphql::Name;
-use futures_util::future::{BoxFuture, Future, FutureExt};
+use super::{Error, TypeRef, IO};
+use crate::{
+	interface::{Result, Value},
+	prelude::{
+		GraphQLField, GraphQLFieldFuture, GraphQLFieldValue, GraphQLInputValue, ProtoField,
+		ProtoFieldFuture, ProtoFieldValue,
+	},
+	ApiType, FieldValueTrait, ResolverContext,
+};
+use futures_util::future::{Future, FutureExt};
 use indexmap::IndexMap;
 use std::any::Any;
 use std::borrow::Cow;
-use std::ops::Deref;
-use std::pin::Pin;
 
 /// A value returned from the resolver function
 #[derive(Debug)]
-pub struct FieldValue<'a> {
-	graphql: GraphQLFieldValue<'a>,
-	proto: ProtoFieldValue<'a>,
-}
+pub struct FieldValue<'a>(pub(crate) FieldValueInner<'a>);
 
 impl<'a> FieldValue<'a> {
-	pub fn new(graphql: GraphQLFieldValue<'a>, proto: ProtoFieldValue<'a>) -> Self {
-		Self {
-			graphql,
-			proto,
-		}
+	pub fn to_graphql(self) -> GraphQLFieldValue<'a> {
+		self.0.to_graphql()
+	}
+
+	pub fn to_proto(self) -> ProtoFieldValue<'a> {
+		self.0.to_proto()
+	}
+}
+
+impl<'a> From<()> for FieldValue<'a> {
+	#[inline]
+	fn from(_: ()) -> Self {
+		Self(FieldValueInner::Value(Value::null()))
+	}
+}
+
+impl<'a> From<Value> for FieldValue<'a> {
+	#[inline]
+	fn from(value: Value) -> Self {
+		Self(FieldValueInner::Value(value))
+	}
+}
+
+impl<'a, T: Into<FieldValue<'a>>> From<Vec<T>> for FieldValue<'a> {
+	fn from(values: Vec<T>) -> Self {
+		Self(FieldValueInner::List(values.into_iter().map(Into::into).collect()))
 	}
 }
 
@@ -44,6 +63,38 @@ pub(crate) enum FieldValueInner<'a> {
 		/// Object name
 		ty: Cow<'static, str>,
 	},
+}
+
+impl<'a> FieldValueInner<'a> {
+	fn to_graphql(self) -> GraphQLFieldValue<'a> {
+		match self {
+			FieldValueInner::Value(value) => GraphQLFieldValue::value(value.graphql),
+			FieldValueInner::BorrowedAny(any) => GraphQLFieldValue::borrowed_any(any),
+			FieldValueInner::OwnedAny(any) => GraphQLFieldValue::boxed_any(any),
+			FieldValueInner::List(vec) => {
+				GraphQLFieldValue::list(vec.into_iter().map(|val| val.to_graphql()))
+			}
+			FieldValueInner::WithType {
+				value,
+				ty,
+			} => value.to_graphql().with_type(ty),
+		}
+	}
+
+	fn to_proto(self) -> ProtoFieldValue<'a> {
+		match self {
+			FieldValueInner::Value(value) => ProtoFieldValue::value(value.proto),
+			FieldValueInner::BorrowedAny(any) => ProtoFieldValue::borrowed_any(any),
+			FieldValueInner::OwnedAny(any) => ProtoFieldValue::boxed_any(any),
+			FieldValueInner::List(vec) => {
+				ProtoFieldValue::list(vec.into_iter().map(|val| val.to_proto()))
+			}
+			FieldValueInner::WithType {
+				value,
+				ty,
+			} => value.to_proto().with_type(ty),
+		}
+	}
 }
 
 impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
@@ -87,7 +138,7 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 
 	/// Create a FieldValue from owned any value
 	#[inline]
-	fn owned_any(obj: impl Any + Send + Sync) -> Self {
+	fn owned_any<T: Any + Send + Sync>(obj: T) -> Self {
 		Self(FieldValueInner::OwnedAny(Box::new(obj)))
 	}
 
@@ -131,7 +182,7 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 	///     "a",
 	///     TypeRef::named_nn(TypeRef::INT),
 	///     |ctx| FieldFuture::new(async move {
-	///         let data = ctx.parent_value.try_downcast_ref::<MyObjData>()?;
+	///         let data =ctx.parent_value.try_downcast_ref::<MyObjData>()?;
 	///         Ok(Some(Value::from(data.a)))
 	///     }),
 	/// ));
@@ -191,7 +242,7 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 	/// If the FieldValue is a list, returns the associated
 	/// vector. Returns `None` otherwise.
 	#[inline]
-	fn as_list(&self) -> Option<&[Self]> {
+	fn as_list(&'a self) -> Option<&'a [Self]> {
 		match &self.0 {
 			FieldValueInner::List(values) => Some(values),
 			_ => None,
@@ -200,7 +251,7 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 
 	/// Like `as_list`, but returns `Result`.
 	#[inline]
-	fn try_to_list(&'a self) -> std::result::Result<&[Self], Self::Error> {
+	fn try_to_list(&'a self) -> std::result::Result<&'a [Self], Self::Error> {
 		self.as_list().ok_or_else(|| Error::new("internal: not a list"))
 	}
 
@@ -234,68 +285,148 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 	}
 }
 
-type BoxResolveFut<'a> = BoxFuture<'a, Result<Option<FieldValue<'a>>>>;
+// type BoxResolveFut<'a> = BoxFuture<'a, Result<Option<FieldValueInner<'a>>>>;
 
-/// A context for resolver function
-pub struct ResolverContext<'a> {
-	pub type_name: &'a str,
-	// /// GraphQL context
-	// pub ctx: &'a Context<'a>,
-	/// Field arguments
-	pub args: ObjectAccessors<'a>,
-	/// Parent value
-	pub parent_value: &'a FieldValue<'a>,
-}
+// /// A context for resolver function
+// pub struct ResolverContext<'a> {
+// 	// /// GraphQL context
+// 	pub ctx: Context<'a>,
+// 	/// Field arguments
+// 	pub args: ObjectAccessors<'a>,
+// 	/// Parent value
+// 	pub parent_value: FieldValue<'a>,
+// }
 
-// impl<'a> Deref for ResolverContext<'a> {
-// 	type Target = Context<'a>;
-
-// 	fn deref(&self) -> &Self::Target {
-// 		self.ctx
+// impl<'a> ResolverContext<'a> {
+// 	pub fn new(ctx: Context<'a>, args: ObjectAccessors<'a>, parent_value: FieldValue<'a>) -> Self {
+// 		Self {
+// 			ctx,
+// 			args,
+// 			parent_value,
+// 		}
 // 	}
+// }
+
+// impl<'a> ResolverContextDyn<'a> for ResolverContext<'a> {
+// type Context;
+// type ObjectAccessor = ObjectAccessors<'a>;
+// type FieldValue = FieldValue<'a>;
+
+// fn args(self) -> Self::ObjectAccessor {
+// 	match self {
+// 		ResolverContext::Graphql(resolver_context) => {
+// 			ObjectAccessors::GraphQL(resolver_context.args)
+// 		}
+// 		ResolverContext::Proto(resolver_context) => {
+// 			ObjectAccessors::Proto(resolver_context.args)
+// 		}
+// 	}
+// }
+
+// fn ctx(self) -> &'a Self::Context {
+// 	todo!()
+// }
+
+// fn parent_value(self) -> &'a Self::FieldValue {
+// 	match self {
+// 		ResolverContext::Graphql(resolver_context) => {
+// 			FieldValue::GraphQL(resolver_context.parent_value)
+// 		}
+// 		ResolverContext::Proto(resolver_context) => {
+// 			ObjectAccessors::Proto(resolver_context.args)
+// 		}
+// 	}
+// }
+
+// pub fn to_graphql(self) -> GraphQLResolverContext<'a> {
+// 	match self {
+// 		ResolverContext::Graphql(resolver_context) => resolver_context,
+// 		ResolverContext::Proto(_) => {
+// 			panic!("resolver_context is of type proto not graphql")
+// 		}
+// 	}
+// }
+
+// pub fn to_proto(self) -> ProtoResolverContext<'a> {
+// 	match self {
+// 		ResolverContext::Graphql(_) => {
+// 			panic!("resolver_context is of type graphql not proto")
+// 		}
+// 		ResolverContext::Proto(resolver_context) => resolver_context,
+// 	}
+// }
 // }
 
 /// A future that returned from field resolver
 pub enum FieldFuture<'a> {
-	/// A pure value without any async operation
-	Value(Option<FieldValue<'a>>),
-
-	/// A future that returned from field resolver
-	Future(BoxResolveFut<'a>),
+	GraphQL(GraphQLFieldFuture<'a>),
+	Proto(ProtoFieldFuture<'a>),
 }
 
 impl<'a> FieldFuture<'a> {
 	/// Create a `FieldFuture` from a `Future`
-	pub fn new<Fut, R>(future: Fut) -> Self
+	pub fn new<Fut, R>(api_type: ApiType, future: Fut) -> Self
 	where
 		Fut: Future<Output = Result<Option<R>>> + Send + 'a,
-		R: Into<FieldValue<'a>> + Send,
+		R: Into<FieldValue<'a>> + Send + 'a,
 	{
-		FieldFuture::Future(
-			async move {
-				let res = future.await?;
-				Ok(res.map(Into::into))
-			}
-			.boxed(),
-		)
+		match api_type {
+			ApiType::GraphQL => Self::GraphQL(GraphQLFieldFuture::Future(
+				async move {
+					let res = future.await.map_err(|err| err.to_graphql())?;
+					Ok(res.map(|r| r.into().to_graphql()))
+				}
+				.boxed(),
+			)),
+			ApiType::Proto => Self::Proto(ProtoFieldFuture::Future(
+				async move {
+					let res = future.await.map_err(|err| err.to_proto())?;
+					Ok(res.map(|r| r.into().to_proto()))
+				}
+				.boxed(),
+			)),
+		}
 	}
 
-	/// Create a `FieldFuture` from a `Value`
-	pub fn from_value(value: Option<Value>) -> Self {
-		FieldFuture::Value(value.map(FieldValue::from))
+	// /// Create a `FieldFuture` from a `Value`
+	// pub fn from_value(value: Option<Value>) -> Self {
+	// 	value.map(|val| {
+	// 		return Self {
+	// 			graphql: GraphQLFieldFuture::Value(Some(GraphQLFieldValue::from(val.graphql))),
+	// 			proto: ProtoFieldFuture::Value(Some(ProtoFieldValue::from(val.proto))),
+	// 		};
+	// 	});
+
+	// 	Self {
+	// 		graphql: GraphQLFieldFuture::Value(None),
+	// 		proto: ProtoFieldFuture::Value(None),
+	// 	}
+	// }
+
+	pub fn to_graphql(self) -> GraphQLFieldFuture<'a> {
+		match self {
+			FieldFuture::GraphQL(field_future) => field_future,
+			FieldFuture::Proto(_) => panic!("FieldFuture is not of type GraphQL"),
+		}
+	}
+
+	pub fn to_proto(self) -> ProtoFieldFuture<'a> {
+		match self {
+			FieldFuture::GraphQL(_) => panic!("FieldFuture is not of type Proto"),
+			FieldFuture::Proto(field_future) => field_future,
+		}
 	}
 }
 
 pub(crate) type BoxResolverFn =
 	Box<(dyn for<'a> Fn(ResolverContext<'a>) -> FieldFuture<'a> + Send + Sync)>;
 
-pub(crate) type BoxFieldFuture<'a> =
-	Pin<Box<dyn Future<Output = Result<(Name, Value)>> + 'a + Send>>;
-
 pub struct Field {
 	pub(crate) arguments: IndexMap<String, Field>,
 	pub(crate) name: String,
 	pub(crate) ty: TypeRef,
+	pub(crate) tag: u32,
+	pub(crate) resolver_fn: Option<BoxResolverFn>,
 }
 
 impl Field {
@@ -308,6 +439,8 @@ impl Field {
 			name: name.into(),
 			arguments: Default::default(),
 			ty,
+			tag,
+			resolver_fn: Some(Box::new(resolver_fn)),
 		}
 	}
 
@@ -320,6 +453,8 @@ impl Field {
 			name: name.into(),
 			arguments: Default::default(),
 			ty,
+			tag,
+			resolver_fn: None,
 		}
 	}
 
@@ -328,5 +463,34 @@ impl Field {
 	pub fn argument(mut self, input_value: Field) -> Self {
 		self.arguments.insert(input_value.name.clone(), input_value);
 		self
+	}
+
+	pub(crate) fn to_graphql_input(self) -> GraphQLInputValue {
+		GraphQLInputValue::new(self.name, self.ty.to_graphql())
+	}
+
+	pub(crate) fn to_graphql_output(self) -> GraphQLField {
+		if let Some(resolver_fn) = self.resolver_fn {
+			GraphQLField::new(self.name, self.ty.to_graphql(), move |ctx| {
+				resolver_fn(ctx.into()).to_graphql()
+			})
+		} else {
+			panic!("resolver_fn not found")
+		}
+	}
+
+	pub(crate) fn to_proto(self, io: IO) -> ProtoField {
+		match io {
+			IO::Input => ProtoField::input(self.name, self.tag, self.ty.to_proto()),
+			IO::Output => {
+				if let Some(resolver_fn) = self.resolver_fn {
+					ProtoField::output(self.name, self.tag, self.ty.to_proto(), move |ctx| {
+						resolver_fn(ctx.into()).to_proto()
+					})
+				} else {
+					panic!("resolver_fn not found")
+				}
+			}
+		}
 	}
 }

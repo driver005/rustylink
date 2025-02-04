@@ -1,12 +1,8 @@
-use dynamic::prelude::{
-	Field, FieldFuture, FieldValue, FieldValueTrait, GraphQLTypeRef, Object, ProtoTypeRef, TypeRef,
-	TypeRefTrait,
-};
-use sea_orm::EntityTrait;
-
 use crate::{
 	BuilderContext, Edge, EdgeObjectBuilder, EntityObjectBuilder, PageInfo, PaginationInfo,
 };
+use dynamic::prelude::*;
+use sea_orm::EntityTrait;
 
 /// used to represent a GraphQL Connection node for any Type
 #[derive(Clone, Debug)]
@@ -79,7 +75,7 @@ impl ConnectionObjectBuilder {
 		let object_name = entity_object_builder.type_name::<T>();
 		let name = self.type_name(&object_name);
 
-		Object::new(name)
+		Object::new(name, IO::Output)
 			.field(Field::output(
 				&self.context.connection_object.page_info,
 				1u32,
@@ -88,7 +84,7 @@ impl ConnectionObjectBuilder {
 					ProtoTypeRef::named_nn(&self.context.page_info_object.type_name),
 				),
 				|ctx| {
-					FieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let connection = ctx.parent_value.try_downcast_ref::<Connection<T>>()?;
 						Ok(Some(FieldValue::borrowed_any(&connection.page_info)))
 					})
@@ -102,14 +98,14 @@ impl ConnectionObjectBuilder {
 					ProtoTypeRef::named(&self.context.pagination_info_object.type_name),
 				),
 				|ctx| {
-					FieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let connection = ctx.parent_value.try_downcast_ref::<Connection<T>>()?;
 						if let Some(value) =
 							connection.pagination_info.as_ref().map(|v| FieldValue::borrowed_any(v))
 						{
 							Ok(Some(value))
 						} else {
-							Ok(FieldValue::NONE)
+							Ok(FieldValue::none())
 						}
 					})
 				},
@@ -122,7 +118,7 @@ impl ConnectionObjectBuilder {
 					ProtoTypeRef::named_nn_list_nn(&object_name),
 				),
 				|ctx| {
-					FieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let connection = ctx.parent_value.try_downcast_ref::<Connection<T>>()?;
 						Ok(Some(FieldValue::list(
 							connection
@@ -141,7 +137,7 @@ impl ConnectionObjectBuilder {
 					ProtoTypeRef::named_nn_list_nn(edge_object_builder.type_name(&object_name)),
 				),
 				|ctx| {
-					FieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let connection = ctx.parent_value.try_downcast_ref::<Connection<T>>()?;
 						Ok(Some(FieldValue::list(
 							connection

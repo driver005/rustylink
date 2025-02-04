@@ -1,15 +1,11 @@
-use dynamic::prelude::{
-	DataContext, Error, Field, FieldFuture, FieldValue, FieldValueTrait, GraphQLTypeRef,
-	ObjectAccessorTrait, ObjectAccessors, ProtoTypeRef, TypeRef, TypeRefTrait, ValueAccessorTrait,
-};
-use sea_orm::{
-	ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, Iterable,
-	PrimaryKeyToColumn, PrimaryKeyTrait,
-};
-
 use crate::{
 	BuilderContext, EntityInputBuilder, EntityObjectBuilder, EntityQueryFieldBuilder, GuardAction,
 	SeaResult,
+};
+use dynamic::prelude::*;
+use sea_orm::{
+	ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, Iterable,
+	PrimaryKeyToColumn, PrimaryKeyTrait,
 };
 
 /// The configuration structure of EntityCreateOneMutationBuilder
@@ -80,7 +76,7 @@ impl EntityCreateOneMutationBuilder {
 				ProtoTypeRef::named_nn(entity_object_builder.basic_type_name::<T>()),
 			),
 			move |ctx| {
-				FieldFuture::new(async move {
+				FieldFuture::new(ctx.api_type.clone(), async move {
 					let guard_flag = if let Some(guard) = guard {
 						(*guard)(&ctx)
 					} else {
@@ -103,7 +99,7 @@ impl EntityCreateOneMutationBuilder {
 					let db = ctx.data::<DatabaseConnection>()?;
 					let value_accessor =
 						ctx.args.get(&context.entity_create_one_mutation.data_field).unwrap();
-					let input_object = &value_accessor.object()?;
+					let input_object = value_accessor.object()?;
 
 					for (column, _) in input_object.to_iter() {
 						let field_guard = field_guards.get(&format!(
@@ -152,7 +148,7 @@ impl EntityCreateOneMutationBuilder {
 pub fn prepare_active_model<'a, T, A>(
 	entity_input_builder: &'a EntityInputBuilder,
 	entity_object_builder: &'a EntityObjectBuilder,
-	input_object: &'a ObjectAccessors<'a>,
+	input_object: ObjectAccessors<'a>,
 ) -> SeaResult<A>
 where
 	T: EntityTrait,

@@ -1,7 +1,8 @@
 use super::{get_type, Error, ObjectAccessor, Result, Type, TypeRef, Value};
 use crate::{
+	interface::{FieldValue as DynFieldValue, Value as DynValue},
 	prelude::Name,
-	traits::{EnumTrait, FieldValueTrait, TypeRefTrait},
+	traits::{EnumTrait, FieldValueTrait, ResolverContextDyn, TypeRefTrait},
 	Context,
 };
 use binary::proto::{Decoder, DecoderLit, Encoder, EncoderLit};
@@ -18,6 +19,12 @@ use std::{
 /// A value returned from the resolver function
 #[derive(Debug)]
 pub struct FieldValue<'a>(pub(crate) FieldValueInner<'a>);
+
+impl<'a> FieldValue<'a> {
+	pub fn from_interface(self) -> DynFieldValue<'a> {
+		self.0.from_interface()
+	}
+}
 
 #[derive(Debug)]
 pub(crate) enum FieldValueInner<'a> {
@@ -36,6 +43,23 @@ pub(crate) enum FieldValueInner<'a> {
 		/// Object name
 		ty: Cow<'static, str>,
 	},
+}
+
+impl<'a> FieldValueInner<'a> {
+	fn from_interface(self) -> DynFieldValue<'a> {
+		match self {
+			FieldValueInner::Value(value) => DynFieldValue::value(DynValue::proto(value)),
+			FieldValueInner::BorrowedAny(any) => DynFieldValue::borrowed_any(any),
+			FieldValueInner::OwnedAny(any) => DynFieldValue::owned_any(any),
+			FieldValueInner::List(vec) => {
+				DynFieldValue::list(vec.into_iter().map(|val| val.from_interface()))
+			}
+			FieldValueInner::WithType {
+				value,
+				ty,
+			} => value.from_interface().with_type(ty),
+		}
+	}
 }
 
 impl<'a> From<()> for FieldValue<'a> {
@@ -99,7 +123,7 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 
 	/// Create a FieldValue from owned any value
 	#[inline]
-	fn owned_any(obj: impl Any + Send + Sync) -> Self {
+	fn owned_any<T: Any + Send + Sync>(obj: T) -> Self {
 		Self(FieldValueInner::OwnedAny(Box::new(obj)))
 	}
 
@@ -203,7 +227,7 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 	/// If the FieldValue is a list, returns the associated
 	/// vector. Returns `None` otherwise.
 	#[inline]
-	fn as_list(&self) -> Option<&[Self]> {
+	fn as_list(&'a self) -> Option<&'a [Self]> {
 		match &self.0 {
 			FieldValueInner::List(values) => Some(values),
 			_ => None,
@@ -212,7 +236,7 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 
 	/// Like `as_list`, but returns `Result`.
 	#[inline]
-	fn try_to_list(&'a self) -> std::result::Result<&[Self], Self::Error> {
+	fn try_to_list(&'a self) -> std::result::Result<&'a [Self], Self::Error> {
 		self.as_list().ok_or_else(|| Error::new("internal: not a list"))
 	}
 
@@ -250,12 +274,11 @@ type BoxResolveFut<'a> = BoxFuture<'a, Result<Option<FieldValue<'a>>>>;
 
 /// A context for resolver function
 pub struct ResolverContext<'a> {
-	pub type_name: &'a str,
-	/// GraphQL context
+	// Proto context
 	pub ctx: &'a Context<'a>,
 	/// Field arguments
 	pub args: ObjectAccessor<'a>,
-	// /// Parent value
+	/// Parent value
 	pub parent_value: &'a FieldValue<'a>,
 }
 
@@ -266,6 +289,43 @@ impl<'a> Deref for ResolverContext<'a> {
 		self.ctx
 	}
 }
+
+// /// A context for resolver function
+// pub struct ResolverContext<'a> {
+// 	pub type_name: &'a str,
+// 	/// GraphQL context
+// 	pub ctx: &'a Context<'a>,
+// 	/// Field arguments
+// 	pub args: ObjectAccessor<'a>,
+// 	// /// Parent value
+// 	pub parent_value: &'a FieldValue<'a>,
+// }
+
+impl<'a> ResolverContextDyn<'a> for ResolverContext<'a> {
+	type Context = Context<'a>;
+	type ObjectAccessor = ObjectAccessor<'a>;
+	type FieldValue = FieldValue<'a>;
+
+	fn ctx(&'a self) -> &'a Self::Context {
+		self.ctx
+	}
+
+	fn args(self) -> Self::ObjectAccessor {
+		self.args
+	}
+
+	fn parent_value(&'a self) -> &'a Self::FieldValue {
+		self.parent_value
+	}
+}
+
+// impl<'a> Deref for ResolverContext<'a> {
+// 	type Target = Context<'a>;
+
+// 	fn deref(&self) -> &Self::Target {
+// 		self.ctx
+// 	}
+// }
 
 /// A future that returned from field resolver
 pub enum FieldFuture<'a> {
@@ -448,9 +508,7 @@ impl Field {
 			FieldValueInner::List(values) => {
 				let mut list = Vec::new();
 				for value in values.iter() {
-					list.push(
-						Box::pin(self.to_value(ctx, &*value, arguments, parent_value)).await?,
-					);
+					list.push(Box::pin(self.to_value(ctx, value, arguments, parent_value)).await?);
 				}
 
 				Ok(Value::List(list))
@@ -484,7 +542,7 @@ impl Field {
 			FieldValueInner::WithType {
 				value,
 				..
-			} => Box::pin(self.to_value(ctx, &*value, arguments, parent_value)).await,
+			} => Box::pin(self.to_value(ctx, value, arguments, parent_value)).await,
 		}
 	}
 
@@ -552,7 +610,6 @@ impl Field {
 				let field_future = match &self.resolver_fn {
 					Some(resolver_fn) => (resolver_fn)(ResolverContext {
 						ctx,
-						type_name: &self.ty.type_name(),
 						args: arguments.clone(),
 						parent_value: parent_val,
 					}),

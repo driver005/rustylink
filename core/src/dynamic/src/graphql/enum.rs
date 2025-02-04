@@ -1,6 +1,5 @@
-use async_graphql::dynamic::{Enum, EnumItem};
-
-use crate::traits::EnumTrait;
+use crate::EnumTrait;
+pub use async_graphql::dynamic::{Enum, EnumItem};
 
 impl EnumTrait for Enum {
 	type Item = EnumItem;

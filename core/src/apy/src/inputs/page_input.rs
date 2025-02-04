@@ -1,9 +1,5 @@
-use dynamic::prelude::{
-	Field, GraphQLTypeRef, Object, ObjectAccessorTrait, ObjectAccessors, ProtoTypeRef, TypeRef,
-	TypeRefTrait, ValueAccessorTrait,
-};
-
 use crate::BuilderContext;
+use dynamic::prelude::*;
 
 /// used to hold information about page pagination
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -45,7 +41,7 @@ impl PageInputBuilder {
 
 	/// used to get page pagination options message
 	pub fn input_object(&self) -> Object {
-		Object::new(&self.context.page_input.type_name)
+		Object::new(&self.context.page_input.type_name, IO::Input)
 			.field(Field::input(
 				&self.context.page_input.limit,
 				1u32,

@@ -1,6 +1,7 @@
-use async_graphql::{dynamic::FieldValue, Error, Value};
-
-use crate::traits::FieldValueTrait;
+use super::{Context, Error, Value};
+use crate::{FieldValueTrait, ResolverContextDyn};
+pub use async_graphql::dynamic::{FieldValue, ObjectAccessor, ResolverContext};
+use std::any::Any;
 
 impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 	type Value = Value;
@@ -22,15 +23,15 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 		Self::value(value)
 	}
 
-	fn owned_any(obj: impl std::any::Any + Send + Sync) -> Self {
+	fn owned_any<T: Any + Send + Sync>(obj: T) -> Self {
 		Self::owned_any(obj)
 	}
 
-	fn boxed_any(obj: Box<dyn std::any::Any + Send + Sync>) -> Self {
+	fn boxed_any(obj: Box<dyn Any + Send + Sync>) -> Self {
 		Self::boxed_any(obj)
 	}
 
-	fn borrowed_any(obj: &'a (dyn std::any::Any + Send + Sync)) -> Self {
+	fn borrowed_any(obj: &'a (dyn Any + Send + Sync)) -> Self {
 		Self::borrowed_any(obj)
 	}
 
@@ -72,5 +73,23 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 
 	fn to_val(&self) -> Option<Self::Value> {
 		panic!("GraphQLFieldValue::to_val() is not a valid function use ProtoFieldValue::to_val() instead")
+	}
+}
+
+impl<'a> ResolverContextDyn<'a> for ResolverContext<'a> {
+	type Context = Context<'a>;
+	type ObjectAccessor = ObjectAccessor<'a>;
+	type FieldValue = FieldValue<'a>;
+
+	fn ctx(&'a self) -> &'a Self::Context {
+		self.ctx
+	}
+
+	fn args(self) -> Self::ObjectAccessor {
+		self.args
+	}
+
+	fn parent_value(&'a self) -> &'a Self::FieldValue {
+		self.parent_value
 	}
 }

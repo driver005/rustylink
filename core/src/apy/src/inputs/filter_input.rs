@@ -1,8 +1,5 @@
 use crate::{BuilderContext, EntityObjectBuilder, FilterTypesMapHelper};
-use dynamic::prelude::{
-	Field, GraphQLInputObject, GraphQLInputValue, GraphQLTypeRef, Object, ProtoTypeRef, TypeRef,
-	TypeRefTrait,
-};
+use dynamic::prelude::*;
 use sea_orm::{EntityTrait, Iterable};
 use std::ops::Add;
 
@@ -51,7 +48,7 @@ impl FilterInputBuilder {
 		let filter_name = self.type_name(&entity_name);
 
 		let object = T::Column::iter().enumerate().fold(
-			Object::new(&filter_name),
+			Object::new(&filter_name, IO::Input),
 			|object, (index, column)| match filter_types_map_helper
 				.get_column_filter_input_value::<T>(&column, index.add(1) as u32)
 			{

@@ -1,8 +1,5 @@
 use crate::BuilderContext;
-use dynamic::prelude::{
-	Field, GraphQLTypeRef, Object, ObjectAccessorTrait, ObjectAccessors, ProtoTypeRef, TypeRef,
-	TypeRefTrait, ValueAccessorTrait,
-};
+use dynamic::prelude::*;
 use std::sync::Arc;
 
 /// used to hold information about offset pagination
@@ -51,7 +48,7 @@ impl OffsetInputBuilder {
 
 	/// used to get offset pagination options message
 	pub fn input_object(&self) -> Object {
-		Object::new(&self.context.offset_input.type_name)
+		Object::new(&self.context.offset_input.type_name, IO::Input)
 			.field(Field::input(
 				&self.context.offset_input.limit,
 				1u32,

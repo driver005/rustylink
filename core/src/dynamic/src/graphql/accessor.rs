@@ -1,11 +1,10 @@
+use super::{Error, Name, Upload, Value};
 use crate::{
 	interface::{ListAccessors, ObjectAccessors, ValueAccessors},
 	ListAccessorTrait, ObjectAccessorTrait, ValueAccessorTrait,
 };
-use async_graphql::{
-	dynamic::{ListAccessor, ObjectAccessor, ValueAccessor},
-	Error, Name, Upload, Value,
-};
+pub use async_graphql::dynamic::{ListAccessor, ObjectAccessor, ValueAccessor};
+
 use indexmap::IndexMap;
 
 impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
@@ -85,6 +84,10 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	fn upload(&self) -> Result<Upload, Self::Error> {
 		self.upload()
 	}
+
+	fn deserialize<T: serde::de::DeserializeOwned>(&self) -> Result<T, Self::Error> {
+		self.deserialize::<T>()
+	}
 }
 
 impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
@@ -96,8 +99,8 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
 		"GraphQLObjectAccessor"
 	}
 
-	fn get_accessor<'b>(&'b self) -> ObjectAccessors<'b> {
-		todo!()
+	fn get_accessor(self) -> ObjectAccessors<'a> {
+		ObjectAccessors::graphql(self)
 	}
 
 	fn get(&'a self, name: &str) -> Option<Self::ValueAccessor> {
@@ -175,7 +178,3 @@ impl<'a> ListAccessorTrait<'a> for ListAccessor<'a> {
 		self.as_values_slice().to_vec()
 	}
 }
-
-pub type GraphQLValueAccessor<'a> = ValueAccessor<'a>;
-pub type GraphQLObjectAccessor<'a> = ObjectAccessor<'a>;
-pub type GraphQLListAccessor<'a> = ListAccessor<'a>;

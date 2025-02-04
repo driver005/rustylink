@@ -2,8 +2,8 @@ use crate::prelude::{GraphQLValue, ProtoValue};
 
 #[derive(Debug, Clone)]
 pub struct Value {
-	graphql: GraphQLValue,
-	proto: ProtoValue,
+	pub graphql: GraphQLValue,
+	pub proto: ProtoValue,
 }
 
 impl Value {

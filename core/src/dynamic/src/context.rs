@@ -1,10 +1,174 @@
-use crate::proto::{Error, Result};
+use crate::{
+	interface::{Error, ObjectAccessors, Result},
+	prelude::{
+		GraphQLContext, GraphQLFieldValue, GraphQLResolverContext, ProtoFieldValue,
+		ProtoResolverContext,
+	},
+	traits::FieldValueTrait,
+};
 use fnv::FnvHashMap;
 use std::{
 	any::{Any, TypeId},
 	fmt::{self, Debug, Formatter},
 	ops::Deref,
 };
+
+pub enum ResolverContextType<'a> {
+	GraphQL(&'a GraphQLContext<'a>),
+	Proto(&'a Context<'a>),
+}
+
+impl<'a> DataContext<'a> for ResolverContextType<'a> {
+	fn data<D: Any + Send + Sync>(&self) -> Result<&'a D> {
+		match self {
+			ResolverContextType::GraphQL(context) => {
+				context.data::<D>().map_err(|err| Error::new(err.message))
+			}
+			ResolverContextType::Proto(context) => context.data::<D>(),
+		}
+	}
+
+	fn data_unchecked<D: Any + Send + Sync>(&self) -> &'a D {
+		match self {
+			ResolverContextType::GraphQL(context) => context.data_unchecked::<D>(),
+			ResolverContextType::Proto(context) => context.data_unchecked::<D>(),
+		}
+	}
+
+	fn data_opt<D: Any + Send + Sync>(&self) -> Option<&'a D> {
+		match self {
+			ResolverContextType::GraphQL(context) => context.data_opt::<D>(),
+			ResolverContextType::Proto(context) => context.data_opt::<D>(),
+		}
+	}
+}
+
+pub enum ResolverFieldValue<'a> {
+	GraphQL(&'a GraphQLFieldValue<'a>),
+	Proto(&'a ProtoFieldValue<'a>),
+}
+
+impl<'a> ResolverFieldValue<'a> {
+	//TODO: Implement
+	// /// If the FieldValue is a value, returns the associated
+	// /// Value. Returns `None` otherwise.
+	// #[inline]
+	// pub fn as_value(&self) -> Option<&Value> {
+	// 	match self {
+	// 		ResolverFieldValue::GraphQL(field_value) => field_value.as_value(),
+	// 		ResolverFieldValue::Proto(field_value) => field_value.as_value(),
+	// 	}
+	// }
+
+	// /// Like `as_value`, but returns `Result`.
+	// #[inline]
+	// pub fn try_to_value(&self) -> Result<&Value> {
+	// 	match self {
+	// 		ResolverFieldValue::GraphQL(field_value) => field_value.try_to_value(),
+	// 		ResolverFieldValue::Proto(field_value) => field_value.try_to_value(),
+	// 	}
+	// }
+
+	// /// If the FieldValue is a list, returns the associated
+	// /// vector. Returns `None` otherwise.
+	// #[inline]
+	// pub fn as_list(&self) -> Option<&[FieldValue]> {
+	// 	match self {
+	// 		ResolverFieldValue::GraphQL(field_value) => field_value.as_list(),
+	// 		ResolverFieldValue::Proto(field_value) => field_value.as_list(),
+	// 	}
+	// }
+
+	// /// Like `as_list`, but returns `Result`.
+	// #[inline]
+	// pub fn try_to_list(&self) -> Result<&[FieldValue]> {
+	// 	match self {
+	// 		ResolverFieldValue::GraphQL(field_value) => field_value.try_to_list(),
+	// 		ResolverFieldValue::Proto(field_value) => field_value.try_to_list(),
+	// 	}
+	// }
+
+	/// If the FieldValue is a any, returns the associated
+	/// vector. Returns `None` otherwise.
+	#[inline]
+	pub fn downcast_ref<T: Any>(self) -> Option<&'a T> {
+		match self {
+			ResolverFieldValue::GraphQL(field_value) => field_value.downcast_ref::<T>(),
+			ResolverFieldValue::Proto(field_value) => field_value.downcast_ref::<T>(),
+		}
+	}
+
+	/// Like `downcast_ref`, but returns `Result`.
+	#[inline]
+	pub fn try_downcast_ref<T: Any>(self) -> Result<&'a T> {
+		match self {
+			ResolverFieldValue::GraphQL(field_value) => {
+				field_value.try_downcast_ref::<T>().map_err(|err| Error::new(err.message))
+			}
+			ResolverFieldValue::Proto(field_value) => {
+				field_value.try_downcast_ref::<T>().map_err(|err| Error::new(err.message))
+			}
+		}
+	}
+}
+
+/// A context for resolver function
+pub struct ResolverContext<'a> {
+	pub api_type: ApiType,
+
+	pub ctx: ResolverContextType<'a>,
+	pub args: ObjectAccessors<'a>,
+	pub parent_value: ResolverFieldValue<'a>,
+}
+
+impl<'a> ResolverContext<'a> {
+	// pub fn new(
+	// 	api_type: ApiType,
+	// 	ctx: ResolverContextType<'a>,
+	// 	args: ObjectAccessors<'a>,
+	// 	parent_value: ResolverFieldValue<'a>,
+	// ) -> Self {
+	// 	Self {
+	// 		api_type,
+	// 		ctx: &ctx,
+	// 		args,
+	// 		parent_value: &parent_value,
+	// 	}
+	// }
+	pub fn data<D: Any + Send + Sync>(&self) -> Result<&'a D> {
+		self.ctx.data::<D>()
+	}
+
+	pub fn data_unchecked<D: Any + Send + Sync>(&self) -> &'a D {
+		self.ctx.data_unchecked::<D>()
+	}
+
+	pub fn data_opt<D: Any + Send + Sync>(&self) -> Option<&'a D> {
+		self.ctx.data_opt::<D>()
+	}
+}
+
+impl<'a> From<GraphQLResolverContext<'a>> for ResolverContext<'a> {
+	fn from(value: GraphQLResolverContext<'a>) -> Self {
+		Self {
+			api_type: ApiType::GraphQL,
+			ctx: ResolverContextType::GraphQL(value.ctx),
+			args: ObjectAccessors::GraphQL(value.args),
+			parent_value: ResolverFieldValue::GraphQL(value.parent_value),
+		}
+	}
+}
+
+impl<'a> From<ProtoResolverContext<'a>> for ResolverContext<'a> {
+	fn from(value: ProtoResolverContext<'a>) -> Self {
+		Self {
+			api_type: ApiType::Proto,
+			ctx: ResolverContextType::Proto(value.ctx),
+			args: ObjectAccessors::Proto(value.args),
+			parent_value: ResolverFieldValue::Proto(value.parent_value),
+		}
+	}
+}
 
 /// Context object for resolve field
 pub type Context<'a> = ContextBase<'a>;
@@ -64,11 +228,18 @@ impl Debug for Data {
 	}
 }
 
+#[derive(Debug, Clone)]
+pub enum ApiType {
+	GraphQL,
+	Proto,
+}
+
 /// Query context.
 ///
 /// **This type is not stable and should not be used directly.**
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ContextBase<'a> {
+	pub r#type: ApiType,
 	// /// The current path node being resolved.
 	// pub path_node: Option<QueryPathNode<'a>>,
 	// /// If `true` means the current field is for introspection.
@@ -98,8 +269,9 @@ impl<'a> DataContext<'a> for ContextBase<'a> {
 }
 
 impl<'a> ContextBase<'a> {
-	pub fn new() -> Self {
+	pub fn new(r#type: ApiType) -> Self {
 		Self {
+			r#type,
 			execute_data: None,
 		}
 	}

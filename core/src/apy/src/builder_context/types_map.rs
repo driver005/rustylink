@@ -1,8 +1,5 @@
 use crate::{ActiveEnumBuilder, BuilderContext, EntityObjectBuilder, SeaResult};
-use dynamic::prelude::{
-	GraphQLTypeRef, GraphQLValue, ProtoTypeRef, ProtoValueAccessor, TypeRef, TypeRefTrait, Value,
-	ValueAccessorTrait, ValueAccessors,
-};
+use dynamic::prelude::*;
 use sea_orm::{ColumnTrait, ColumnType, EntityTrait};
 use std::{collections::BTreeMap, num::ParseIntError};
 
@@ -379,20 +376,9 @@ impl TypesMapHelper {
 		}
 		.map(|ty| {
 			if not_null {
-				let graphql = if let Some(type_name) = ty.graphql {
-					Some(GraphQLTypeRef::NonNull(Box::new(type_name)))
-				} else {
-					None
-				};
-
-				let proto = if let Some(type_name) = ty.proto {
-					Some(ProtoTypeRef::NonNull(Box::new(type_name)))
-				} else {
-					None
-				};
 				TypeRef {
-					graphql,
-					proto,
+					graphql: GraphQLTypeRef::NonNull(Box::new(ty.graphql)),
+					proto: ProtoTypeRef::NonNull(Box::new(ty.proto)),
 				}
 			} else {
 				ty

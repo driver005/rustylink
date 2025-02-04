@@ -51,7 +51,7 @@ impl Graphql {
 			use #name::entities::*;
 			use ::apy::{Builder, BuilderContext};
 			use ::dynamic::{
-				prelude::{Proto, Schema, GraphQLSchemaError, ProtoSchemaError},
+				prelude::{Proto, Schema, GraphQLSchemaError, ProtoSchemaError, DynamicBuilder},
 			};
 			use sea_orm::DatabaseConnection;
 
@@ -59,7 +59,7 @@ impl Graphql {
 				static ref CONTEXT: BuilderContext = BuilderContext::default();
 			}
 
-			fn builder(database: &DatabaseConnection) -> Builder {
+			fn builder(database: &DatabaseConnection) -> DynamicBuilder {
 				let mut builder = Builder::new(&CONTEXT, database.clone());
 
 				apy::register_entities!(
@@ -71,7 +71,7 @@ impl Graphql {
 
 				#(#enumerations)*
 
-				builder
+				builder.builder()
 			}
 
 			pub fn schema(
@@ -81,7 +81,7 @@ impl Graphql {
 			) -> Result<Schema, GraphQLSchemaError> {
 				let builder = builder(database);
 
-				let schema = builder.schema_builder();
+				let schema = builder.to_graphql();
 
 				let schema = if let Some(depth) = depth {
 					schema.limit_depth(depth)
@@ -101,7 +101,7 @@ impl Graphql {
 			pub fn proto(database: &DatabaseConnection) -> Result<Proto, ProtoSchemaError> {
 				let builder = builder(database);
 
-				let proto = builder.proto_builder();
+				let proto = builder.to_proto();
 
 				proto.data(database.clone()).finish()
 			}

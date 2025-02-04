@@ -40,7 +40,5 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	);
 	generator::generate(db, "./src/handles", writer_context).await?;
 
-	println!("Hello, world!");
-
 	Ok(())
 }

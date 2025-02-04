@@ -148,6 +148,10 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	fn upload(&self) -> Result<Upload, Self::Error> {
 		panic!("ProtoValueAccessor::upload() is not a vailid function use GraphQLValueAccessor::upload() instead")
 	}
+
+	fn deserialize<T: serde::de::DeserializeOwned>(&self) -> std::result::Result<T, Self::Error> {
+		panic!("ProtoValueAccessor::deserialize() is not a vailid function use GraphQLValueAccessor::deserialize() instead")
+	}
 }
 
 /// A object accessor
@@ -163,8 +167,8 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
 		"ProtoObjectAccessor"
 	}
 
-	fn get_accessor<'b>(&'b self) -> ObjectAccessors<'b> {
-		todo!()
+	fn get_accessor(self) -> ObjectAccessors<'a> {
+		ObjectAccessors::proto(self)
 	}
 
 	/// Return a reference to the value stored for `key`, if it is present,

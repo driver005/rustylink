@@ -1,6 +1,6 @@
-use async_graphql::dynamic::TypeRef;
+pub use async_graphql::dynamic::TypeRef;
 
-use crate::traits::TypeRefTrait;
+use crate::TypeRefTrait;
 
 impl TypeRefTrait for TypeRef {
 	fn named(type_name: impl Into<String>) -> Self {

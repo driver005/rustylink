@@ -1,9 +1,8 @@
+use crate::TypeRefTrait;
 use std::{
 	borrow::Cow,
 	fmt::{self, Display},
 };
-
-use crate::traits::TypeRefTrait;
 
 /// A type reference
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]

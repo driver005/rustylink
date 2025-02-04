@@ -1,9 +1,5 @@
-use dynamic::prelude::{
-	GraphQLField, GraphQLFieldFuture, GraphQLObject, GraphQLTypeRef, GraphQLValue, ProtoField,
-	ProtoFieldFuture, ProtoMessage, ProtoTypeRef, ProtoValue,
-};
-
 use crate::BuilderContext;
+use dynamic::prelude::*;
 
 /// used to hold pages pagination info
 #[derive(Clone, Debug)]
@@ -53,114 +49,87 @@ impl PageInfoObjectBuilder {
 		self.context.page_info_object.type_name.clone()
 	}
 
-	/// used to get GraphQL object for PageInfo
-	pub fn to_object(&self) -> GraphQLObject {
-		GraphQLObject::new(&self.context.page_info_object.type_name)
-			.field(GraphQLField::new(
-				&self.context.page_info_object.has_previous_page,
-				GraphQLTypeRef::named_nn(GraphQLTypeRef::BOOLEAN),
-				|ctx| {
-					GraphQLFieldFuture::new(async move {
-						let cursor_page_info = ctx.parent_value.try_downcast_ref::<PageInfo>()?;
-						Ok(Some(GraphQLValue::from(cursor_page_info.has_previous_page)))
-					})
-				},
-			))
-			.field(GraphQLField::new(
-				&self.context.page_info_object.has_next_page,
-				GraphQLTypeRef::named_nn(GraphQLTypeRef::BOOLEAN),
-				|ctx| {
-					GraphQLFieldFuture::new(async move {
-						let cursor_page_info = ctx.parent_value.try_downcast_ref::<PageInfo>()?;
-						Ok(Some(GraphQLValue::from(cursor_page_info.has_next_page)))
-					})
-				},
-			))
-			.field(GraphQLField::new(
-				&self.context.page_info_object.start_cursor,
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				|ctx| {
-					GraphQLFieldFuture::new(async move {
-						let cursor_page_info = ctx.parent_value.try_downcast_ref::<PageInfo>()?;
-						let value = cursor_page_info
-							.start_cursor
-							.as_ref()
-							.map(|v| GraphQLValue::from(v.as_str()))
-							.or_else(|| Some(GraphQLValue::Null));
-						Ok(value)
-					})
-				},
-			))
-			.field(GraphQLField::new(
-				&self.context.page_info_object.end_cursor,
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				|ctx| {
-					GraphQLFieldFuture::new(async move {
-						let cursor_page_info = ctx.parent_value.try_downcast_ref::<PageInfo>()?;
-						let value = cursor_page_info
-							.end_cursor
-							.as_ref()
-							.map(|v| GraphQLValue::from(v.as_str()))
-							.or_else(|| Some(GraphQLValue::Null));
-						Ok(value)
-					})
-				},
-			))
-	}
-
 	/// used to get GraphQL message for PageInfo
-	pub fn to_message(&self) -> ProtoMessage {
-		ProtoMessage::new(&self.context.page_info_object.type_name)
-			.field(ProtoField::output(
+	pub fn to_object(&self) -> Object {
+		Object::new(&self.context.page_info_object.type_name, IO::Output)
+			.field(Field::output(
 				&self.context.page_info_object.has_previous_page,
 				1u32,
-				ProtoTypeRef::named_nn(ProtoTypeRef::BOOL),
+				TypeRef::new(
+					GraphQLTypeRef::named_nn(GraphQLTypeRef::BOOLEAN),
+					ProtoTypeRef::named_nn(ProtoTypeRef::BOOL),
+				),
 				|ctx| {
-					ProtoFieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let cursor_page_info = ctx.parent_value.try_downcast_ref::<PageInfo>()?;
-						Ok(Some(ProtoValue::from(cursor_page_info.has_previous_page)))
+						Ok(Some(Value::new(
+							GraphQLValue::from(cursor_page_info.has_previous_page),
+							ProtoValue::from(cursor_page_info.has_previous_page),
+						)))
 					})
 				},
 			))
-			.field(ProtoField::output(
+			.field(Field::output(
 				&self.context.page_info_object.has_next_page,
 				2u32,
-				ProtoTypeRef::named_nn(ProtoTypeRef::BOOL),
+				TypeRef::new(
+					GraphQLTypeRef::named_nn(GraphQLTypeRef::BOOLEAN),
+					ProtoTypeRef::named_nn(ProtoTypeRef::BOOL),
+				),
 				|ctx| {
-					ProtoFieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let cursor_page_info = ctx.parent_value.try_downcast_ref::<PageInfo>()?;
-						Ok(Some(ProtoValue::from(cursor_page_info.has_next_page)))
+						Ok(Some(Value::new(
+							GraphQLValue::from(cursor_page_info.has_next_page),
+							ProtoValue::from(cursor_page_info.has_next_page),
+						)))
 					})
 				},
 			))
-			.field(ProtoField::output(
+			.field(Field::output(
 				&self.context.page_info_object.start_cursor,
 				3u32,
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
+				TypeRef::new(
+					GraphQLTypeRef::named(GraphQLTypeRef::STRING),
+					ProtoTypeRef::named(ProtoTypeRef::STRING),
+				),
 				|ctx| {
-					ProtoFieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let cursor_page_info = ctx.parent_value.try_downcast_ref::<PageInfo>()?;
 						let value = cursor_page_info
 							.start_cursor
 							.as_ref()
-							.map(|v| ProtoValue::from(v.as_str()))
-							.or_else(|| Some(ProtoValue::Null));
+							.map(|v| {
+								Value::new(
+									GraphQLValue::from(v.as_str()),
+									ProtoValue::from(v.as_str()),
+								)
+							})
+							.or_else(|| Some(Value::null()));
 						Ok(value)
 					})
 				},
 			))
-			.field(ProtoField::output(
+			.field(Field::output(
 				&self.context.page_info_object.end_cursor,
 				4u32,
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
+				TypeRef::new(
+					GraphQLTypeRef::named(GraphQLTypeRef::STRING),
+					ProtoTypeRef::named(ProtoTypeRef::STRING),
+				),
 				|ctx| {
-					ProtoFieldFuture::new(async move {
+					FieldFuture::new(ctx.api_type.clone(), async move {
 						let cursor_page_info = ctx.parent_value.try_downcast_ref::<PageInfo>()?;
 						let value = cursor_page_info
 							.end_cursor
 							.as_ref()
-							.map(|v| ProtoValue::from(v.as_str()))
-							.or_else(|| Some(ProtoValue::Null));
+							.map(|v| {
+								Value::new(
+									GraphQLValue::from(v.as_str()),
+									ProtoValue::from(v.as_str()),
+								)
+							})
+							.or_else(|| Some(Value::null()));
 						Ok(value)
 					})
 				},

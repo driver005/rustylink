@@ -1,16 +1,5 @@
-use crate::prelude::{GraphQLError, GraphQLSchemaError, ProtoError};
+use crate::prelude::{GraphQLError, ProtoError};
 use thiserror::Error;
-
-/// An error can occur when building dynamic schema
-#[derive(Debug, thiserror::Error, Eq, PartialEq)]
-#[error("{0}")]
-pub struct SchemaError(pub String);
-
-impl From<GraphQLSchemaError> for SchemaError {
-	fn from(value: GraphQLSchemaError) -> Self {
-		SchemaError(value.0)
-	}
-}
 
 #[derive(Error, Debug)]
 pub enum SeaographyError {

@@ -5,6 +5,11 @@ use std::{
 	sync::Arc,
 };
 
+/// An error can occur when building dynamic schema
+#[derive(Debug, thiserror::Error, Eq, PartialEq)]
+#[error("{0}")]
+pub struct SchemaError(pub String);
+
 /// An error with a message and optional extensions.
 #[derive(Clone)]
 pub struct Error {

@@ -1,7 +1,7 @@
-use super::{BoxFieldFuture, Error, ObjectAccessor, Result, Value};
+use super::{BoxFieldFuture, Error, ObjectAccessor, Result, SchemaError, Value};
 use crate::{
 	prelude::Name, traits::EnumTrait, ObjectAccessorTrait, ProtobufEnumValue, ProtobufKind,
-	Registry, SchemaError, ValueAccessorTrait,
+	Registry, ValueAccessorTrait,
 };
 use binary::proto::{DecoderLit, Encoder, EncoderLit};
 use futures_util::FutureExt;
