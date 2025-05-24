@@ -1,12 +1,9 @@
-use super::{Result, SchemaError, Value};
-use crate::{ProtobufKind, Registry};
+use super::Result;
+use crate::{ProtoRegistry, ProtobufKind, ScalarValidatorFn, SchemaError, Value};
 use std::{
 	fmt::{self, Debug},
 	sync::Arc,
 };
-
-/// A validator for scalar
-pub type ScalarValidatorFn = Arc<dyn Fn(&Value) -> bool + Send + Sync>;
 
 pub struct Scalar {
 	pub(crate) name: String,
@@ -59,8 +56,8 @@ impl Scalar {
 		&self.name
 	}
 
-	pub(crate) fn register(&self, registry: &mut Registry) -> Result<(), SchemaError> {
-		registry.types.proto.insert(
+	pub(crate) fn register(&self, registry: &mut ProtoRegistry) -> Result<(), SchemaError> {
+		registry.types.insert(
 			self.name.clone(),
 			ProtobufKind::Scalar {
 				name: self.name.clone(),

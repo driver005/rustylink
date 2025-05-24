@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/core/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/link/common_test/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/link/models/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/link/protobuf/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/link/router/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/link/service/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/link/storage/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/sdk/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/worker/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a8b50cfe-b602-4ac2-950c-97c6e42bbdf7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/core/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/core/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/core/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/dynamic/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/dynamic/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/dynamic/src/http/graphql.rs" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/dynamic/src/http/graphql.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/dynamic/src/interface/field.rs" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/dynamic/src/interface/field.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/macros/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/macros/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/plugin/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/plugin/src/lib.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/service/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/service/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/worker/src/sdk/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/worker/src/sdk/src/lib.rs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="qJRJvmVz" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 3
+}]]></component>
+  <component name="ProjectId" id="2vAQjmdUPjrH0f7mIGkOhfD8jg5" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.rust.reset.selective.auto.import": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/default/rust/rustylink",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.first.attach.projects": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a8b50cfe-b602-4ac2-950c-97c6e42bbdf7" name="Changes" comment="" />
+      <created>1743585536161</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1743585536161</updated>
+      <workItem from="1743585538302" duration="453000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

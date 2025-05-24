@@ -262,8 +262,8 @@ pub use builder_context::*;
 pub mod builder;
 pub use builder::*;
 
-pub mod error;
-pub use error::*;
+// pub mod error;
+// pub use error::*;
 
 pub use macros::*;
 

@@ -1,4 +1,6 @@
-use crate::TypeRefTrait;
+use binary::proto::DecoderLit;
+
+use crate::{SeaResult, SeaographyError, TypeRefTrait, Value};
 use std::{
 	borrow::Cow,
 	fmt::{self, Display},
@@ -76,6 +78,11 @@ impl TypeRefTrait for TypeRef {
 		))))))
 	}
 
+	/// Returns the non-null type reference
+	fn non_null(ty: Box<Self>) -> Self {
+		TypeRef::NonNull(ty)
+	}
+
 	/// Returns the type name
 	///
 	/// `[Foo!]` -> `Foo`
@@ -87,6 +94,24 @@ impl TypeRefTrait for TypeRef {
 			TypeRef::List(inner) => inner.type_name(),
 		}
 	}
+
+	const DOUBLE: &'static str = TypeRef::DOUBLE;
+	const FLOAT: &'static str = TypeRef::FLOAT;
+	const INT32: &'static str = TypeRef::INT32;
+	const INT64: &'static str = TypeRef::INT64;
+	const UINT32: &'static str = TypeRef::UINT32;
+	const UINT64: &'static str = TypeRef::UINT64;
+	const SINT32: &'static str = TypeRef::SINT32;
+	const SINT64: &'static str = TypeRef::SINT64;
+	const FIXED32: &'static str = TypeRef::FIXED32;
+	const FIXED64: &'static str = TypeRef::FIXED64;
+	const SFIXED32: &'static str = TypeRef::SFIXED32;
+	const SFIXED64: &'static str = TypeRef::SFIXED64;
+	const BOOL: &'static str = TypeRef::BOOL;
+	const STRING: &'static str = TypeRef::STRING;
+	const BYTES: &'static str = TypeRef::BYTES;
+	const ID: &'static str = TypeRef::STRING;
+	// const UPLOAD: &'static str = TypeRef::BYTES;
 }
 
 impl TypeRef {
@@ -188,6 +213,70 @@ impl TypeRef {
 		}
 
 		is_subtype(self, sub)
+	}
+
+	pub(crate) fn bytes(&self, buf: Vec<u8>, tag: u32) -> SeaResult<Value> {
+		// if tag != self.tag {
+		// 	return Err(Error::new(format!("invalid tag: expected {}, got {}", self.tag, tag)));
+		// }
+		match self.type_name() {
+			TypeRef::INT32 => match self.is_repeated() {
+				false => Ok(i32::from(DecoderLit::Int32(buf)).into()),
+				true => Ok(Vec::<i32>::from(DecoderLit::Int32Vec(buf)).into()),
+			},
+			TypeRef::INT64 => match self.is_repeated() {
+				false => Ok(i64::from(DecoderLit::Int64(buf)).into()),
+				true => Ok(Vec::<i64>::from(DecoderLit::Int64Vec(buf)).into()),
+			},
+			TypeRef::UINT32 => match self.is_repeated() {
+				false => Ok(u32::from(DecoderLit::UInt32(buf)).into()),
+				true => Ok(Vec::<u32>::from(DecoderLit::UInt32Vec(buf)).into()),
+			},
+			TypeRef::UINT64 => match self.is_repeated() {
+				false => Ok(u64::from(DecoderLit::UInt64(buf)).into()),
+				true => Ok(Vec::<u64>::from(DecoderLit::UInt64Vec(buf)).into()),
+			},
+			TypeRef::SINT32 => match self.is_repeated() {
+				false => Ok(i32::from(DecoderLit::SInt32(buf)).into()),
+				true => Ok(Vec::<i32>::from(DecoderLit::SInt32Vec(buf)).into()),
+			},
+			TypeRef::SINT64 => match self.is_repeated() {
+				false => Ok(i64::from(DecoderLit::SInt64(buf)).into()),
+				true => Ok(Vec::<i64>::from(DecoderLit::SInt64Vec(buf)).into()),
+			},
+			TypeRef::SFIXED32 => match self.is_repeated() {
+				false => Ok(i32::from(DecoderLit::SFixed32(buf)).into()),
+				true => Ok(Vec::<i32>::from(DecoderLit::SFixed32Vec(buf)).into()),
+			},
+			TypeRef::SFIXED64 => match self.is_repeated() {
+				false => Ok(i64::from(DecoderLit::SFixed64(buf)).into()),
+				true => Ok(Vec::<i64>::from(DecoderLit::SFixed64Vec(buf)).into()),
+			},
+			TypeRef::BOOL => match self.is_repeated() {
+				false => Ok(bool::from(DecoderLit::Bool(buf)).into()),
+				true => Ok(Vec::<bool>::from(DecoderLit::BoolVec(buf)).into()),
+			},
+			TypeRef::FLOAT => match self.is_repeated() {
+				false => Ok(f32::from(DecoderLit::Float(buf)).into()),
+				true => Ok(Vec::<f32>::from(DecoderLit::FloatVec(buf)).into()),
+			},
+			TypeRef::DOUBLE => match self.is_repeated() {
+				false => Ok(f64::from(DecoderLit::Double(buf)).into()),
+				true => Ok(Vec::<f64>::from(DecoderLit::DoubleVec(buf)).into()),
+			},
+			TypeRef::STRING => match self.is_repeated() {
+				false => Ok(String::from(DecoderLit::Bytes(buf)).into()),
+				true => Ok(String::from(DecoderLit::Bytes(buf)).into()),
+			},
+			TypeRef::BYTES => match self.is_repeated() {
+				false => Ok(Vec::<u8>::from(DecoderLit::Bytes(buf)).into()),
+				true => Ok(Vec::<u8>::from(DecoderLit::Bytes(buf)).into()),
+			},
+			name => Err(SeaographyError::new(format!(
+				"Unsupported type or wire type combination: {}",
+				name
+			))),
+		}
 	}
 }
 

@@ -1,9 +1,9 @@
 use crate::{
+	ListAccessorTrait, ObjectAccessorTrait, ValueAccessorTrait,
 	prelude::{
 		GraphQLListAccessor, GraphQLObjectAccessor, GraphQLValueAccessor, ProtoListAccessor,
 		ProtoObjectAccessor, ProtoValueAccessor,
 	},
-	ListAccessorTrait, ObjectAccessorTrait, ValueAccessorTrait,
 };
 use async_graphql::Name;
 use indexmap::IndexMap;
@@ -33,10 +33,6 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessors<'a> {
 
 	fn type_name(&self) -> &'static str {
 		"ValueAccessors"
-	}
-
-	fn get_accessor<'b>(&'b self) -> ValueAccessors<'b> {
-		todo!()
 	}
 
 	fn is_null(&self) -> bool {
@@ -263,10 +259,6 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessors<'a> {
 		"GraphQLObjectAccessor"
 	}
 
-	fn get_accessor(self) -> ObjectAccessors<'a> {
-		self
-	}
-
 	fn get(&'a self, name: &str) -> Option<Self::ValueAccessor> {
 		match self {
 			ObjectAccessors::GraphQL(accessor) => accessor.get(name).map(ValueAccessors::graphql),
@@ -365,14 +357,9 @@ impl<'a> ListAccessorTrait<'a> for ListAccessors<'a> {
 	type Value = Value;
 	type Error = Error;
 	type ValueAccessor = ValueAccessors<'a>;
-	type ListAccessor = ListAccessors<'a>;
 
 	fn type_name(&self) -> &'static str {
 		"ListAccessor"
-	}
-
-	fn get_accessor<'b>(&'b self) -> ListAccessors<'b> {
-		todo!()
 	}
 
 	fn len(&self) -> usize {
@@ -420,7 +407,7 @@ impl<'a> ListAccessorTrait<'a> for ListAccessors<'a> {
 		}
 	}
 
-	fn as_slice(&self, start: usize, end: usize) -> Result<Self::ListAccessor, Self::Error> {
+	fn as_slice(&self, start: usize, end: usize) -> Result<Self, Self::Error> {
 		match self {
 			ListAccessors::GraphQL(accessor) => match accessor.as_slice(start, end) {
 				Ok(accessor) => Ok(ListAccessors::graphql(accessor)),

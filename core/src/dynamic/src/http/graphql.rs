@@ -1,22 +1,18 @@
+use crate::{Value, graphql::Schema};
 use actix_web::{
-	guard,
+	HttpResponse, Result, guard,
 	web::{self, Data},
-	HttpResponse, Result,
 };
-use async_graphql::{
-	dynamic::*,
-	http::{playground_source, GraphQLPlaygroundConfig},
-};
-use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
+use juniper::http::{GraphQLRequest, graphiql::graphiql_source};
 
-async fn index(schema: Data<Schema>, req: GraphQLRequest) -> GraphQLResponse {
-	schema.execute(req.into_inner()).await.into()
+async fn index(schema: Data<Schema>, request: web::Json<GraphQLRequest<Value>>) -> HttpResponse {
+	schema.execute(request.into_inner()).await
 }
 
 async fn playground() -> Result<HttpResponse> {
 	Ok(HttpResponse::Ok()
 		.content_type("text/html; charset=utf-8")
-		.body(playground_source(GraphQLPlaygroundConfig::new("/"))))
+		.body(graphiql_source("/graphql", None)))
 }
 
 pub fn graphql(cfg: &mut web::ServiceConfig, schema: Schema) {
@@ -24,6 +20,6 @@ pub fn graphql(cfg: &mut web::ServiceConfig, schema: Schema) {
 		web::scope("/graphql")
 			.app_data(Data::new(schema.clone()))
 			.service(web::resource("").guard(guard::Post()).to(index))
-			.service(web::resource("").guard(guard::Get()).to(playground)), // .service(web::redirect("", "/graphql/")),
+			.service(web::resource("").guard(guard::Get()).to(playground)), // .service(web::resource("/sdl").guard(guard::Get()).to(sdl)), // .service(web::redirect("", "/graphql/")),
 	);
 }

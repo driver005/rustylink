@@ -1,4 +1,4 @@
-use crate::{BuilderContext, EntityObjectBuilder, SeaResult, TypesMapHelper};
+use crate::{BuilderContext, EntityObjectBuilder, TypesMapHelper};
 use dynamic::prelude::*;
 use sea_orm::{ColumnTrait, EntityTrait, Iterable};
 use std::{collections::BTreeMap, ops::Add};
@@ -59,28 +59,31 @@ impl EntityInputBuilder {
 	}
 
 	/// used to produce the SeaORM entity insert input object
-	pub fn insert_input_object<T>(&self) -> Object
+	pub fn insert_input_object<T, Ty>(&self) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
 	{
-		self.input_object::<T>(true)
+		self.input_object::<T, Ty>(true)
 	}
 
 	/// used to produce the SeaORM entity update input object
-	pub fn update_input_object<T>(&self) -> Object
+	pub fn update_input_object<T, Ty>(&self) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
 	{
-		self.input_object::<T>(false)
+		self.input_object::<T, Ty>(false)
 	}
 
 	/// used to produce the SeaORM entity input object
-	fn input_object<T>(&self, is_insert: bool) -> Object
+	fn input_object<T, Ty>(&self, is_insert: bool) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
 	{
 		let name = if is_insert {
 			self.insert_type_name::<T>()
@@ -123,14 +126,14 @@ impl EntityInputBuilder {
 					None => return object,
 				};
 
-				object.field(Field::input(column_name, index.add(1) as u32, type_ref))
+				object.field(Field::input(&column_name, index.add(1) as u32, type_ref))
 			},
 		)
 	}
 
 	pub fn parse_object<'a, T>(
 		&self,
-		object: &'a ObjectAccessors<'a>,
+		object: &'a ObjectAccessor<'a>,
 	) -> SeaResult<BTreeMap<String, sea_orm::Value>>
 	where
 		T: EntityTrait,

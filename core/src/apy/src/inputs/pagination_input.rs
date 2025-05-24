@@ -45,36 +45,30 @@ impl PaginationInputBuilder {
 	}
 
 	/// used to get pagination input message
-	pub fn input_object(&self) -> Object {
+	pub fn input_object<Ty>(&self) -> Object<Ty>
+	where
+		Ty: TypeRefTrait,
+	{
 		Object::new(&self.context.pagination_input.type_name, IO::Input)
 			.field(Field::input(
 				&self.context.pagination_input.cursor,
 				1u32,
-				TypeRef::new(
-					GraphQLTypeRef::named(&self.context.cursor_input.type_name),
-					ProtoTypeRef::named(&self.context.cursor_input.type_name),
-				),
+				Ty::named(&self.context.cursor_input.type_name),
 			))
 			.field(Field::input(
 				&self.context.pagination_input.page,
 				2u32,
-				TypeRef::new(
-					GraphQLTypeRef::named(&self.context.page_input.type_name),
-					ProtoTypeRef::named(&self.context.page_input.type_name),
-				),
+				Ty::named(&self.context.page_input.type_name),
 			))
 			.field(Field::input(
 				&self.context.pagination_input.offset,
 				3u32,
-				TypeRef::new(
-					GraphQLTypeRef::named(&self.context.offset_input.type_name),
-					ProtoTypeRef::named(&self.context.offset_input.type_name),
-				),
+				Ty::named(&self.context.offset_input.type_name),
 			))
 			.oneof()
 	}
 	/// used to parse query input to pagination information structure
-	pub fn parse_object<'a>(&self, value: Option<ValueAccessors<'a>>) -> PaginationInput {
+	pub fn parse_object<'a>(&self, value: Option<ValueAccessor<'a>>) -> PaginationInput {
 		if value.is_none() {
 			return PaginationInput {
 				cursor: None,
@@ -91,7 +85,7 @@ impl PaginationInputBuilder {
 					cursor: None,
 					offset: None,
 					page: None,
-				}
+				};
 			}
 		};
 

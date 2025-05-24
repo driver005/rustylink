@@ -1,13 +1,11 @@
-use super::{
-	add_type, get_type, BoxResolverFn, Error, Field, FieldFuture, ObjectAccessor, ResolverContext,
-	Result, Scalar, SchemaError, Type, Value, TYPES,
+use super::{ContextType, Error, Field, Result, Scalar, TYPES, Type, add_type, get_type};
+use crate::{
+	ApiType, BoxResolverFn, Data, FieldFuture, ObjectAccessor, ProtoRegistry, ResolverContext,
+	SchemaError, Value,
 };
-use crate::{ApiType, Data, Registry};
-use async_graphql::Name;
-use binary::proto::Decoder;
+use binary::proto::{Decoder, Encoder};
 use bytes::Bytes;
-use indexmap::IndexMap;
-use std::{any::Any, borrow::Cow, fmt::Debug, sync::Arc};
+use std::{any::Any, borrow::Cow, collections::BTreeMap, fmt::Debug, sync::Arc};
 
 /// Dynamic schema builder
 pub struct ProtoBuilder {
@@ -45,7 +43,7 @@ impl ProtoBuilder {
 	}
 
 	pub fn finish(self) -> Result<Proto, SchemaError> {
-		let mut registry = Registry {
+		let mut registry = ProtoRegistry {
 			types: Default::default(),
 			proto_type: self.proto_type,
 			ignore_name_conflicts: Default::default(),
@@ -65,7 +63,7 @@ impl ProtoBuilder {
 
 		let inner = ProtoInner {
 			registry,
-			data: self.data,
+			data: Arc::new(self.data),
 		};
 		// inner.check()?;
 		Ok(Proto(Arc::new(inner)))
@@ -85,8 +83,8 @@ impl Debug for Proto {
 }
 
 pub struct ProtoInner {
-	pub(crate) registry: Registry,
-	pub(crate) data: Data,
+	pub(crate) registry: ProtoRegistry,
+	pub(crate) data: Arc<Data>,
 }
 
 impl Proto {
@@ -101,17 +99,17 @@ impl Proto {
 
 	/// Returns SDL(Proto Definition Language) of this schema.
 	pub fn sdl(&self) -> String {
-		self.registry().build_proto()
+		self.registry().build()
 	}
 
 	pub(crate) fn decode(
 		&self,
 		buf: &mut Vec<u8>,
 		parent: &Field,
-	) -> Result<IndexMap<Name, Value>> {
+	) -> Result<BTreeMap<Value, Value>> {
 		let mut decoder = Decoder::default();
 		let mut dst = vec![];
-		let mut arguments = IndexMap::new();
+		let mut arguments = BTreeMap::new();
 		decoder.decode(buf, &mut dst)?;
 
 		for (tag, _, byt) in dst.drain(..) {
@@ -141,7 +139,7 @@ impl Proto {
 	) -> Result<Bytes> {
 		let mut ctx = crate::ContextBase::new(ApiType::Proto);
 
-		ctx.execute_data = Some(&self.0.data);
+		ctx.execute_data = Some(self.0.data.clone());
 
 		async move {
 			match get_type(&self.registry().proto_type) {
@@ -150,7 +148,15 @@ impl Proto {
 						Some(field) => {
 							let arguments = self.to_object_accessor(&mut buf, field)?;
 
-							Ok(Bytes::from(field.execute(&ctx, &arguments).await?))
+							let res = field.collect(&ctx, &arguments, None).await?;
+
+							println!("res: {:#?}", res.0);
+							println!("val: {:#?}", res.1);
+
+							let encoder = Encoder::default();
+							let mut output = Vec::new();
+							field.encode(&encoder, &mut output, res.1)?;
+							Ok(Bytes::from(output))
 						}
 						None => Err(Error::new(format!("Method not found: {}", name))),
 					},
@@ -202,7 +208,7 @@ impl Proto {
 	// }
 
 	/// Returns the registry of this schema.
-	pub fn registry(&self) -> &Registry {
+	pub fn registry(&self) -> &ProtoRegistry {
 		&self.0.registry
 	}
 }

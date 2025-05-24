@@ -1,4 +1,4 @@
-use crate::{BuilderContext, EntityObjectBuilder, FilterTypesMapHelper};
+use crate::{BuilderContext, EntityObjectBuilder, FilterTypeTrait, FilterTypesMapHelper};
 use dynamic::prelude::*;
 use sea_orm::{EntityTrait, Iterable};
 use std::ops::Add;
@@ -32,10 +32,12 @@ impl FilterInputBuilder {
 	}
 
 	/// used to produce the filter input message of a SeaORM entity
-	pub fn to_object<T>(&self) -> Object
+	pub fn to_object<T, Ty, F>(&self) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
+		F: FilterTypeTrait,
 	{
 		let filter_types_map_helper = FilterTypesMapHelper {
 			context: self.context,
@@ -50,7 +52,7 @@ impl FilterInputBuilder {
 		let object = T::Column::iter().enumerate().fold(
 			Object::new(&filter_name, IO::Input),
 			|object, (index, column)| match filter_types_map_helper
-				.get_column_filter_input_value::<T>(&column, index.add(1) as u32)
+				.get_column_filter_input_value::<T, Ty, F>(&column, index.add(1) as u32)
 			{
 				Some(field) => object.field(field),
 				None => object,
@@ -60,21 +62,7 @@ impl FilterInputBuilder {
 		let length = object.field_len();
 
 		object
-			.field(Field::input(
-				"and",
-				length.add(2) as u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn_list(&filter_name),
-					ProtoTypeRef::named_nn_list(&filter_name),
-				),
-			))
-			.field(Field::input(
-				"or",
-				length.add(3) as u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn_list(&filter_name),
-					ProtoTypeRef::named_nn_list(&filter_name),
-				),
-			))
+			.field(Field::input("and", length.add(2) as u32, Ty::named_nn_list(&filter_name)))
+			.field(Field::input("or", length.add(3) as u32, Ty::named_nn_list(&filter_name)))
 	}
 }

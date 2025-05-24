@@ -1,0 +1,3007 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+input BooleanFilterInput {
+  eq: Boolean
+  ne: Boolean
+  gt: Boolean
+  gte: Boolean
+  lt: Boolean
+  lte: Boolean
+  is_in: [Boolean!]
+  is_not_in: [Boolean!]
+  is_null: Boolean
+  is_not_null: Boolean
+}
+
+type BuissnessRule {
+  id: String!
+  ruleFileLocation: String!
+  executionStrategy: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type BuissnessRuleBasic {
+  id: String!
+  ruleFileLocation: String!
+  executionStrategy: String!
+  taskModelId: String
+}
+
+type BuissnessRuleConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [BuissnessRule!]!
+  edges: [BuissnessRuleEdge!]!
+}
+
+type BuissnessRuleEdge {
+  cursor: String!
+  node: BuissnessRule!
+}
+
+input BuissnessRuleFilterInput {
+  id: TextFilterInput
+  ruleFileLocation: StringFilterInput
+  executionStrategy: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [BuissnessRuleFilterInput!]
+  or: [BuissnessRuleFilterInput!]
+}
+
+input BuissnessRuleInsertInput {
+  id: String!
+  ruleFileLocation: String!
+  executionStrategy: String!
+  taskModelId: String
+}
+
+input BuissnessRuleOrderInput {
+  id: OrderByEnum
+  ruleFileLocation: OrderByEnum
+  executionStrategy: OrderByEnum
+  inputColumn: OrderByEnum
+  outputColumn: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input BuissnessRuleUpdateInput {
+  id: String
+  ruleFileLocation: String
+  executionStrategy: String
+  taskModelId: String
+}
+
+input CursorInput {
+  cursor: String
+  limit: Int!
+}
+
+type DoWhile {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  loopCondition: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type DoWhileBasic {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  loopCondition: String!
+  taskModelId: String
+}
+
+type DoWhileConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [DoWhile!]!
+  edges: [DoWhileEdge!]!
+}
+
+type DoWhileEdge {
+  cursor: String!
+  node: DoWhile!
+}
+
+input DoWhileFilterInput {
+  id: TextFilterInput
+  evaluatorType: EvaluatorTypeEnumFilterInput
+  loopCondition: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [DoWhileFilterInput!]
+  or: [DoWhileFilterInput!]
+}
+
+input DoWhileInsertInput {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  loopCondition: String!
+  taskModelId: String
+}
+
+input DoWhileOrderInput {
+  id: OrderByEnum
+  evaluatorType: OrderByEnum
+  loopCondition: OrderByEnum
+  loopOver: OrderByEnum
+  taskIds: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input DoWhileUpdateInput {
+  id: String
+  evaluatorType: EvaluatorTypeEnum
+  loopCondition: String
+  taskModelId: String
+}
+
+type Dynamic {
+  id: String!
+  dynamicTaskName: String!
+  subWorkflowName: String
+  subWorkflowVersion: Int
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type DynamicBasic {
+  id: String!
+  dynamicTaskName: String!
+  subWorkflowName: String
+  subWorkflowVersion: Int
+  taskModelId: String
+}
+
+type DynamicConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Dynamic!]!
+  edges: [DynamicEdge!]!
+}
+
+type DynamicEdge {
+  cursor: String!
+  node: Dynamic!
+}
+
+input DynamicFilterInput {
+  id: TextFilterInput
+  dynamicTaskName: StringFilterInput
+  subWorkflowName: StringFilterInput
+  subWorkflowVersion: IntegerFilterInput
+  taskModelId: TextFilterInput
+  and: [DynamicFilterInput!]
+  or: [DynamicFilterInput!]
+}
+
+type DynamicFork {
+  id: String!
+  forkType: ForkTypeEnum!
+  taskModelId: String
+  forkTaskName: String
+  forkTaskWorkflow: String
+  forkTaskWorkflowVersion: String
+  taskModel: TaskModel
+}
+
+type DynamicForkBasic {
+  id: String!
+  forkType: ForkTypeEnum!
+  taskModelId: String
+  forkTaskName: String
+  forkTaskWorkflow: String
+  forkTaskWorkflowVersion: String
+}
+
+type DynamicForkConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [DynamicFork!]!
+  edges: [DynamicForkEdge!]!
+}
+
+type DynamicForkEdge {
+  cursor: String!
+  node: DynamicFork!
+}
+
+input DynamicForkFilterInput {
+  id: TextFilterInput
+  forkType: ForkTypeEnumFilterInput
+  taskModelId: TextFilterInput
+  forkTaskName: StringFilterInput
+  forkTaskWorkflow: StringFilterInput
+  forkTaskWorkflowVersion: StringFilterInput
+  and: [DynamicForkFilterInput!]
+  or: [DynamicForkFilterInput!]
+}
+
+input DynamicForkInsertInput {
+  id: String!
+  forkType: ForkTypeEnum!
+  taskModelId: String
+  forkTaskName: String
+  forkTaskWorkflow: String
+  forkTaskWorkflowVersion: String
+}
+
+input DynamicForkOrderInput {
+  id: OrderByEnum
+  forkType: OrderByEnum
+  taskModelId: OrderByEnum
+  taskIds: OrderByEnum
+  dynamicForkTasks: OrderByEnum
+  dynamicForkTasksInput: OrderByEnum
+  forkTaskName: OrderByEnum
+  forkTaskInputs: OrderByEnum
+  forkTaskWorkflow: OrderByEnum
+  forkTaskWorkflowVersion: OrderByEnum
+}
+
+input DynamicForkUpdateInput {
+  id: String
+  forkType: ForkTypeEnum
+  taskModelId: String
+  forkTaskName: String
+  forkTaskWorkflow: String
+  forkTaskWorkflowVersion: String
+}
+
+input DynamicInsertInput {
+  id: String!
+  dynamicTaskName: String!
+  subWorkflowName: String
+  subWorkflowVersion: Int
+  taskModelId: String
+}
+
+input DynamicOrderInput {
+  id: OrderByEnum
+  dynamicTaskName: OrderByEnum
+  subWorkflowName: OrderByEnum
+  subWorkflowVersion: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input DynamicUpdateInput {
+  id: String
+  dynamicTaskName: String
+  subWorkflowName: String
+  subWorkflowVersion: Int
+  taskModelId: String
+}
+
+enum EvaluatorTypeEnum {
+  GRAALJS
+  VALUEPARAM
+}
+
+input EvaluatorTypeEnumFilterInput {
+  eq: EvaluatorTypeEnum
+  ne: EvaluatorTypeEnum
+  gt: EvaluatorTypeEnum
+  gte: EvaluatorTypeEnum
+  lt: EvaluatorTypeEnum
+  lte: EvaluatorTypeEnum
+  is_in: [EvaluatorTypeEnum!]
+  is_not_in: [EvaluatorTypeEnum!]
+  is_null: EvaluatorTypeEnum
+  is_not_null: EvaluatorTypeEnum
+}
+
+type Event {
+  id: String!
+  sink: String!
+  asyncComplete: Boolean
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type EventBasic {
+  id: String!
+  sink: String!
+  asyncComplete: Boolean
+  taskModelId: String
+}
+
+type EventConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Event!]!
+  edges: [EventEdge!]!
+}
+
+type EventEdge {
+  cursor: String!
+  node: Event!
+}
+
+input EventFilterInput {
+  id: TextFilterInput
+  sink: StringFilterInput
+  asyncComplete: BooleanFilterInput
+  taskModelId: TextFilterInput
+  and: [EventFilterInput!]
+  or: [EventFilterInput!]
+}
+
+input EventInsertInput {
+  id: String!
+  sink: String!
+  asyncComplete: Boolean
+  taskModelId: String
+}
+
+input EventOrderInput {
+  id: OrderByEnum
+  sink: OrderByEnum
+  asyncComplete: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input EventUpdateInput {
+  id: String
+  sink: String
+  asyncComplete: Boolean
+  taskModelId: String
+}
+
+type Fork {
+  id: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type ForkBasic {
+  id: String!
+  taskModelId: String
+}
+
+type ForkConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Fork!]!
+  edges: [ForkEdge!]!
+}
+
+type ForkEdge {
+  cursor: String!
+  node: Fork!
+}
+
+input ForkFilterInput {
+  id: TextFilterInput
+  taskModelId: TextFilterInput
+  and: [ForkFilterInput!]
+  or: [ForkFilterInput!]
+}
+
+input ForkInsertInput {
+  id: String!
+  taskModelId: String
+}
+
+input ForkOrderInput {
+  id: OrderByEnum
+  forkTasks: OrderByEnum
+  taskIds: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+enum ForkTypeEnum {
+  DIFFERENTTASK
+  SAMETASK
+  SAMETASKSUBWORKFLOW
+}
+
+input ForkTypeEnumFilterInput {
+  eq: ForkTypeEnum
+  ne: ForkTypeEnum
+  gt: ForkTypeEnum
+  gte: ForkTypeEnum
+  lt: ForkTypeEnum
+  lte: ForkTypeEnum
+  is_in: [ForkTypeEnum!]
+  is_not_in: [ForkTypeEnum!]
+  is_null: ForkTypeEnum
+  is_not_null: ForkTypeEnum
+}
+
+input ForkUpdateInput {
+  id: String
+  taskModelId: String
+}
+
+type GetSignedJwt {
+  id: String!
+  subject: String!
+  issuer: String!
+  privateKey: String!
+  privateKeyId: String!
+  audience: String!
+  ttlInSeconds: Int!
+  scopes: String!
+  algorithm: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type GetSignedJwtBasic {
+  id: String!
+  subject: String!
+  issuer: String!
+  privateKey: String!
+  privateKeyId: String!
+  audience: String!
+  ttlInSeconds: Int!
+  scopes: String!
+  algorithm: String!
+  taskModelId: String
+}
+
+type GetSignedJwtConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [GetSignedJwt!]!
+  edges: [GetSignedJwtEdge!]!
+}
+
+type GetSignedJwtEdge {
+  cursor: String!
+  node: GetSignedJwt!
+}
+
+input GetSignedJwtFilterInput {
+  id: TextFilterInput
+  subject: StringFilterInput
+  issuer: StringFilterInput
+  privateKey: StringFilterInput
+  privateKeyId: StringFilterInput
+  audience: StringFilterInput
+  ttlInSeconds: IntegerFilterInput
+  scopes: StringFilterInput
+  algorithm: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [GetSignedJwtFilterInput!]
+  or: [GetSignedJwtFilterInput!]
+}
+
+input GetSignedJwtInsertInput {
+  id: String!
+  subject: String!
+  issuer: String!
+  privateKey: String!
+  privateKeyId: String!
+  audience: String!
+  ttlInSeconds: Int!
+  scopes: String!
+  algorithm: String!
+  taskModelId: String
+}
+
+input GetSignedJwtOrderInput {
+  id: OrderByEnum
+  subject: OrderByEnum
+  issuer: OrderByEnum
+  privateKey: OrderByEnum
+  privateKeyId: OrderByEnum
+  audience: OrderByEnum
+  ttlInSeconds: OrderByEnum
+  scopes: OrderByEnum
+  algorithm: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input GetSignedJwtUpdateInput {
+  id: String
+  subject: String
+  issuer: String
+  privateKey: String
+  privateKeyId: String
+  audience: String
+  ttlInSeconds: Int
+  scopes: String
+  algorithm: String
+  taskModelId: String
+}
+
+type GetWorkflow {
+  id: String!
+  includeTasks: Boolean!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type GetWorkflowBasic {
+  id: String!
+  includeTasks: Boolean!
+  taskModelId: String
+}
+
+type GetWorkflowConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [GetWorkflow!]!
+  edges: [GetWorkflowEdge!]!
+}
+
+type GetWorkflowEdge {
+  cursor: String!
+  node: GetWorkflow!
+}
+
+input GetWorkflowFilterInput {
+  id: TextFilterInput
+  includeTasks: BooleanFilterInput
+  taskModelId: TextFilterInput
+  and: [GetWorkflowFilterInput!]
+  or: [GetWorkflowFilterInput!]
+}
+
+input GetWorkflowInsertInput {
+  id: String!
+  includeTasks: Boolean!
+  taskModelId: String
+}
+
+input GetWorkflowOrderInput {
+  id: OrderByEnum
+  includeTasks: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input GetWorkflowUpdateInput {
+  id: String
+  includeTasks: Boolean
+  taskModelId: String
+}
+
+type Http {
+  id: String!
+  uri: String!
+  method: String!
+  accept: String
+  contentType: String
+  terminationCondition: String
+  pollingInterval: Int
+  pollingStrategy: String
+  encode: Boolean
+  asyncComplete: Boolean
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type HttpBasic {
+  id: String!
+  uri: String!
+  method: String!
+  accept: String
+  contentType: String
+  terminationCondition: String
+  pollingInterval: Int
+  pollingStrategy: String
+  encode: Boolean
+  asyncComplete: Boolean
+  taskModelId: String
+}
+
+type HttpConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Http!]!
+  edges: [HttpEdge!]!
+}
+
+type HttpEdge {
+  cursor: String!
+  node: Http!
+}
+
+input HttpFilterInput {
+  id: TextFilterInput
+  uri: StringFilterInput
+  method: StringFilterInput
+  accept: StringFilterInput
+  contentType: StringFilterInput
+  terminationCondition: StringFilterInput
+  pollingInterval: IntegerFilterInput
+  pollingStrategy: StringFilterInput
+  encode: BooleanFilterInput
+  asyncComplete: BooleanFilterInput
+  taskModelId: TextFilterInput
+  and: [HttpFilterInput!]
+  or: [HttpFilterInput!]
+}
+
+input HttpInsertInput {
+  id: String!
+  uri: String!
+  method: String!
+  accept: String
+  contentType: String
+  terminationCondition: String
+  pollingInterval: Int
+  pollingStrategy: String
+  encode: Boolean
+  asyncComplete: Boolean
+  taskModelId: String
+}
+
+input HttpOrderInput {
+  id: OrderByEnum
+  uri: OrderByEnum
+  method: OrderByEnum
+  accept: OrderByEnum
+  contentType: OrderByEnum
+  terminationCondition: OrderByEnum
+  pollingInterval: OrderByEnum
+  pollingStrategy: OrderByEnum
+  headers: OrderByEnum
+  body: OrderByEnum
+  encode: OrderByEnum
+  asyncComplete: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input HttpUpdateInput {
+  id: String
+  uri: String
+  method: String
+  accept: String
+  contentType: String
+  terminationCondition: String
+  pollingInterval: Int
+  pollingStrategy: String
+  encode: Boolean
+  asyncComplete: Boolean
+  taskModelId: String
+}
+
+type Human {
+  id: String!
+  taskType: TaskTypeEnum!
+  status: TaskStatusEnum!
+  startTime: String!
+  assignmentCompletionStrategy: String!
+  displayName: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type HumanBasic {
+  id: String!
+  taskType: TaskTypeEnum!
+  status: TaskStatusEnum!
+  startTime: String!
+  assignmentCompletionStrategy: String!
+  displayName: String!
+  taskModelId: String
+}
+
+type HumanConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Human!]!
+  edges: [HumanEdge!]!
+}
+
+type HumanEdge {
+  cursor: String!
+  node: Human!
+}
+
+input HumanFilterInput {
+  id: TextFilterInput
+  taskType: TaskTypeEnumFilterInput
+  status: TaskStatusEnumFilterInput
+  startTime: TextFilterInput
+  assignmentCompletionStrategy: StringFilterInput
+  displayName: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [HumanFilterInput!]
+  or: [HumanFilterInput!]
+}
+
+input HumanInsertInput {
+  id: String!
+  taskType: TaskTypeEnum!
+  status: TaskStatusEnum!
+  startTime: String!
+  assignmentCompletionStrategy: String!
+  displayName: String!
+  taskModelId: String
+}
+
+input HumanOrderInput {
+  id: OrderByEnum
+  taskType: OrderByEnum
+  status: OrderByEnum
+  startTime: OrderByEnum
+  assignmentCompletionStrategy: OrderByEnum
+  displayName: OrderByEnum
+  userFormTemplate: OrderByEnum
+  assignments: OrderByEnum
+  taskTriggers: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input HumanUpdateInput {
+  id: String
+  taskType: TaskTypeEnum
+  status: TaskStatusEnum
+  startTime: String
+  assignmentCompletionStrategy: String
+  displayName: String
+  taskModelId: String
+}
+
+enum IdempotencyStrategyEnum {
+  FAIL
+  RUNNINGEXISTING
+}
+
+input IdempotencyStrategyEnumFilterInput {
+  eq: IdempotencyStrategyEnum
+  ne: IdempotencyStrategyEnum
+  gt: IdempotencyStrategyEnum
+  gte: IdempotencyStrategyEnum
+  lt: IdempotencyStrategyEnum
+  lte: IdempotencyStrategyEnum
+  is_in: [IdempotencyStrategyEnum!]
+  is_not_in: [IdempotencyStrategyEnum!]
+  is_null: IdempotencyStrategyEnum
+  is_not_null: IdempotencyStrategyEnum
+}
+
+type Inline {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  expression: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type InlineBasic {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  expression: String!
+  taskModelId: String
+}
+
+type InlineConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Inline!]!
+  edges: [InlineEdge!]!
+}
+
+type InlineEdge {
+  cursor: String!
+  node: Inline!
+}
+
+input InlineFilterInput {
+  id: TextFilterInput
+  evaluatorType: EvaluatorTypeEnumFilterInput
+  expression: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [InlineFilterInput!]
+  or: [InlineFilterInput!]
+}
+
+input InlineInsertInput {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  expression: String!
+  taskModelId: String
+}
+
+input InlineOrderInput {
+  id: OrderByEnum
+  evaluatorType: OrderByEnum
+  expression: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input InlineUpdateInput {
+  id: String
+  evaluatorType: EvaluatorTypeEnum
+  expression: String
+  taskModelId: String
+}
+
+input IntegerFilterInput {
+  eq: Int
+  ne: Int
+  gt: Int
+  gte: Int
+  lt: Int
+  lte: Int
+  is_in: [Int!]
+  is_not_in: [Int!]
+  is_null: Int
+  is_not_null: Int
+  between: [Int!]
+  not_between: [Int!]
+}
+
+type Join {
+  id: String!
+  expression: String
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type JoinBasic {
+  id: String!
+  expression: String
+  taskModelId: String
+}
+
+type JoinConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Join!]!
+  edges: [JoinEdge!]!
+}
+
+type JoinEdge {
+  cursor: String!
+  node: Join!
+}
+
+input JoinFilterInput {
+  id: TextFilterInput
+  expression: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [JoinFilterInput!]
+  or: [JoinFilterInput!]
+}
+
+input JoinInsertInput {
+  id: String!
+  expression: String
+  taskModelId: String
+}
+
+input JoinOrderInput {
+  id: OrderByEnum
+  joinOn: OrderByEnum
+  expression: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input JoinUpdateInput {
+  id: String
+  expression: String
+  taskModelId: String
+}
+
+type JsonTransform {
+  id: String!
+  queryExpression: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type JsonTransformBasic {
+  id: String!
+  queryExpression: String!
+  taskModelId: String
+}
+
+type JsonTransformConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [JsonTransform!]!
+  edges: [JsonTransformEdge!]!
+}
+
+type JsonTransformEdge {
+  cursor: String!
+  node: JsonTransform!
+}
+
+input JsonTransformFilterInput {
+  id: TextFilterInput
+  queryExpression: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [JsonTransformFilterInput!]
+  or: [JsonTransformFilterInput!]
+}
+
+input JsonTransformInsertInput {
+  id: String!
+  queryExpression: String!
+  taskModelId: String
+}
+
+input JsonTransformOrderInput {
+  id: OrderByEnum
+  queryExpression: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input JsonTransformUpdateInput {
+  id: String
+  queryExpression: String
+  taskModelId: String
+}
+
+type Mutation {
+  _ping: String
+  buissnessRuleCreateOne(data: BuissnessRuleInsertInput!): BuissnessRuleBasic!
+  buissnessRuleCreateBatch(data: [BuissnessRuleInsertInput!]!): [BuissnessRuleBasic!]!
+  buissnessRuleUpdate(data: BuissnessRuleUpdateInput!, filter: BuissnessRuleFilterInput): [BuissnessRuleBasic!]!
+  buissnessRuleDelete(filter: BuissnessRuleFilterInput): Int!
+  doWhileCreateOne(data: DoWhileInsertInput!): DoWhileBasic!
+  doWhileCreateBatch(data: [DoWhileInsertInput!]!): [DoWhileBasic!]!
+  doWhileUpdate(data: DoWhileUpdateInput!, filter: DoWhileFilterInput): [DoWhileBasic!]!
+  doWhileDelete(filter: DoWhileFilterInput): Int!
+  dynamicCreateOne(data: DynamicInsertInput!): DynamicBasic!
+  dynamicCreateBatch(data: [DynamicInsertInput!]!): [DynamicBasic!]!
+  dynamicUpdate(data: DynamicUpdateInput!, filter: DynamicFilterInput): [DynamicBasic!]!
+  dynamicDelete(filter: DynamicFilterInput): Int!
+  dynamicForkCreateOne(data: DynamicForkInsertInput!): DynamicForkBasic!
+  dynamicForkCreateBatch(data: [DynamicForkInsertInput!]!): [DynamicForkBasic!]!
+  dynamicForkUpdate(data: DynamicForkUpdateInput!, filter: DynamicForkFilterInput): [DynamicForkBasic!]!
+  dynamicForkDelete(filter: DynamicForkFilterInput): Int!
+  eventCreateOne(data: EventInsertInput!): EventBasic!
+  eventCreateBatch(data: [EventInsertInput!]!): [EventBasic!]!
+  eventUpdate(data: EventUpdateInput!, filter: EventFilterInput): [EventBasic!]!
+  eventDelete(filter: EventFilterInput): Int!
+  forkCreateOne(data: ForkInsertInput!): ForkBasic!
+  forkCreateBatch(data: [ForkInsertInput!]!): [ForkBasic!]!
+  forkUpdate(data: ForkUpdateInput!, filter: ForkFilterInput): [ForkBasic!]!
+  forkDelete(filter: ForkFilterInput): Int!
+  getSignedJwtCreateOne(data: GetSignedJwtInsertInput!): GetSignedJwtBasic!
+  getSignedJwtCreateBatch(data: [GetSignedJwtInsertInput!]!): [GetSignedJwtBasic!]!
+  getSignedJwtUpdate(data: GetSignedJwtUpdateInput!, filter: GetSignedJwtFilterInput): [GetSignedJwtBasic!]!
+  getSignedJwtDelete(filter: GetSignedJwtFilterInput): Int!
+  getWorkflowCreateOne(data: GetWorkflowInsertInput!): GetWorkflowBasic!
+  getWorkflowCreateBatch(data: [GetWorkflowInsertInput!]!): [GetWorkflowBasic!]!
+  getWorkflowUpdate(data: GetWorkflowUpdateInput!, filter: GetWorkflowFilterInput): [GetWorkflowBasic!]!
+  getWorkflowDelete(filter: GetWorkflowFilterInput): Int!
+  httpCreateOne(data: HttpInsertInput!): HttpBasic!
+  httpCreateBatch(data: [HttpInsertInput!]!): [HttpBasic!]!
+  httpUpdate(data: HttpUpdateInput!, filter: HttpFilterInput): [HttpBasic!]!
+  httpDelete(filter: HttpFilterInput): Int!
+  humanCreateOne(data: HumanInsertInput!): HumanBasic!
+  humanCreateBatch(data: [HumanInsertInput!]!): [HumanBasic!]!
+  humanUpdate(data: HumanUpdateInput!, filter: HumanFilterInput): [HumanBasic!]!
+  humanDelete(filter: HumanFilterInput): Int!
+  inlineCreateOne(data: InlineInsertInput!): InlineBasic!
+  inlineCreateBatch(data: [InlineInsertInput!]!): [InlineBasic!]!
+  inlineUpdate(data: InlineUpdateInput!, filter: InlineFilterInput): [InlineBasic!]!
+  inlineDelete(filter: InlineFilterInput): Int!
+  joinCreateOne(data: JoinInsertInput!): JoinBasic!
+  joinCreateBatch(data: [JoinInsertInput!]!): [JoinBasic!]!
+  joinUpdate(data: JoinUpdateInput!, filter: JoinFilterInput): [JoinBasic!]!
+  joinDelete(filter: JoinFilterInput): Int!
+  jsonTransformCreateOne(data: JsonTransformInsertInput!): JsonTransformBasic!
+  jsonTransformCreateBatch(data: [JsonTransformInsertInput!]!): [JsonTransformBasic!]!
+  jsonTransformUpdate(data: JsonTransformUpdateInput!, filter: JsonTransformFilterInput): [JsonTransformBasic!]!
+  jsonTransformDelete(filter: JsonTransformFilterInput): Int!
+  pollDataCreateOne(data: PollDataInsertInput!): PollDataBasic!
+  pollDataCreateBatch(data: [PollDataInsertInput!]!): [PollDataBasic!]!
+  pollDataUpdate(data: PollDataUpdateInput!, filter: PollDataFilterInput): [PollDataBasic!]!
+  pollDataDelete(filter: PollDataFilterInput): Int!
+  setVariableCreateOne(data: SetVariableInsertInput!): SetVariableBasic!
+  setVariableCreateBatch(data: [SetVariableInsertInput!]!): [SetVariableBasic!]!
+  setVariableUpdate(data: SetVariableUpdateInput!, filter: SetVariableFilterInput): [SetVariableBasic!]!
+  setVariableDelete(filter: SetVariableFilterInput): Int!
+  simpleCreateOne(data: SimpleInsertInput!): SimpleBasic!
+  simpleCreateBatch(data: [SimpleInsertInput!]!): [SimpleBasic!]!
+  simpleUpdate(data: SimpleUpdateInput!, filter: SimpleFilterInput): [SimpleBasic!]!
+  simpleDelete(filter: SimpleFilterInput): Int!
+  sqlCreateOne(data: SqlInsertInput!): SqlBasic!
+  sqlCreateBatch(data: [SqlInsertInput!]!): [SqlBasic!]!
+  sqlUpdate(data: SqlUpdateInput!, filter: SqlFilterInput): [SqlBasic!]!
+  sqlDelete(filter: SqlFilterInput): Int!
+  startWorkflowCreateOne(data: StartWorkflowInsertInput!): StartWorkflowBasic!
+  startWorkflowCreateBatch(data: [StartWorkflowInsertInput!]!): [StartWorkflowBasic!]!
+  startWorkflowUpdate(data: StartWorkflowUpdateInput!, filter: StartWorkflowFilterInput): [StartWorkflowBasic!]!
+  startWorkflowDelete(filter: StartWorkflowFilterInput): Int!
+  subWorkflowCreateOne(data: SubWorkflowInsertInput!): SubWorkflowBasic!
+  subWorkflowCreateBatch(data: [SubWorkflowInsertInput!]!): [SubWorkflowBasic!]!
+  subWorkflowUpdate(data: SubWorkflowUpdateInput!, filter: SubWorkflowFilterInput): [SubWorkflowBasic!]!
+  subWorkflowDelete(filter: SubWorkflowFilterInput): Int!
+  switchCreateOne(data: SwitchInsertInput!): SwitchBasic!
+  switchCreateBatch(data: [SwitchInsertInput!]!): [SwitchBasic!]!
+  switchUpdate(data: SwitchUpdateInput!, filter: SwitchFilterInput): [SwitchBasic!]!
+  switchDelete(filter: SwitchFilterInput): Int!
+  taskConfigCreateOne(data: TaskConfigInsertInput!): TaskConfigBasic!
+  taskConfigCreateBatch(data: [TaskConfigInsertInput!]!): [TaskConfigBasic!]!
+  taskConfigUpdate(data: TaskConfigUpdateInput!, filter: TaskConfigFilterInput): [TaskConfigBasic!]!
+  taskConfigDelete(filter: TaskConfigFilterInput): Int!
+  taskDefinitionCreateOne(data: TaskDefinitionInsertInput!): TaskDefinitionBasic!
+  taskDefinitionCreateBatch(data: [TaskDefinitionInsertInput!]!): [TaskDefinitionBasic!]!
+  taskDefinitionUpdate(data: TaskDefinitionUpdateInput!, filter: TaskDefinitionFilterInput): [TaskDefinitionBasic!]!
+  taskDefinitionDelete(filter: TaskDefinitionFilterInput): Int!
+  taskExecutionLogCreateOne(data: TaskExecutionLogInsertInput!): TaskExecutionLogBasic!
+  taskExecutionLogCreateBatch(data: [TaskExecutionLogInsertInput!]!): [TaskExecutionLogBasic!]!
+  taskExecutionLogUpdate(
+    data: TaskExecutionLogUpdateInput!
+    filter: TaskExecutionLogFilterInput
+  ): [TaskExecutionLogBasic!]!
+  taskExecutionLogDelete(filter: TaskExecutionLogFilterInput): Int!
+  taskModelCreateOne(data: TaskModelInsertInput!): TaskModelBasic!
+  taskModelCreateBatch(data: [TaskModelInsertInput!]!): [TaskModelBasic!]!
+  taskModelUpdate(data: TaskModelUpdateInput!, filter: TaskModelFilterInput): [TaskModelBasic!]!
+  taskModelDelete(filter: TaskModelFilterInput): Int!
+  terminateTaskCreateOne(data: TerminateTaskInsertInput!): TerminateTaskBasic!
+  terminateTaskCreateBatch(data: [TerminateTaskInsertInput!]!): [TerminateTaskBasic!]!
+  terminateTaskUpdate(data: TerminateTaskUpdateInput!, filter: TerminateTaskFilterInput): [TerminateTaskBasic!]!
+  terminateTaskDelete(filter: TerminateTaskFilterInput): Int!
+  terminateWorkflowCreateOne(data: TerminateWorkflowInsertInput!): TerminateWorkflowBasic!
+  terminateWorkflowCreateBatch(data: [TerminateWorkflowInsertInput!]!): [TerminateWorkflowBasic!]!
+  terminateWorkflowUpdate(
+    data: TerminateWorkflowUpdateInput!
+    filter: TerminateWorkflowFilterInput
+  ): [TerminateWorkflowBasic!]!
+  terminateWorkflowDelete(filter: TerminateWorkflowFilterInput): Int!
+  updateSecretCreateOne(data: UpdateSecretInsertInput!): UpdateSecretBasic!
+  updateSecretCreateBatch(data: [UpdateSecretInsertInput!]!): [UpdateSecretBasic!]!
+  updateSecretUpdate(data: UpdateSecretUpdateInput!, filter: UpdateSecretFilterInput): [UpdateSecretBasic!]!
+  updateSecretDelete(filter: UpdateSecretFilterInput): Int!
+  updateTaskCreateOne(data: UpdateTaskInsertInput!): UpdateTaskBasic!
+  updateTaskCreateBatch(data: [UpdateTaskInsertInput!]!): [UpdateTaskBasic!]!
+  updateTaskUpdate(data: UpdateTaskUpdateInput!, filter: UpdateTaskFilterInput): [UpdateTaskBasic!]!
+  updateTaskDelete(filter: UpdateTaskFilterInput): Int!
+  waitCreateOne(data: WaitInsertInput!): WaitBasic!
+  waitCreateBatch(data: [WaitInsertInput!]!): [WaitBasic!]!
+  waitUpdate(data: WaitUpdateInput!, filter: WaitFilterInput): [WaitBasic!]!
+  waitDelete(filter: WaitFilterInput): Int!
+  waitForWebhookCreateOne(data: WaitForWebhookInsertInput!): WaitForWebhookBasic!
+  waitForWebhookCreateBatch(data: [WaitForWebhookInsertInput!]!): [WaitForWebhookBasic!]!
+  waitForWebhookUpdate(data: WaitForWebhookUpdateInput!, filter: WaitForWebhookFilterInput): [WaitForWebhookBasic!]!
+  waitForWebhookDelete(filter: WaitForWebhookFilterInput): Int!
+}
+
+input OffsetInput {
+  limit: Int!
+  offset: Int!
+}
+
+enum OperationTypeEnum {
+  DELETE
+  INSERT
+  SELECT
+  UPDATE
+}
+
+input OperationTypeEnumFilterInput {
+  eq: OperationTypeEnum
+  ne: OperationTypeEnum
+  gt: OperationTypeEnum
+  gte: OperationTypeEnum
+  lt: OperationTypeEnum
+  lte: OperationTypeEnum
+  is_in: [OperationTypeEnum!]
+  is_not_in: [OperationTypeEnum!]
+  is_null: OperationTypeEnum
+  is_not_null: OperationTypeEnum
+}
+
+enum OrderByEnum {
+  ASC
+  DESC
+}
+
+type PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+input PageInput {
+  limit: Int!
+  page: Int!
+}
+
+type PaginationInfo {
+  pages: Int!
+  current: Int!
+  offset: Int!
+  total: Int!
+}
+
+input PaginationInput {
+  cursor: CursorInput
+  page: PageInput
+  offset: OffsetInput
+}
+
+type PollData {
+  id: String!
+  createdOn: String!
+  modifiedOn: String!
+  queueName: String!
+  domain: String!
+  jsonData: String!
+}
+
+type PollDataBasic {
+  id: String!
+  createdOn: String!
+  modifiedOn: String!
+  queueName: String!
+  domain: String!
+  jsonData: String!
+}
+
+type PollDataConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [PollData!]!
+  edges: [PollDataEdge!]!
+}
+
+type PollDataEdge {
+  cursor: String!
+  node: PollData!
+}
+
+input PollDataFilterInput {
+  id: TextFilterInput
+  createdOn: TextFilterInput
+  modifiedOn: TextFilterInput
+  queueName: StringFilterInput
+  domain: StringFilterInput
+  jsonData: StringFilterInput
+  and: [PollDataFilterInput!]
+  or: [PollDataFilterInput!]
+}
+
+input PollDataInsertInput {
+  id: String!
+  createdOn: String!
+  modifiedOn: String!
+  queueName: String!
+  domain: String!
+  jsonData: String!
+}
+
+input PollDataOrderInput {
+  id: OrderByEnum
+  createdOn: OrderByEnum
+  modifiedOn: OrderByEnum
+  queueName: OrderByEnum
+  domain: OrderByEnum
+  jsonData: OrderByEnum
+}
+
+input PollDataUpdateInput {
+  id: String
+  createdOn: String
+  modifiedOn: String
+  queueName: String
+  domain: String
+  jsonData: String
+}
+
+type Query {
+  buissnessRule(
+    filters: BuissnessRuleFilterInput
+    orderBy: BuissnessRuleOrderInput
+    pagination: PaginationInput
+  ): BuissnessRuleConnection!
+  doWhile(
+    filters: DoWhileFilterInput
+    orderBy: DoWhileOrderInput
+    pagination: PaginationInput
+  ): DoWhileConnection!
+  dynamic(
+    filters: DynamicFilterInput
+    orderBy: DynamicOrderInput
+    pagination: PaginationInput
+  ): DynamicConnection!
+  dynamicFork(
+    filters: DynamicForkFilterInput
+    orderBy: DynamicForkOrderInput
+    pagination: PaginationInput
+  ): DynamicForkConnection!
+  event(
+    filters: EventFilterInput
+    orderBy: EventOrderInput
+    pagination: PaginationInput
+  ): EventConnection!
+  fork(
+    filters: ForkFilterInput
+    orderBy: ForkOrderInput
+    pagination: PaginationInput
+  ): ForkConnection!
+  getSignedJwt(
+    filters: GetSignedJwtFilterInput
+    orderBy: GetSignedJwtOrderInput
+    pagination: PaginationInput
+  ): GetSignedJwtConnection!
+  getWorkflow(
+    filters: GetWorkflowFilterInput
+    orderBy: GetWorkflowOrderInput
+    pagination: PaginationInput
+  ): GetWorkflowConnection!
+  http(
+    filters: HttpFilterInput
+    orderBy: HttpOrderInput
+    pagination: PaginationInput
+  ): HttpConnection!
+  human(
+    filters: HumanFilterInput
+    orderBy: HumanOrderInput
+    pagination: PaginationInput
+  ): HumanConnection!
+  inline(
+    filters: InlineFilterInput
+    orderBy: InlineOrderInput
+    pagination: PaginationInput
+  ): InlineConnection!
+  join(
+    filters: JoinFilterInput
+    orderBy: JoinOrderInput
+    pagination: PaginationInput
+  ): JoinConnection!
+  jsonTransform(
+    filters: JsonTransformFilterInput
+    orderBy: JsonTransformOrderInput
+    pagination: PaginationInput
+  ): JsonTransformConnection!
+  pollData(
+    filters: PollDataFilterInput
+    orderBy: PollDataOrderInput
+    pagination: PaginationInput
+  ): PollDataConnection!
+  setVariable(
+    filters: SetVariableFilterInput
+    orderBy: SetVariableOrderInput
+    pagination: PaginationInput
+  ): SetVariableConnection!
+  simple(
+    filters: SimpleFilterInput
+    orderBy: SimpleOrderInput
+    pagination: PaginationInput
+  ): SimpleConnection!
+  sql(filters: SqlFilterInput, orderBy: SqlOrderInput, pagination: PaginationInput): SqlConnection!
+  startWorkflow(
+    filters: StartWorkflowFilterInput
+    orderBy: StartWorkflowOrderInput
+    pagination: PaginationInput
+  ): StartWorkflowConnection!
+  subWorkflow(
+    filters: SubWorkflowFilterInput
+    orderBy: SubWorkflowOrderInput
+    pagination: PaginationInput
+  ): SubWorkflowConnection!
+  switch(
+    filters: SwitchFilterInput
+    orderBy: SwitchOrderInput
+    pagination: PaginationInput
+  ): SwitchConnection!
+  taskConfig(
+    filters: TaskConfigFilterInput
+    orderBy: TaskConfigOrderInput
+    pagination: PaginationInput
+  ): TaskConfigConnection!
+  taskDefinition(
+    filters: TaskDefinitionFilterInput
+    orderBy: TaskDefinitionOrderInput
+    pagination: PaginationInput
+  ): TaskDefinitionConnection!
+  taskExecutionLog(
+    filters: TaskExecutionLogFilterInput
+    orderBy: TaskExecutionLogOrderInput
+    pagination: PaginationInput
+  ): TaskExecutionLogConnection!
+  taskModel(
+    filters: TaskModelFilterInput
+    orderBy: TaskModelOrderInput
+    pagination: PaginationInput
+  ): TaskModelConnection!
+  terminateTask(
+    filters: TerminateTaskFilterInput
+    orderBy: TerminateTaskOrderInput
+    pagination: PaginationInput
+  ): TerminateTaskConnection!
+  terminateWorkflow(
+    filters: TerminateWorkflowFilterInput
+    orderBy: TerminateWorkflowOrderInput
+    pagination: PaginationInput
+  ): TerminateWorkflowConnection!
+  updateSecret(
+    filters: UpdateSecretFilterInput
+    orderBy: UpdateSecretOrderInput
+    pagination: PaginationInput
+  ): UpdateSecretConnection!
+  updateTask(
+    filters: UpdateTaskFilterInput
+    orderBy: UpdateTaskOrderInput
+    pagination: PaginationInput
+  ): UpdateTaskConnection!
+  wait(
+    filters: WaitFilterInput
+    orderBy: WaitOrderInput
+    pagination: PaginationInput
+  ): WaitConnection!
+  waitForWebhook(
+    filters: WaitForWebhookFilterInput
+    orderBy: WaitForWebhookOrderInput
+    pagination: PaginationInput
+  ): WaitForWebhookConnection!
+}
+
+enum RetryLogicEnum {
+  EXPONENTIALBACKOFF
+  FIXED
+  LINEARBACKOFF
+}
+
+input RetryLogicEnumFilterInput {
+  eq: RetryLogicEnum
+  ne: RetryLogicEnum
+  gt: RetryLogicEnum
+  gte: RetryLogicEnum
+  lt: RetryLogicEnum
+  lte: RetryLogicEnum
+  is_in: [RetryLogicEnum!]
+  is_not_in: [RetryLogicEnum!]
+  is_null: RetryLogicEnum
+  is_not_null: RetryLogicEnum
+}
+
+type SetVariable {
+  id: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type SetVariableBasic {
+  id: String!
+  taskModelId: String
+}
+
+type SetVariableConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [SetVariable!]!
+  edges: [SetVariableEdge!]!
+}
+
+type SetVariableEdge {
+  cursor: String!
+  node: SetVariable!
+}
+
+input SetVariableFilterInput {
+  id: TextFilterInput
+  taskModelId: TextFilterInput
+  and: [SetVariableFilterInput!]
+  or: [SetVariableFilterInput!]
+}
+
+input SetVariableInsertInput {
+  id: String!
+  taskModelId: String
+}
+
+input SetVariableOrderInput {
+  id: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input SetVariableUpdateInput {
+  id: String
+  taskModelId: String
+}
+
+type Simple {
+  id: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type SimpleBasic {
+  id: String!
+  taskModelId: String
+}
+
+type SimpleConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Simple!]!
+  edges: [SimpleEdge!]!
+}
+
+type SimpleEdge {
+  cursor: String!
+  node: Simple!
+}
+
+input SimpleFilterInput {
+  id: TextFilterInput
+  taskModelId: TextFilterInput
+  and: [SimpleFilterInput!]
+  or: [SimpleFilterInput!]
+}
+
+input SimpleInsertInput {
+  id: String!
+  taskModelId: String
+}
+
+input SimpleOrderInput {
+  id: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input SimpleUpdateInput {
+  id: String
+  taskModelId: String
+}
+
+type Sql {
+  id: String!
+  integrationName: String!
+  statement: String!
+  operationType: OperationTypeEnum!
+  expectedOutputCount: Int
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type SqlBasic {
+  id: String!
+  integrationName: String!
+  statement: String!
+  operationType: OperationTypeEnum!
+  expectedOutputCount: Int
+  taskModelId: String
+}
+
+type SqlConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Sql!]!
+  edges: [SqlEdge!]!
+}
+
+type SqlEdge {
+  cursor: String!
+  node: Sql!
+}
+
+input SqlFilterInput {
+  id: TextFilterInput
+  integrationName: StringFilterInput
+  statement: StringFilterInput
+  operationType: OperationTypeEnumFilterInput
+  expectedOutputCount: IntegerFilterInput
+  taskModelId: TextFilterInput
+  and: [SqlFilterInput!]
+  or: [SqlFilterInput!]
+}
+
+input SqlInsertInput {
+  id: String!
+  integrationName: String!
+  statement: String!
+  operationType: OperationTypeEnum!
+  expectedOutputCount: Int
+  taskModelId: String
+}
+
+input SqlOrderInput {
+  id: OrderByEnum
+  integrationName: OrderByEnum
+  statement: OrderByEnum
+  operationType: OrderByEnum
+  parameters: OrderByEnum
+  expectedOutputCount: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input SqlUpdateInput {
+  id: String
+  integrationName: String
+  statement: String
+  operationType: OperationTypeEnum
+  expectedOutputCount: Int
+  taskModelId: String
+}
+
+type StartWorkflow {
+  id: String!
+  name: String!
+  version: Int
+  correlationId: String
+  idempotencyKey: String
+  idempotencyStrategy: IdempotencyStrategyEnum
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type StartWorkflowBasic {
+  id: String!
+  name: String!
+  version: Int
+  correlationId: String
+  idempotencyKey: String
+  idempotencyStrategy: IdempotencyStrategyEnum
+  taskModelId: String
+}
+
+type StartWorkflowConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [StartWorkflow!]!
+  edges: [StartWorkflowEdge!]!
+}
+
+type StartWorkflowEdge {
+  cursor: String!
+  node: StartWorkflow!
+}
+
+input StartWorkflowFilterInput {
+  id: TextFilterInput
+  name: StringFilterInput
+  version: IntegerFilterInput
+  correlationId: StringFilterInput
+  idempotencyKey: StringFilterInput
+  idempotencyStrategy: IdempotencyStrategyEnumFilterInput
+  taskModelId: TextFilterInput
+  and: [StartWorkflowFilterInput!]
+  or: [StartWorkflowFilterInput!]
+}
+
+input StartWorkflowInsertInput {
+  id: String!
+  name: String!
+  version: Int
+  correlationId: String
+  idempotencyKey: String
+  idempotencyStrategy: IdempotencyStrategyEnum
+  taskModelId: String
+}
+
+input StartWorkflowOrderInput {
+  id: OrderByEnum
+  name: OrderByEnum
+  version: OrderByEnum
+  correlationId: OrderByEnum
+  idempotencyKey: OrderByEnum
+  idempotencyStrategy: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input StartWorkflowUpdateInput {
+  id: String
+  name: String
+  version: Int
+  correlationId: String
+  idempotencyKey: String
+  idempotencyStrategy: IdempotencyStrategyEnum
+  taskModelId: String
+}
+
+input StringFilterInput {
+  eq: String
+  ne: String
+  gt: String
+  gte: String
+  lt: String
+  lte: String
+  is_in: [String!]
+  is_not_in: [String!]
+  is_null: String
+  is_not_null: String
+  contains: String
+  starts_with: String
+  ends_with: String
+  like: String
+  not_like: String
+  between: [String!]
+  not_between: [String!]
+}
+
+type SubWorkflow {
+  id: String!
+  name: String!
+  version: Int!
+  priority: Int!
+  idempotencyKey: String
+  idempotencyStrategy: IdempotencyStrategyEnum
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type SubWorkflowBasic {
+  id: String!
+  name: String!
+  version: Int!
+  priority: Int!
+  idempotencyKey: String
+  idempotencyStrategy: IdempotencyStrategyEnum
+  taskModelId: String
+}
+
+type SubWorkflowConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [SubWorkflow!]!
+  edges: [SubWorkflowEdge!]!
+}
+
+type SubWorkflowEdge {
+  cursor: String!
+  node: SubWorkflow!
+}
+
+input SubWorkflowFilterInput {
+  id: TextFilterInput
+  name: StringFilterInput
+  version: IntegerFilterInput
+  priority: IntegerFilterInput
+  idempotencyKey: StringFilterInput
+  idempotencyStrategy: IdempotencyStrategyEnumFilterInput
+  taskModelId: TextFilterInput
+  and: [SubWorkflowFilterInput!]
+  or: [SubWorkflowFilterInput!]
+}
+
+input SubWorkflowInsertInput {
+  id: String!
+  name: String!
+  version: Int!
+  priority: Int!
+  idempotencyKey: String
+  idempotencyStrategy: IdempotencyStrategyEnum
+  taskModelId: String
+}
+
+input SubWorkflowOrderInput {
+  id: OrderByEnum
+  name: OrderByEnum
+  version: OrderByEnum
+  taskToDomain: OrderByEnum
+  priority: OrderByEnum
+  idempotencyKey: OrderByEnum
+  idempotencyStrategy: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input SubWorkflowUpdateInput {
+  id: String
+  name: String
+  version: Int
+  priority: Int
+  idempotencyKey: String
+  idempotencyStrategy: IdempotencyStrategyEnum
+  taskModelId: String
+}
+
+type Switch {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  expression: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type SwitchBasic {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  expression: String!
+  taskModelId: String
+}
+
+type SwitchConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Switch!]!
+  edges: [SwitchEdge!]!
+}
+
+type SwitchEdge {
+  cursor: String!
+  node: Switch!
+}
+
+input SwitchFilterInput {
+  id: TextFilterInput
+  evaluatorType: EvaluatorTypeEnumFilterInput
+  expression: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [SwitchFilterInput!]
+  or: [SwitchFilterInput!]
+}
+
+input SwitchInsertInput {
+  id: String!
+  evaluatorType: EvaluatorTypeEnum!
+  expression: String!
+  taskModelId: String
+}
+
+input SwitchOrderInput {
+  id: OrderByEnum
+  evaluatorType: OrderByEnum
+  expression: OrderByEnum
+  decisionCases: OrderByEnum
+  defaultCase: OrderByEnum
+  taskIds: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input SwitchUpdateInput {
+  id: String
+  evaluatorType: EvaluatorTypeEnum
+  expression: String
+  taskModelId: String
+}
+
+type TaskConfig {
+  id: String!
+  name: String!
+  taskReferenceName: String!
+  taskType: TaskTypeEnum!
+  description: String
+  optional: Boolean!
+  asyncComplete: Boolean!
+  startDelay: Int!
+  permissive: Boolean!
+  loopCondition: String
+  dynamicTaskNameParam: String
+  dynamicForkTasksParam: String
+  dynamicForkTasksInputParamName: String
+  joinStatus: String
+  evaluatorType: EvaluatorTypeEnum
+  expression: String
+  sink: String
+  triggerFailureWorkflow: Boolean
+  scriptExpression: String
+  taskDefinition: String
+  rateLimited: Boolean
+  retryCount: Int
+  taskModel(
+    filters: TaskModelFilterInput
+    orderBy: TaskModelOrderInput
+    pagination: PaginationInput
+  ): TaskModelConnection!
+}
+
+type TaskConfigBasic {
+  id: String!
+  name: String!
+  taskReferenceName: String!
+  taskType: TaskTypeEnum!
+  description: String
+  optional: Boolean!
+  asyncComplete: Boolean!
+  startDelay: Int!
+  permissive: Boolean!
+  loopCondition: String
+  dynamicTaskNameParam: String
+  dynamicForkTasksParam: String
+  dynamicForkTasksInputParamName: String
+  joinStatus: String
+  evaluatorType: EvaluatorTypeEnum
+  expression: String
+  sink: String
+  triggerFailureWorkflow: Boolean
+  scriptExpression: String
+  taskDefinition: String
+  rateLimited: Boolean
+  retryCount: Int
+}
+
+type TaskConfigConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [TaskConfig!]!
+  edges: [TaskConfigEdge!]!
+}
+
+type TaskConfigEdge {
+  cursor: String!
+  node: TaskConfig!
+}
+
+input TaskConfigFilterInput {
+  id: TextFilterInput
+  name: StringFilterInput
+  taskReferenceName: StringFilterInput
+  taskType: TaskTypeEnumFilterInput
+  description: StringFilterInput
+  optional: BooleanFilterInput
+  asyncComplete: BooleanFilterInput
+  startDelay: IntegerFilterInput
+  permissive: BooleanFilterInput
+  loopCondition: StringFilterInput
+  dynamicTaskNameParam: StringFilterInput
+  dynamicForkTasksParam: StringFilterInput
+  dynamicForkTasksInputParamName: StringFilterInput
+  joinStatus: StringFilterInput
+  evaluatorType: EvaluatorTypeEnumFilterInput
+  expression: StringFilterInput
+  sink: StringFilterInput
+  triggerFailureWorkflow: BooleanFilterInput
+  scriptExpression: StringFilterInput
+  taskDefinition: StringFilterInput
+  rateLimited: BooleanFilterInput
+  retryCount: IntegerFilterInput
+  and: [TaskConfigFilterInput!]
+  or: [TaskConfigFilterInput!]
+}
+
+input TaskConfigInsertInput {
+  id: String!
+  name: String!
+  taskReferenceName: String!
+  taskType: TaskTypeEnum!
+  description: String
+  optional: Boolean!
+  asyncComplete: Boolean!
+  startDelay: Int!
+  permissive: Boolean!
+  loopCondition: String
+  dynamicTaskNameParam: String
+  dynamicForkTasksParam: String
+  dynamicForkTasksInputParamName: String
+  joinStatus: String
+  evaluatorType: EvaluatorTypeEnum
+  expression: String
+  sink: String
+  triggerFailureWorkflow: Boolean
+  scriptExpression: String
+  taskDefinition: String
+  rateLimited: Boolean
+  retryCount: Int
+}
+
+input TaskConfigOrderInput {
+  id: OrderByEnum
+  name: OrderByEnum
+  taskReferenceName: OrderByEnum
+  taskType: OrderByEnum
+  description: OrderByEnum
+  optional: OrderByEnum
+  inputParameters: OrderByEnum
+  asyncComplete: OrderByEnum
+  startDelay: OrderByEnum
+  permissive: OrderByEnum
+  loopCondition: OrderByEnum
+  loopOver: OrderByEnum
+  dynamicTaskNameParam: OrderByEnum
+  dynamicForkTasksParam: OrderByEnum
+  dynamicForkTasksInputParamName: OrderByEnum
+  forkTasks: OrderByEnum
+  joinOn: OrderByEnum
+  joinStatus: OrderByEnum
+  subWorkflowParam: OrderByEnum
+  decisionCases: OrderByEnum
+  defaultCase: OrderByEnum
+  evaluatorType: OrderByEnum
+  expression: OrderByEnum
+  sink: OrderByEnum
+  triggerFailureWorkflow: OrderByEnum
+  scriptExpression: OrderByEnum
+  taskDefinition: OrderByEnum
+  rateLimited: OrderByEnum
+  defaultExclusiveJoinTask: OrderByEnum
+  retryCount: OrderByEnum
+  onStateChange: OrderByEnum
+  cacheConfig: OrderByEnum
+}
+
+input TaskConfigUpdateInput {
+  id: String
+  name: String
+  taskReferenceName: String
+  taskType: TaskTypeEnum
+  description: String
+  optional: Boolean
+  asyncComplete: Boolean
+  startDelay: Int
+  permissive: Boolean
+  loopCondition: String
+  dynamicTaskNameParam: String
+  dynamicForkTasksParam: String
+  dynamicForkTasksInputParamName: String
+  joinStatus: String
+  evaluatorType: EvaluatorTypeEnum
+  expression: String
+  sink: String
+  triggerFailureWorkflow: Boolean
+  scriptExpression: String
+  taskDefinition: String
+  rateLimited: Boolean
+  retryCount: Int
+}
+
+type TaskDefinition {
+  name: String!
+  description: String
+  retryCount: Int!
+  timeoutSeconds: Int
+  timeoutPolicy: TimeoutPolicyEnum!
+  retryLogic: RetryLogicEnum!
+  retryDelaySeconds: Int!
+  responseTimeoutSeconds: Int!
+  concurrentExecLimit: Int
+  rateLimitPerFrequency: Int
+  rateLimitFrequencyInSeconds: Int
+  isolationGroupId: String
+  executionNameSpace: String
+  ownerEmail: String
+  pollTimeoutSeconds: Int
+  backoffScaleFactor: Int!
+  baseType: String
+  enforceSchema: Boolean!
+  createdOn: String!
+  createdBy: String
+  modifiedOn: String!
+  modifiedBy: String
+  taskModel(
+    filters: TaskModelFilterInput
+    orderBy: TaskModelOrderInput
+    pagination: PaginationInput
+  ): TaskModelConnection!
+}
+
+type TaskDefinitionBasic {
+  name: String!
+  description: String
+  retryCount: Int!
+  timeoutSeconds: Int
+  timeoutPolicy: TimeoutPolicyEnum!
+  retryLogic: RetryLogicEnum!
+  retryDelaySeconds: Int!
+  responseTimeoutSeconds: Int!
+  concurrentExecLimit: Int
+  rateLimitPerFrequency: Int
+  rateLimitFrequencyInSeconds: Int
+  isolationGroupId: String
+  executionNameSpace: String
+  ownerEmail: String
+  pollTimeoutSeconds: Int
+  backoffScaleFactor: Int!
+  baseType: String
+  enforceSchema: Boolean!
+  createdOn: String!
+  createdBy: String
+  modifiedOn: String!
+  modifiedBy: String
+}
+
+type TaskDefinitionConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [TaskDefinition!]!
+  edges: [TaskDefinitionEdge!]!
+}
+
+type TaskDefinitionEdge {
+  cursor: String!
+  node: TaskDefinition!
+}
+
+input TaskDefinitionFilterInput {
+  name: StringFilterInput
+  description: StringFilterInput
+  retryCount: IntegerFilterInput
+  timeoutSeconds: IntegerFilterInput
+  timeoutPolicy: TimeoutPolicyEnumFilterInput
+  retryLogic: RetryLogicEnumFilterInput
+  retryDelaySeconds: IntegerFilterInput
+  responseTimeoutSeconds: IntegerFilterInput
+  concurrentExecLimit: IntegerFilterInput
+  rateLimitPerFrequency: IntegerFilterInput
+  rateLimitFrequencyInSeconds: IntegerFilterInput
+  isolationGroupId: StringFilterInput
+  executionNameSpace: StringFilterInput
+  ownerEmail: StringFilterInput
+  pollTimeoutSeconds: IntegerFilterInput
+  backoffScaleFactor: IntegerFilterInput
+  baseType: StringFilterInput
+  enforceSchema: BooleanFilterInput
+  createdOn: TextFilterInput
+  createdBy: StringFilterInput
+  modifiedOn: TextFilterInput
+  modifiedBy: StringFilterInput
+  and: [TaskDefinitionFilterInput!]
+  or: [TaskDefinitionFilterInput!]
+}
+
+input TaskDefinitionInsertInput {
+  name: String!
+  description: String
+  retryCount: Int!
+  timeoutSeconds: Int
+  timeoutPolicy: TimeoutPolicyEnum!
+  retryLogic: RetryLogicEnum!
+  retryDelaySeconds: Int!
+  responseTimeoutSeconds: Int!
+  concurrentExecLimit: Int
+  rateLimitPerFrequency: Int
+  rateLimitFrequencyInSeconds: Int
+  isolationGroupId: String
+  executionNameSpace: String
+  ownerEmail: String
+  pollTimeoutSeconds: Int
+  backoffScaleFactor: Int!
+  baseType: String
+  enforceSchema: Boolean!
+  createdOn: String!
+  createdBy: String
+  modifiedOn: String!
+  modifiedBy: String
+}
+
+input TaskDefinitionOrderInput {
+  name: OrderByEnum
+  description: OrderByEnum
+  retryCount: OrderByEnum
+  timeoutSeconds: OrderByEnum
+  inputKeys: OrderByEnum
+  outputKeys: OrderByEnum
+  timeoutPolicy: OrderByEnum
+  retryLogic: OrderByEnum
+  retryDelaySeconds: OrderByEnum
+  responseTimeoutSeconds: OrderByEnum
+  concurrentExecLimit: OrderByEnum
+  inputTemplate: OrderByEnum
+  rateLimitPerFrequency: OrderByEnum
+  rateLimitFrequencyInSeconds: OrderByEnum
+  isolationGroupId: OrderByEnum
+  executionNameSpace: OrderByEnum
+  ownerEmail: OrderByEnum
+  pollTimeoutSeconds: OrderByEnum
+  backoffScaleFactor: OrderByEnum
+  baseType: OrderByEnum
+  inputSchema: OrderByEnum
+  enforceSchema: OrderByEnum
+  outputSchema: OrderByEnum
+  createdOn: OrderByEnum
+  createdBy: OrderByEnum
+  modifiedOn: OrderByEnum
+  modifiedBy: OrderByEnum
+}
+
+input TaskDefinitionUpdateInput {
+  name: String
+  description: String
+  retryCount: Int
+  timeoutSeconds: Int
+  timeoutPolicy: TimeoutPolicyEnum
+  retryLogic: RetryLogicEnum
+  retryDelaySeconds: Int
+  responseTimeoutSeconds: Int
+  concurrentExecLimit: Int
+  rateLimitPerFrequency: Int
+  rateLimitFrequencyInSeconds: Int
+  isolationGroupId: String
+  executionNameSpace: String
+  ownerEmail: String
+  pollTimeoutSeconds: Int
+  backoffScaleFactor: Int
+  baseType: String
+  enforceSchema: Boolean
+  createdOn: String
+  createdBy: String
+  modifiedOn: String
+  modifiedBy: String
+}
+
+type TaskExecutionLog {
+  logId: String!
+  taskId: String!
+  log: String!
+  createdTime: String!
+  taskModel: TaskModel
+}
+
+type TaskExecutionLogBasic {
+  logId: String!
+  taskId: String!
+  log: String!
+  createdTime: String!
+}
+
+type TaskExecutionLogConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [TaskExecutionLog!]!
+  edges: [TaskExecutionLogEdge!]!
+}
+
+type TaskExecutionLogEdge {
+  cursor: String!
+  node: TaskExecutionLog!
+}
+
+input TaskExecutionLogFilterInput {
+  logId: TextFilterInput
+  taskId: TextFilterInput
+  log: StringFilterInput
+  createdTime: TextFilterInput
+  and: [TaskExecutionLogFilterInput!]
+  or: [TaskExecutionLogFilterInput!]
+}
+
+input TaskExecutionLogInsertInput {
+  logId: String!
+  taskId: String!
+  log: String!
+  createdTime: String!
+}
+
+input TaskExecutionLogOrderInput {
+  logId: OrderByEnum
+  taskId: OrderByEnum
+  log: OrderByEnum
+  createdTime: OrderByEnum
+}
+
+input TaskExecutionLogUpdateInput {
+  logId: String
+  taskId: String
+  log: String
+  createdTime: String
+}
+
+type TaskModel {
+  taskId: String!
+  taskType: TaskTypeEnum!
+  status: TaskStatusEnum!
+  referenceTaskName: String!
+  retryCount: Int
+  seq: Int!
+  correlationId: String
+  pollCount: Int!
+  taskDefName: String!
+  taskConfigId: String
+  scheduledTime: String!
+  startTime: String!
+  endTime: String
+  updateTime: String
+  startDelayInSeconds: Int!
+  retriedTaskId: String
+  retried: Boolean!
+  executed: Boolean!
+  callbackFromWorker: Boolean!
+  responseTimeoutSeconds: Int
+  workflowInstanceId: String
+  workflowType: String
+  reasonForIncompletion: String
+  callbackAfterSeconds: Int!
+  workerId: String
+  domain: String
+  rateLimitPerFrequency: Int
+  rateLimitFrequencyInSeconds: Int
+  externalInputPayloadStoragePath: String
+  externalOutputPayloadStoragePath: String
+  workflowPriority: Int!
+  executionNameSpace: String
+  isolationGroupId: String
+  iteration: Int!
+  subworkflowChanged: Boolean!
+  waitTimeout: Int
+  buissnessRule(
+    filters: BuissnessRuleFilterInput
+    orderBy: BuissnessRuleOrderInput
+    pagination: PaginationInput
+  ): BuissnessRuleConnection!
+  doWhile(
+    filters: DoWhileFilterInput
+    orderBy: DoWhileOrderInput
+    pagination: PaginationInput
+  ): DoWhileConnection!
+  dynamic(
+    filters: DynamicFilterInput
+    orderBy: DynamicOrderInput
+    pagination: PaginationInput
+  ): DynamicConnection!
+  dynamicFork(
+    filters: DynamicForkFilterInput
+    orderBy: DynamicForkOrderInput
+    pagination: PaginationInput
+  ): DynamicForkConnection!
+  event(
+    filters: EventFilterInput
+    orderBy: EventOrderInput
+    pagination: PaginationInput
+  ): EventConnection!
+  fork(
+    filters: ForkFilterInput
+    orderBy: ForkOrderInput
+    pagination: PaginationInput
+  ): ForkConnection!
+  getSignedJwt(
+    filters: GetSignedJwtFilterInput
+    orderBy: GetSignedJwtOrderInput
+    pagination: PaginationInput
+  ): GetSignedJwtConnection!
+  getWorkflow(
+    filters: GetWorkflowFilterInput
+    orderBy: GetWorkflowOrderInput
+    pagination: PaginationInput
+  ): GetWorkflowConnection!
+  http(
+    filters: HttpFilterInput
+    orderBy: HttpOrderInput
+    pagination: PaginationInput
+  ): HttpConnection!
+  human(
+    filters: HumanFilterInput
+    orderBy: HumanOrderInput
+    pagination: PaginationInput
+  ): HumanConnection!
+  inline(
+    filters: InlineFilterInput
+    orderBy: InlineOrderInput
+    pagination: PaginationInput
+  ): InlineConnection!
+  join(
+    filters: JoinFilterInput
+    orderBy: JoinOrderInput
+    pagination: PaginationInput
+  ): JoinConnection!
+  jsonTransform(
+    filters: JsonTransformFilterInput
+    orderBy: JsonTransformOrderInput
+    pagination: PaginationInput
+  ): JsonTransformConnection!
+  setVariable(
+    filters: SetVariableFilterInput
+    orderBy: SetVariableOrderInput
+    pagination: PaginationInput
+  ): SetVariableConnection!
+  simple(
+    filters: SimpleFilterInput
+    orderBy: SimpleOrderInput
+    pagination: PaginationInput
+  ): SimpleConnection!
+  sql(filters: SqlFilterInput, orderBy: SqlOrderInput, pagination: PaginationInput): SqlConnection!
+  startWorkflow(
+    filters: StartWorkflowFilterInput
+    orderBy: StartWorkflowOrderInput
+    pagination: PaginationInput
+  ): StartWorkflowConnection!
+  subWorkflow(
+    filters: SubWorkflowFilterInput
+    orderBy: SubWorkflowOrderInput
+    pagination: PaginationInput
+  ): SubWorkflowConnection!
+  switch(
+    filters: SwitchFilterInput
+    orderBy: SwitchOrderInput
+    pagination: PaginationInput
+  ): SwitchConnection!
+  taskConfig: TaskConfig
+  taskDefinition: TaskDefinition
+  taskExecutionLog(
+    filters: TaskExecutionLogFilterInput
+    orderBy: TaskExecutionLogOrderInput
+    pagination: PaginationInput
+  ): TaskExecutionLogConnection!
+  terminateTask(
+    filters: TerminateTaskFilterInput
+    orderBy: TerminateTaskOrderInput
+    pagination: PaginationInput
+  ): TerminateTaskConnection!
+  terminateWorkflow(
+    filters: TerminateWorkflowFilterInput
+    orderBy: TerminateWorkflowOrderInput
+    pagination: PaginationInput
+  ): TerminateWorkflowConnection!
+  updateSecret(
+    filters: UpdateSecretFilterInput
+    orderBy: UpdateSecretOrderInput
+    pagination: PaginationInput
+  ): UpdateSecretConnection!
+  updateTask(
+    filters: UpdateTaskFilterInput
+    orderBy: UpdateTaskOrderInput
+    pagination: PaginationInput
+  ): UpdateTaskConnection!
+  wait(
+    filters: WaitFilterInput
+    orderBy: WaitOrderInput
+    pagination: PaginationInput
+  ): WaitConnection!
+  waitForWebhook(
+    filters: WaitForWebhookFilterInput
+    orderBy: WaitForWebhookOrderInput
+    pagination: PaginationInput
+  ): WaitForWebhookConnection!
+}
+
+type TaskModelBasic {
+  taskId: String!
+  taskType: TaskTypeEnum!
+  status: TaskStatusEnum!
+  referenceTaskName: String!
+  retryCount: Int
+  seq: Int!
+  correlationId: String
+  pollCount: Int!
+  taskDefName: String!
+  taskConfigId: String
+  scheduledTime: String!
+  startTime: String!
+  endTime: String
+  updateTime: String
+  startDelayInSeconds: Int!
+  retriedTaskId: String
+  retried: Boolean!
+  executed: Boolean!
+  callbackFromWorker: Boolean!
+  responseTimeoutSeconds: Int
+  workflowInstanceId: String
+  workflowType: String
+  reasonForIncompletion: String
+  callbackAfterSeconds: Int!
+  workerId: String
+  domain: String
+  rateLimitPerFrequency: Int
+  rateLimitFrequencyInSeconds: Int
+  externalInputPayloadStoragePath: String
+  externalOutputPayloadStoragePath: String
+  workflowPriority: Int!
+  executionNameSpace: String
+  isolationGroupId: String
+  iteration: Int!
+  subworkflowChanged: Boolean!
+  waitTimeout: Int
+}
+
+type TaskModelConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [TaskModel!]!
+  edges: [TaskModelEdge!]!
+}
+
+type TaskModelEdge {
+  cursor: String!
+  node: TaskModel!
+}
+
+input TaskModelFilterInput {
+  taskId: TextFilterInput
+  taskType: TaskTypeEnumFilterInput
+  status: TaskStatusEnumFilterInput
+  referenceTaskName: StringFilterInput
+  retryCount: IntegerFilterInput
+  seq: IntegerFilterInput
+  correlationId: StringFilterInput
+  pollCount: IntegerFilterInput
+  taskDefName: StringFilterInput
+  taskConfigId: TextFilterInput
+  scheduledTime: TextFilterInput
+  startTime: TextFilterInput
+  endTime: TextFilterInput
+  updateTime: TextFilterInput
+  startDelayInSeconds: IntegerFilterInput
+  retriedTaskId: StringFilterInput
+  retried: BooleanFilterInput
+  executed: BooleanFilterInput
+  callbackFromWorker: BooleanFilterInput
+  responseTimeoutSeconds: IntegerFilterInput
+  workflowInstanceId: StringFilterInput
+  workflowType: StringFilterInput
+  reasonForIncompletion: StringFilterInput
+  callbackAfterSeconds: IntegerFilterInput
+  workerId: StringFilterInput
+  domain: StringFilterInput
+  rateLimitPerFrequency: IntegerFilterInput
+  rateLimitFrequencyInSeconds: IntegerFilterInput
+  externalInputPayloadStoragePath: StringFilterInput
+  externalOutputPayloadStoragePath: StringFilterInput
+  workflowPriority: IntegerFilterInput
+  executionNameSpace: StringFilterInput
+  isolationGroupId: StringFilterInput
+  iteration: IntegerFilterInput
+  subworkflowChanged: BooleanFilterInput
+  waitTimeout: IntegerFilterInput
+  and: [TaskModelFilterInput!]
+  or: [TaskModelFilterInput!]
+}
+
+input TaskModelInsertInput {
+  taskId: String!
+  taskType: TaskTypeEnum!
+  status: TaskStatusEnum!
+  referenceTaskName: String!
+  retryCount: Int
+  seq: Int!
+  correlationId: String
+  pollCount: Int!
+  taskDefName: String!
+  taskConfigId: String
+  scheduledTime: String!
+  startTime: String!
+  endTime: String
+  updateTime: String
+  startDelayInSeconds: Int!
+  retriedTaskId: String
+  retried: Boolean!
+  executed: Boolean!
+  callbackFromWorker: Boolean!
+  responseTimeoutSeconds: Int
+  workflowInstanceId: String
+  workflowType: String
+  reasonForIncompletion: String
+  callbackAfterSeconds: Int!
+  workerId: String
+  domain: String
+  rateLimitPerFrequency: Int
+  rateLimitFrequencyInSeconds: Int
+  externalInputPayloadStoragePath: String
+  externalOutputPayloadStoragePath: String
+  workflowPriority: Int!
+  executionNameSpace: String
+  isolationGroupId: String
+  iteration: Int!
+  subworkflowChanged: Boolean!
+  waitTimeout: Int
+}
+
+input TaskModelOrderInput {
+  taskId: OrderByEnum
+  taskType: OrderByEnum
+  status: OrderByEnum
+  referenceTaskName: OrderByEnum
+  retryCount: OrderByEnum
+  seq: OrderByEnum
+  correlationId: OrderByEnum
+  pollCount: OrderByEnum
+  taskDefName: OrderByEnum
+  taskConfigId: OrderByEnum
+  scheduledTime: OrderByEnum
+  startTime: OrderByEnum
+  endTime: OrderByEnum
+  updateTime: OrderByEnum
+  startDelayInSeconds: OrderByEnum
+  retriedTaskId: OrderByEnum
+  retried: OrderByEnum
+  executed: OrderByEnum
+  callbackFromWorker: OrderByEnum
+  responseTimeoutSeconds: OrderByEnum
+  workflowInstanceId: OrderByEnum
+  workflowType: OrderByEnum
+  reasonForIncompletion: OrderByEnum
+  callbackAfterSeconds: OrderByEnum
+  workerId: OrderByEnum
+  domain: OrderByEnum
+  inputMessage: OrderByEnum
+  outputMessage: OrderByEnum
+  rateLimitPerFrequency: OrderByEnum
+  rateLimitFrequencyInSeconds: OrderByEnum
+  externalInputPayloadStoragePath: OrderByEnum
+  externalOutputPayloadStoragePath: OrderByEnum
+  workflowPriority: OrderByEnum
+  executionNameSpace: OrderByEnum
+  isolationGroupId: OrderByEnum
+  iteration: OrderByEnum
+  subworkflowChanged: OrderByEnum
+  waitTimeout: OrderByEnum
+}
+
+input TaskModelUpdateInput {
+  taskId: String
+  taskType: TaskTypeEnum
+  status: TaskStatusEnum
+  referenceTaskName: String
+  retryCount: Int
+  seq: Int
+  correlationId: String
+  pollCount: Int
+  taskDefName: String
+  taskConfigId: String
+  scheduledTime: String
+  startTime: String
+  endTime: String
+  updateTime: String
+  startDelayInSeconds: Int
+  retriedTaskId: String
+  retried: Boolean
+  executed: Boolean
+  callbackFromWorker: Boolean
+  responseTimeoutSeconds: Int
+  workflowInstanceId: String
+  workflowType: String
+  reasonForIncompletion: String
+  callbackAfterSeconds: Int
+  workerId: String
+  domain: String
+  rateLimitPerFrequency: Int
+  rateLimitFrequencyInSeconds: Int
+  externalInputPayloadStoragePath: String
+  externalOutputPayloadStoragePath: String
+  workflowPriority: Int
+  executionNameSpace: String
+  isolationGroupId: String
+  iteration: Int
+  subworkflowChanged: Boolean
+  waitTimeout: Int
+}
+
+enum TaskStatusEnum {
+  CANCELED
+  COMPLETED
+  COMPLETEDWITHERRORS
+  FAILED
+  FAILEDWITHTERMINALERROR
+  INPROGRESS
+  SCHEDULED
+  SKIPPED
+  TIMEDOUT
+}
+
+input TaskStatusEnumFilterInput {
+  eq: TaskStatusEnum
+  ne: TaskStatusEnum
+  gt: TaskStatusEnum
+  gte: TaskStatusEnum
+  lt: TaskStatusEnum
+  lte: TaskStatusEnum
+  is_in: [TaskStatusEnum!]
+  is_not_in: [TaskStatusEnum!]
+  is_null: TaskStatusEnum
+  is_not_null: TaskStatusEnum
+}
+
+enum TaskTerminationStatusEnum {
+  COMPLETED
+  FAILED
+  TERMINATED
+}
+
+input TaskTerminationStatusEnumFilterInput {
+  eq: TaskTerminationStatusEnum
+  ne: TaskTerminationStatusEnum
+  gt: TaskTerminationStatusEnum
+  gte: TaskTerminationStatusEnum
+  lt: TaskTerminationStatusEnum
+  lte: TaskTerminationStatusEnum
+  is_in: [TaskTerminationStatusEnum!]
+  is_not_in: [TaskTerminationStatusEnum!]
+  is_null: TaskTerminationStatusEnum
+  is_not_null: TaskTerminationStatusEnum
+}
+
+enum TaskTypeEnum {
+  BUISSNESSRULE
+  DOWHILE
+  DYNAMIC
+  EVENT
+  EXCLUSIVEJOIN
+  FORKJOIN
+  FORKJOINDYNAMIC
+  GETSIGNEDJWT
+  HTTP
+  HUMAN
+  INLINE
+  JOIN
+  JSONJQTRANSFORM
+  KAFKAPUBLISH
+  SETVARIABLE
+  SIMPLE
+  SQLTASK
+  STARTWORKFLOW
+  SUBWORKFLOW
+  SWITCH
+  TERMINATETASK
+  TERMINATEWORKFLOW
+  UPDATESECRET
+  UPDATETASK
+  USERDEFINED
+  WAIT
+  WAITFORWEBHOOK
+}
+
+input TaskTypeEnumFilterInput {
+  eq: TaskTypeEnum
+  ne: TaskTypeEnum
+  gt: TaskTypeEnum
+  gte: TaskTypeEnum
+  lt: TaskTypeEnum
+  lte: TaskTypeEnum
+  is_in: [TaskTypeEnum!]
+  is_not_in: [TaskTypeEnum!]
+  is_null: TaskTypeEnum
+  is_not_null: TaskTypeEnum
+}
+
+type TerminateTask {
+  id: String!
+  terminationStatus: TaskTerminationStatusEnum!
+  terminationReason: String
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type TerminateTaskBasic {
+  id: String!
+  terminationStatus: TaskTerminationStatusEnum!
+  terminationReason: String
+  taskModelId: String
+}
+
+type TerminateTaskConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [TerminateTask!]!
+  edges: [TerminateTaskEdge!]!
+}
+
+type TerminateTaskEdge {
+  cursor: String!
+  node: TerminateTask!
+}
+
+input TerminateTaskFilterInput {
+  id: TextFilterInput
+  terminationStatus: TaskTerminationStatusEnumFilterInput
+  terminationReason: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [TerminateTaskFilterInput!]
+  or: [TerminateTaskFilterInput!]
+}
+
+input TerminateTaskInsertInput {
+  id: String!
+  terminationStatus: TaskTerminationStatusEnum!
+  terminationReason: String
+  taskModelId: String
+}
+
+input TerminateTaskOrderInput {
+  id: OrderByEnum
+  terminationStatus: OrderByEnum
+  terminationReason: OrderByEnum
+  workflowOutput: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input TerminateTaskUpdateInput {
+  id: String
+  terminationStatus: TaskTerminationStatusEnum
+  terminationReason: String
+  taskModelId: String
+}
+
+type TerminateWorkflow {
+  id: String!
+  terminationReason: String
+  triggerFailureWorkflow: Boolean!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type TerminateWorkflowBasic {
+  id: String!
+  terminationReason: String
+  triggerFailureWorkflow: Boolean!
+  taskModelId: String
+}
+
+type TerminateWorkflowConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [TerminateWorkflow!]!
+  edges: [TerminateWorkflowEdge!]!
+}
+
+type TerminateWorkflowEdge {
+  cursor: String!
+  node: TerminateWorkflow!
+}
+
+input TerminateWorkflowFilterInput {
+  id: TextFilterInput
+  terminationReason: StringFilterInput
+  triggerFailureWorkflow: BooleanFilterInput
+  taskModelId: TextFilterInput
+  and: [TerminateWorkflowFilterInput!]
+  or: [TerminateWorkflowFilterInput!]
+}
+
+input TerminateWorkflowInsertInput {
+  id: String!
+  terminationReason: String
+  triggerFailureWorkflow: Boolean!
+  taskModelId: String
+}
+
+input TerminateWorkflowOrderInput {
+  id: OrderByEnum
+  workflowId: OrderByEnum
+  terminationReason: OrderByEnum
+  triggerFailureWorkflow: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input TerminateWorkflowUpdateInput {
+  id: String
+  terminationReason: String
+  triggerFailureWorkflow: Boolean
+  taskModelId: String
+}
+
+input TextFilterInput {
+  eq: String
+  ne: String
+  gt: String
+  gte: String
+  lt: String
+  lte: String
+  is_in: [String!]
+  is_not_in: [String!]
+  is_null: String
+  is_not_null: String
+  between: [String!]
+  not_between: [String!]
+}
+
+enum TimeoutPolicyEnum {
+  ALERTONLY
+  RETRY
+  TIMEDOUTWF
+}
+
+input TimeoutPolicyEnumFilterInput {
+  eq: TimeoutPolicyEnum
+  ne: TimeoutPolicyEnum
+  gt: TimeoutPolicyEnum
+  gte: TimeoutPolicyEnum
+  lt: TimeoutPolicyEnum
+  lte: TimeoutPolicyEnum
+  is_in: [TimeoutPolicyEnum!]
+  is_not_in: [TimeoutPolicyEnum!]
+  is_null: TimeoutPolicyEnum
+  is_not_null: TimeoutPolicyEnum
+}
+
+type UpdateSecret {
+  id: String!
+  secretKey: String!
+  secretValue: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type UpdateSecretBasic {
+  id: String!
+  secretKey: String!
+  secretValue: String!
+  taskModelId: String
+}
+
+type UpdateSecretConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [UpdateSecret!]!
+  edges: [UpdateSecretEdge!]!
+}
+
+type UpdateSecretEdge {
+  cursor: String!
+  node: UpdateSecret!
+}
+
+input UpdateSecretFilterInput {
+  id: TextFilterInput
+  secretKey: StringFilterInput
+  secretValue: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [UpdateSecretFilterInput!]
+  or: [UpdateSecretFilterInput!]
+}
+
+input UpdateSecretInsertInput {
+  id: String!
+  secretKey: String!
+  secretValue: String!
+  taskModelId: String
+}
+
+input UpdateSecretOrderInput {
+  id: OrderByEnum
+  secretKey: OrderByEnum
+  secretValue: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input UpdateSecretUpdateInput {
+  id: String
+  secretKey: String
+  secretValue: String
+  taskModelId: String
+}
+
+type UpdateTask {
+  id: String!
+  taskStatus: TaskStatusEnum!
+  workflowId: String
+  taskRefName: String
+  taskId: String
+  mergeOutput: Boolean
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type UpdateTaskBasic {
+  id: String!
+  taskStatus: TaskStatusEnum!
+  workflowId: String
+  taskRefName: String
+  taskId: String
+  mergeOutput: Boolean
+  taskModelId: String
+}
+
+type UpdateTaskConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [UpdateTask!]!
+  edges: [UpdateTaskEdge!]!
+}
+
+type UpdateTaskEdge {
+  cursor: String!
+  node: UpdateTask!
+}
+
+input UpdateTaskFilterInput {
+  id: TextFilterInput
+  taskStatus: TaskStatusEnumFilterInput
+  workflowId: StringFilterInput
+  taskRefName: StringFilterInput
+  taskId: StringFilterInput
+  mergeOutput: BooleanFilterInput
+  taskModelId: TextFilterInput
+  and: [UpdateTaskFilterInput!]
+  or: [UpdateTaskFilterInput!]
+}
+
+input UpdateTaskInsertInput {
+  id: String!
+  taskStatus: TaskStatusEnum!
+  workflowId: String
+  taskRefName: String
+  taskId: String
+  mergeOutput: Boolean
+  taskModelId: String
+}
+
+input UpdateTaskOrderInput {
+  id: OrderByEnum
+  taskStatus: OrderByEnum
+  workflowId: OrderByEnum
+  taskRefName: OrderByEnum
+  taskId: OrderByEnum
+  mergeOutput: OrderByEnum
+  taskOutput: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input UpdateTaskUpdateInput {
+  id: String
+  taskStatus: TaskStatusEnum
+  workflowId: String
+  taskRefName: String
+  taskId: String
+  mergeOutput: Boolean
+  taskModelId: String
+}
+
+type Wait {
+  id: String!
+  until: String
+  duration: String
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type WaitBasic {
+  id: String!
+  until: String
+  duration: String
+  taskModelId: String
+}
+
+type WaitConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Wait!]!
+  edges: [WaitEdge!]!
+}
+
+type WaitEdge {
+  cursor: String!
+  node: Wait!
+}
+
+input WaitFilterInput {
+  id: TextFilterInput
+  until: TextFilterInput
+  duration: StringFilterInput
+  taskModelId: TextFilterInput
+  and: [WaitFilterInput!]
+  or: [WaitFilterInput!]
+}
+
+type WaitForWebhook {
+  id: String!
+  taskModelId: String
+  taskModel: TaskModel
+}
+
+type WaitForWebhookBasic {
+  id: String!
+  taskModelId: String
+}
+
+type WaitForWebhookConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [WaitForWebhook!]!
+  edges: [WaitForWebhookEdge!]!
+}
+
+type WaitForWebhookEdge {
+  cursor: String!
+  node: WaitForWebhook!
+}
+
+input WaitForWebhookFilterInput {
+  id: TextFilterInput
+  taskModelId: TextFilterInput
+  and: [WaitForWebhookFilterInput!]
+  or: [WaitForWebhookFilterInput!]
+}
+
+input WaitForWebhookInsertInput {
+  id: String!
+  taskModelId: String
+}
+
+input WaitForWebhookOrderInput {
+  id: OrderByEnum
+  matches: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input WaitForWebhookUpdateInput {
+  id: String
+  taskModelId: String
+}
+
+input WaitInsertInput {
+  id: String!
+  until: String
+  duration: String
+  taskModelId: String
+}
+
+input WaitOrderInput {
+  id: OrderByEnum
+  until: OrderByEnum
+  duration: OrderByEnum
+  taskModelId: OrderByEnum
+}
+
+input WaitUpdateInput {
+  id: String
+  until: String
+  duration: String
+  taskModelId: String
+}
+

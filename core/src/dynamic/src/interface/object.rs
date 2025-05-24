@@ -1,5 +1,8 @@
 use super::Field;
-use crate::prelude::{GraphQLInputObject, GraphQLObject, GraphQLType, ProtoMessage, ProtoType};
+use crate::{
+	TypeRefTrait,
+	prelude::{GraphQLObject, GraphQLType, GraphQLTypeRef, ProtoMessage, ProtoType, ProtoTypeRef},
+};
 use indexmap::IndexMap;
 
 #[derive(Clone)]
@@ -8,14 +11,20 @@ pub enum IO {
 	Output,
 }
 
-pub struct Object {
+pub struct Object<T>
+where
+	T: TypeRefTrait,
+{
 	pub(crate) name: String,
 	pub(crate) description: Option<String>,
-	pub(crate) fields: IndexMap<String, Field>,
+	pub(crate) fields: IndexMap<String, Field<T>>,
 	pub(crate) io: IO,
 }
 
-impl Object {
+impl<T> Object<T>
+where
+	T: TypeRefTrait,
+{
 	/// Create a new Protobuf object type
 	#[inline]
 	pub fn new(name: impl Into<String>, io: IO) -> Self {
@@ -29,12 +38,8 @@ impl Object {
 
 	/// Add an field to the object
 	#[inline]
-	pub fn field(mut self, field: Field) -> Self {
-		assert!(
-			!self.fields.contains_key(&field.name),
-			"Field `{}` already exists",
-			field.name.as_str()
-		);
+	pub fn field(mut self, field: Field<T>) -> Self {
+		assert!(!self.fields.contains_key(&field.name), "Field `{}` already exists", field.name);
 		self.fields.insert(field.name.clone(), field);
 		self
 	}
@@ -49,36 +54,29 @@ impl Object {
 		self
 	}
 
-	pub fn to_graphql(self) -> GraphQLType {
-		match self.io {
-			IO::Input => GraphQLType::InputObject(
-				self.fields
-					.into_iter()
-					.fold(GraphQLInputObject::new(self.name), |builder, (_, field)| {
-						builder.field(field.to_graphql_input())
-					}),
-			),
-			IO::Output => GraphQLType::Object(
-				self.fields
-					.into_iter()
-					.fold(GraphQLObject::new(self.name), |builder, (_, field)| {
-						builder.field(field.to_graphql_output())
-					}),
-			),
-		}
-	}
-
-	pub fn to_proto(self) -> ProtoType {
-		ProtoType::Message(
-			self.fields.into_iter().fold(ProtoMessage::new(self.name), |builder, (_, field)| {
-				builder.field(field.to_proto(self.io.clone()))
-			}),
-		)
-	}
-
 	/// Returns the type name
 	#[inline]
 	pub fn type_name(&self) -> &str {
 		&self.name
+	}
+}
+
+impl Object<GraphQLTypeRef> {
+	pub fn to_type(self) -> GraphQLType {
+		GraphQLType::Object(
+			self.fields.into_iter().fold(GraphQLObject::new(self.name), |builder, (_, field)| {
+				builder.field(field.to_field(&self.io))
+			}),
+		)
+	}
+}
+
+impl Object<ProtoTypeRef> {
+	pub fn to_type(self) -> ProtoType {
+		ProtoType::Message(
+			self.fields.into_iter().fold(ProtoMessage::new(self.name), |builder, (_, field)| {
+				builder.field(field.to_field(&self.io))
+			}),
+		)
 	}
 }

@@ -1,11 +1,13 @@
-use super::{BoxFieldFuture, Error, ObjectAccessor, Result, SchemaError, Value};
+use std::collections::BTreeMap;
+
+use super::{Error, Result};
 use crate::{
-	prelude::Name, traits::EnumTrait, ObjectAccessorTrait, ProtobufEnumValue, ProtobufKind,
-	Registry, ValueAccessorTrait,
+	BoxFieldFuture, EnumItemTrait, ObjectAccessor, ObjectAccessorTrait, ProtoRegistry,
+	ProtobufEnumValue, ProtobufKind, SchemaError, Value, ValueAccessor, ValueAccessorTrait,
+	traits::EnumTrait,
 };
-use binary::proto::{DecoderLit, Encoder, EncoderLit};
+use binary::proto::{DecoderLit, Encoder};
 use futures_util::FutureExt;
-use indexmap::IndexMap;
 
 /// A GraphQL enum item
 #[derive(Debug, Clone, PartialEq)]
@@ -46,12 +48,26 @@ impl EnumItem {
 	// impl_set_description!();
 }
 
+impl EnumItemTrait for EnumItem {
+	/// Create a new EnumItem
+	#[inline]
+	fn new(name: impl Into<String>, tag: u32) -> Self {
+		Self::new(name, tag)
+	}
+
+	/// Returns the type name
+	#[inline]
+	fn type_name(&self) -> &str {
+		&self.name
+	}
+}
+
 /// A GraphQL enum type
 #[derive(Debug)]
 pub struct Enum {
 	pub(crate) name: String,
 	pub(crate) description: Option<String>,
-	pub(crate) fields: IndexMap<String, EnumItem>,
+	pub(crate) fields: BTreeMap<String, EnumItem>,
 }
 
 impl EnumTrait for Enum {
@@ -86,8 +102,8 @@ impl EnumTrait for Enum {
 
 	/// Returns the type name
 	#[inline]
-	fn type_name(&self) -> String {
-		self.name.clone()
+	fn type_name(&self) -> &str {
+		&self.name
 	}
 }
 
@@ -101,7 +117,7 @@ impl Enum {
 	pub(crate) fn collect<'a>(&'a self, arguments: &'a ObjectAccessor<'a>) -> BoxFieldFuture<'a> {
 		async move {
 			let resolve_fut = async {
-				let value = match arguments.get(&self.name) {
+				let value = match arguments.get(self.name.as_str()) {
 					Some(val) => val.as_value().to_owned(),
 					None => Value::Null,
 				};
@@ -110,16 +126,19 @@ impl Enum {
 			};
 			futures_util::pin_mut!(resolve_fut);
 
-			Ok((Name::new(self.name.clone()), resolve_fut.await?))
+			Ok((Value::from(self.name.clone()), resolve_fut.await?))
 		}
 		.boxed()
 	}
 
-	pub fn encode(&self, buf: &mut Vec<u8>, value: &Value, tag: u32) -> Result<usize> {
+	pub fn encode(&self, buf: &mut Vec<u8>, value: Value, tag: u32) -> Result<usize> {
 		let encoder = Encoder::default();
 
 		match value {
-			Value::Enum((_, value)) => Ok(encoder.encode((&tag, EncoderLit::Int32(value)), buf)?),
+			Value::Var(var) => {
+				let val = ValueAccessor(&var.0);
+				Ok(encoder.encode((&tag, &val.int32()?), buf)?)
+			}
 			_ => Ok(0),
 		}
 	}
@@ -160,8 +179,8 @@ impl Enum {
 	// 	}
 	// }
 
-	pub(crate) fn register(&self, registry: &mut Registry) -> Result<(), SchemaError> {
-		let mut fields = IndexMap::new();
+	pub(crate) fn register(&self, registry: &mut ProtoRegistry) -> Result<(), SchemaError> {
+		let mut fields = BTreeMap::new();
 
 		for (index, item) in self.fields.values().enumerate() {
 			fields.insert(
@@ -174,7 +193,7 @@ impl Enum {
 			);
 		}
 
-		registry.types.proto.insert(
+		registry.types.insert(
 			self.name.to_string(),
 			ProtobufKind::Enum {
 				name: self.name.to_string(),

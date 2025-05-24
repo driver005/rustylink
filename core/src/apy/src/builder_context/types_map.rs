@@ -1,10 +1,10 @@
-use crate::{ActiveEnumBuilder, BuilderContext, EntityObjectBuilder, SeaResult};
+use crate::{ActiveEnumBuilder, BuilderContext, EntityObjectBuilder};
 use dynamic::prelude::*;
 use sea_orm::{ColumnTrait, ColumnType, EntityTrait};
 use std::{collections::BTreeMap, num::ParseIntError};
 
 pub type FnInputTypeConversion =
-	Box<dyn Fn(&ValueAccessors) -> SeaResult<sea_orm::Value> + Send + Sync>;
+	Box<dyn Fn(&ValueAccessor) -> SeaResult<sea_orm::Value> + Send + Sync>;
 pub type FnOutputTypeConversion =
 	Box<dyn Fn(&sea_orm::sea_query::Value) -> SeaResult<Value> + Send + Sync>;
 
@@ -201,7 +201,7 @@ impl TypesMapHelper {
 	pub fn value_to_sea_orm_value<'a, T>(
 		&self,
 		column: &T::Column,
-		value: &'a ValueAccessors<'a>,
+		value: &'a ValueAccessor<'a>,
 	) -> SeaResult<sea_orm::Value>
 	where
 		T: EntityTrait,
@@ -229,105 +229,52 @@ impl TypesMapHelper {
 
 	/// used to map from a SeaORM column type to an Proto type
 	/// None indicates that we do not support the type
-	pub fn sea_orm_column_type_to_type(&self, ty: &ColumnType, not_null: bool) -> Option<TypeRef> {
+	pub fn sea_orm_column_type_to_type<Ty>(&self, ty: &ColumnType, not_null: bool) -> Option<Ty>
+	where
+		Ty: TypeRefTrait,
+	{
 		let active_enum_builder = ActiveEnumBuilder {
 			context: self.context,
 		};
 
 		match ty {
-			ColumnType::Char(_) | ColumnType::String(_) | ColumnType::Text => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
-			)),
-			ColumnType::TinyInteger => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::INT32),
-			)),
-			ColumnType::SmallInteger => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::INT32),
-			)),
-			ColumnType::Integer => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::INT32),
-			)),
-			ColumnType::BigInteger => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::INT64),
-			)),
-			ColumnType::TinyUnsigned => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::UINT32),
-			)),
-			ColumnType::SmallUnsigned => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::UINT32),
-			)),
-			ColumnType::Unsigned => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::UINT32),
-			)),
-			ColumnType::BigUnsigned => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::UINT64),
-			)),
-			ColumnType::Float => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::FLOAT),
-				ProtoTypeRef::named(ProtoTypeRef::FLOAT),
-			)),
-			ColumnType::Double => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::FLOAT),
-				ProtoTypeRef::named(ProtoTypeRef::DOUBLE),
-			)),
-			ColumnType::Decimal(_) | ColumnType::Money(_) => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
-			)),
+			ColumnType::Char(_) | ColumnType::String(_) | ColumnType::Text => {
+				Some(Ty::named(Ty::STRING))
+			}
+			ColumnType::TinyInteger => Some(Ty::named(Ty::INT32)),
+			ColumnType::SmallInteger => Some(Ty::named(Ty::INT32)),
+			ColumnType::Integer => Some(Ty::named(Ty::INT32)),
+			ColumnType::BigInteger => Some(Ty::named(Ty::INT64)),
+			ColumnType::TinyUnsigned => Some(Ty::named(Ty::UINT32)),
+			ColumnType::SmallUnsigned => Some(Ty::named(Ty::UINT32)),
+			ColumnType::Unsigned => Some(Ty::named(Ty::UINT32)),
+			ColumnType::BigUnsigned => Some(Ty::named(Ty::UINT64)),
+			ColumnType::Float => Some(Ty::named(Ty::FLOAT)),
+			ColumnType::Double => Some(Ty::named(Ty::DOUBLE)),
+			ColumnType::Decimal(_) | ColumnType::Money(_) => Some(Ty::named(Ty::STRING)),
 			ColumnType::DateTime
 			| ColumnType::Timestamp
 			| ColumnType::TimestampWithTimeZone
 			| ColumnType::Time
-			| ColumnType::Date => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
-			)),
-			ColumnType::Year => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::INT),
-				ProtoTypeRef::named(ProtoTypeRef::INT32),
-			)),
-			ColumnType::Interval(_, _) => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
-			)),
+			| ColumnType::Date => Some(Ty::named(Ty::STRING)),
+			ColumnType::Year => Some(Ty::named(Ty::INT32)),
+			ColumnType::Interval(_, _) => Some(Ty::named(Ty::STRING)),
 			ColumnType::Binary(_)
 			| ColumnType::VarBinary(_)
 			| ColumnType::Bit(_)
 			| ColumnType::VarBit(_)
-			| ColumnType::Blob => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::BYTES),
-			)),
-			ColumnType::Boolean => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::BOOLEAN),
-				ProtoTypeRef::named(ProtoTypeRef::BOOL),
-			)),
+			| ColumnType::Blob => Some(Ty::named(Ty::BYTES)),
+			ColumnType::Boolean => Some(Ty::named(Ty::BOOL)),
 			// FIXME: support json type
 			ColumnType::Json | ColumnType::JsonBinary => None,
-			ColumnType::Uuid => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
-			)),
+			ColumnType::Uuid => Some(Ty::named(Ty::STRING)),
 			ColumnType::Enum {
 				name: enum_name,
 				variants: _,
-			} => Some(TypeRef::new(
-				GraphQLTypeRef::named(active_enum_builder.type_name_from_iden(enum_name)),
-				ProtoTypeRef::named(active_enum_builder.type_name_from_iden(enum_name)),
-			)),
-			ColumnType::Cidr | ColumnType::Inet | ColumnType::MacAddr => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
-			)),
+			} => Some(Ty::named(active_enum_builder.type_name_from_iden(enum_name))),
+			ColumnType::Cidr | ColumnType::Inet | ColumnType::MacAddr => {
+				Some(Ty::named(Ty::STRING))
+			}
 			#[cfg(not(feature = "with-postgres-array"))]
 			ColumnType::Array(_) => None,
 			#[cfg(feature = "with-postgres-array")]
@@ -361,25 +308,14 @@ impl TypesMapHelper {
 				//   pros: always technically workable for queries (annoying for non-null data)
 				//   conts: bad for inserts
 				let iden_type = self.sea_orm_column_type_to_graphql_type(iden.as_ref(), true);
-				iden_type.map(|it| {
-					TypeRef::new(
-						GraphQLTypeRef::List(Box::new(it)),
-						ProtoTypeRef::List(Box::new(it)),
-					)
-				})
+				iden_type.map(|it| Ty::List(Box::new(it)))
 			}
-			ColumnType::Custom(_iden) => Some(TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
-			)),
+			ColumnType::Custom(_iden) => Some(Ty::named(Ty::STRING)),
 			_ => None,
 		}
 		.map(|ty| {
 			if not_null {
-				TypeRef {
-					graphql: GraphQLTypeRef::NonNull(Box::new(ty.graphql)),
-					proto: ProtoTypeRef::NonNull(Box::new(ty.proto)),
-				}
+				Ty::non_null(Box::new(ty))
 			} else {
 				ty
 			}
@@ -493,7 +429,7 @@ pub fn converted_type_to_sea_orm_array_type(
 		ConvertedType::Char => Ok(sea_orm::sea_query::value::ArrayType::Char),
 		ConvertedType::Bytes => Ok(sea_orm::sea_query::value::ArrayType::Bytes),
 		#[cfg(feature = "with-postgres-array")]
-		ConvertedType::Array(_) => Err(crate::SeaographyError::NestedArrayConversionError),
+		ConvertedType::Array(_) => Err(SeaographyError::NestedArrayConversionError),
 		ConvertedType::Enum(_) => Ok(sea_orm::sea_query::value::ArrayType::String),
 		ConvertedType::Custom(_) => Ok(sea_orm::sea_query::value::ArrayType::String),
 		#[cfg(feature = "with-json")]
@@ -534,20 +470,20 @@ pub fn converted_type_to_sea_orm_array_type(
 #[allow(unused_variables)] // some conversions behind feature flags need extra params here.
 pub fn converted_value_to_sea_orm_value<'a>(
 	column_type: &ConvertedType,
-	value: &'a ValueAccessors<'a>,
+	value: &'a ValueAccessor<'a>,
 	entity_name: &str,
 	column_name: &str,
 ) -> SeaResult<sea_orm::Value> {
 	Ok(match column_type {
-		ConvertedType::Bool => value.boolean().map(|v| v.into()).map_err(|e| {
-			crate::SeaographyError::TypeConversionError(
+		ConvertedType::Bool => value.bool().map(|v| v.into()).map_err(|e| {
+			SeaographyError::TypeConversionError(
 				format!("{:#?}", e),
 				format!("Bool - {}.{}", entity_name, column_name),
 			)
 		})?,
 		ConvertedType::TinyInteger => {
-			let value = i8::try_from(value.i64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = i8::try_from(value.int64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("TinyInteger - {}.{}", entity_name, column_name),
 				)
@@ -555,8 +491,8 @@ pub fn converted_value_to_sea_orm_value<'a>(
 			sea_orm::Value::TinyInt(Some(value))
 		}
 		ConvertedType::SmallInteger => {
-			let value = i16::try_from(value.i64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = i16::try_from(value.int64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("SmallInteger - {}.{}", entity_name, column_name),
 				)
@@ -564,8 +500,8 @@ pub fn converted_value_to_sea_orm_value<'a>(
 			sea_orm::Value::SmallInt(Some(value))
 		}
 		ConvertedType::Integer => {
-			let value = i32::try_from(value.i64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = i32::try_from(value.int64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Integer - {}.{}", entity_name, column_name),
 				)
@@ -573,8 +509,8 @@ pub fn converted_value_to_sea_orm_value<'a>(
 			sea_orm::Value::Int(Some(value))
 		}
 		ConvertedType::BigInteger => {
-			let value = value.i64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = value.int64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("TinyUnsigned - {}.{}", entity_name, column_name),
 				)
@@ -582,8 +518,8 @@ pub fn converted_value_to_sea_orm_value<'a>(
 			sea_orm::Value::BigInt(Some(value))
 		}
 		ConvertedType::TinyUnsigned => {
-			let value = u8::try_from(value.u64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = u8::try_from(value.uint64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("TinyUnsigned - {}.{}", entity_name, column_name),
 				)
@@ -591,8 +527,8 @@ pub fn converted_value_to_sea_orm_value<'a>(
 			sea_orm::Value::TinyUnsigned(Some(value))
 		}
 		ConvertedType::SmallUnsigned => {
-			let value = u16::try_from(value.u64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = u16::try_from(value.uint64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("SmallUnsigned - {}.{}", entity_name, column_name),
 				)
@@ -600,8 +536,8 @@ pub fn converted_value_to_sea_orm_value<'a>(
 			sea_orm::Value::SmallUnsigned(Some(value))
 		}
 		ConvertedType::Unsigned => {
-			let value = u32::try_from(value.u64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = u32::try_from(value.uint64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Unsigned - {}.{}", entity_name, column_name),
 				)
@@ -609,8 +545,8 @@ pub fn converted_value_to_sea_orm_value<'a>(
 			sea_orm::Value::Unsigned(Some(value))
 		}
 		ConvertedType::BigUnsigned => {
-			let value = value.u64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = value.uint64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("BigUnsigned - {}.{}", entity_name, column_name),
 				)
@@ -618,26 +554,26 @@ pub fn converted_value_to_sea_orm_value<'a>(
 			sea_orm::Value::BigUnsigned(Some(value))
 		}
 		ConvertedType::Float => {
-			let value = value.f32().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = value.float32().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Float - {}.{}", entity_name, column_name),
 				)
 			})?;
-			sea_orm::Value::Float(Some(value))
+			sea_orm::Value::Float(Some(*value))
 		}
 		ConvertedType::Double => {
-			let value = value.f64().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+			let value = value.float64().map_err(|e| {
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Double - {}.{}", entity_name, column_name),
 				)
 			})?;
-			sea_orm::Value::Double(Some(value))
+			sea_orm::Value::Double(Some(*value))
 		}
 		ConvertedType::String | ConvertedType::Enum(_) | ConvertedType::Custom(_) => {
 			let value = value.string().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("String - {}.{}", entity_name, column_name),
 				)
@@ -646,7 +582,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 		}
 		ConvertedType::Char => {
 			let value = value.string().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Char - {}.{}", entity_name, column_name),
 				)
@@ -659,7 +595,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 		}
 		ConvertedType::Bytes => {
 			let value = decode_hex(value.string().map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Bytes - {}.{}", entity_name, column_name),
 				)
@@ -676,7 +612,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				column_name,
 			)?)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Json - {}.{}", entity_name, column_name),
 				)
@@ -691,7 +627,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				"%Y-%m-%d",
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("ChronoDate - {}.{}", entity_name, column_name),
 				)
@@ -706,7 +642,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				"%H:%M:%S",
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("ChronoTime - {}.{}", entity_name, column_name),
 				)
@@ -721,7 +657,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				"%Y-%m-%d %H:%M:%S",
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("ChronoDateTime - {}.{}", entity_name, column_name),
 				)
@@ -737,7 +673,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				input_string_map_error(value, entity_name, column_name)?,
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("ChronoDateTimeUtc - {}.{}", entity_name, column_name),
 				)
@@ -753,7 +689,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				input_string_map_error(value, entity_name, column_name)?,
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("ChronoDateTimeLocal - {}.{}", entity_name, column_name),
 				)
@@ -768,7 +704,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				"%Y-%m-%d %H:%M:%S %:z",
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("ChronoDateTimeWithTimeZone - {}.{}", entity_name, column_name),
 				)
@@ -785,7 +721,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				sea_orm::sea_query::value::time_format::FORMAT_DATE,
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("TimeDate - {}.{}", entity_name, column_name),
 				)
@@ -802,7 +738,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				sea_orm::sea_query::value::time_format::FORMAT_TIME,
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("TimeTime - {}.{}", entity_name, column_name),
 				)
@@ -819,7 +755,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				sea_orm::sea_query::value::time_format::FORMAT_DATETIME,
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("TimeDateTime - {}.{}", entity_name, column_name),
 				)
@@ -835,7 +771,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				sea_orm::sea_query::value::time_format::FORMAT_DATETIME_TZ,
 			)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("TimeDateTimeWithTimeZone - {}.{}", entity_name, column_name),
 				)
@@ -853,7 +789,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				column_name,
 			)?)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Uuid - {}.{}", entity_name, column_name),
 				)
@@ -871,7 +807,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				column_name,
 			)?)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("Decimal - {}.{}", entity_name, column_name),
 				)
@@ -889,7 +825,7 @@ pub fn converted_value_to_sea_orm_value<'a>(
 				column_name,
 			)?)
 			.map_err(|e| {
-				crate::SeaographyError::TypeConversionError(
+				SeaographyError::TypeConversionError(
 					format!("{:#?}", e),
 					format!("BigDecimal - {}.{}", entity_name, column_name),
 				)
@@ -931,12 +867,12 @@ pub fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
 }
 
 fn input_string_map_error<'a>(
-	value: &'a ValueAccessors<'a>,
+	value: &'a ValueAccessor<'a>,
 	entity_name: &str,
 	column_name: &str,
-) -> Result<&'a str, crate::SeaographyError> {
+) -> Result<&'a str, SeaographyError> {
 	value.string().map_err(|e| {
-		crate::SeaographyError::TypeConversionError(
+		SeaographyError::TypeConversionError(
 			format!("{:#?}", e),
 			format!("Bytes - {}.{}", entity_name, column_name),
 		)

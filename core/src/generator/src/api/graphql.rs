@@ -49,9 +49,9 @@ impl Graphql {
 
 		quote! {
 			use #name::entities::*;
-			use ::apy::{Builder, BuilderContext};
+			use ::apy::{Builder, BuilderContext, FilterTypeTrait, GraphQlFilterType, ProtoFilterType};
 			use ::dynamic::{
-				prelude::{Proto, Schema, GraphQLSchemaError, ProtoSchemaError, DynamicBuilder},
+				prelude::{Proto, Schema, SchemaError, DynamicBuilder, GraphQLTypeRef, ProtoTypeRef, GraphQLEnum, ProtoEnum, TypeRefTrait, EnumTrait},
 			};
 			use sea_orm::DatabaseConnection;
 
@@ -59,14 +59,21 @@ impl Graphql {
 				static ref CONTEXT: BuilderContext = BuilderContext::default();
 			}
 
-			fn builder(database: &DatabaseConnection) -> DynamicBuilder {
-				let mut builder = Builder::new(&CONTEXT, database.clone());
+			fn builder<T, E, F>(database: &DatabaseConnection) -> DynamicBuilder<T, E>
+			where
+				T: TypeRefTrait,
+				E: EnumTrait,
+				F: FilterTypeTrait,
+			{
+				let mut builder = Builder::<T, E, F>::new(&CONTEXT, database.clone());
 
 				apy::register_entities!(
 					builder,
 					[
 						#(#entities,)*
-					]
+					],
+					T,
+					F
 				);
 
 				#(#enumerations)*
@@ -78,10 +85,10 @@ impl Graphql {
 				database: &DatabaseConnection,
 				depth: Option<usize>,
 				complexity: Option<usize>,
-			) -> Result<Schema, GraphQLSchemaError> {
-				let builder = builder(database);
+			) -> Result<Schema, SchemaError> {
+				let builder = builder::<GraphQLTypeRef, GraphQLEnum, GraphQlFilterType>(database);
 
-				let schema = builder.to_graphql();
+				let schema = builder.builder();
 
 				let schema = if let Some(depth) = depth {
 					schema.limit_depth(depth)
@@ -98,10 +105,10 @@ impl Graphql {
 				schema.data(database.clone()).finish()
 			}
 
-			pub fn proto(database: &DatabaseConnection) -> Result<Proto, ProtoSchemaError> {
-				let builder = builder(database);
+			pub fn proto(database: &DatabaseConnection) -> Result<Proto, SchemaError> {
+				let builder = builder::<ProtoTypeRef, ProtoEnum, ProtoFilterType>(database);
 
-				let proto = builder.to_proto();
+				let proto = builder.builder();
 
 				proto.data(database.clone()).finish()
 			}

@@ -40,33 +40,22 @@ impl PageInputBuilder {
 	}
 
 	/// used to get page pagination options message
-	pub fn input_object(&self) -> Object {
+	pub fn input_object<Ty>(&self) -> Object<Ty>
+	where
+		Ty: TypeRefTrait,
+	{
 		Object::new(&self.context.page_input.type_name, IO::Input)
-			.field(Field::input(
-				&self.context.page_input.limit,
-				1u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
-				),
-			))
-			.field(Field::input(
-				&self.context.page_input.page,
-				2u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
-				),
-			))
+			.field(Field::input(&self.context.page_input.limit, 1u32, Ty::named_nn(Ty::UINT64)))
+			.field(Field::input(&self.context.page_input.page, 2u32, Ty::named_nn(Ty::UINT64)))
 	}
 
 	/// used to parse query input to page pagination options struct
-	pub fn parse_object<'a>(&self, object: &'a ObjectAccessors<'a>) -> PageInput {
+	pub fn parse_object<'a>(&self, object: &'a ObjectAccessor<'a>) -> PageInput {
 		let page = object
 			.get(&self.context.page_input.page)
-			.map_or_else(|| Ok(0), |v| v.u64())
+			.map_or_else(|| Ok(0), |v| v.uint64())
 			.unwrap_or(0);
-		let limit = object.get(&self.context.page_input.limit).unwrap().u64().unwrap();
+		let limit = object.get(&self.context.page_input.limit).unwrap().uint64().unwrap();
 
 		PageInput {
 			page,

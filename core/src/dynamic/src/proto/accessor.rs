@@ -1,7 +1,9 @@
 use super::{Error, Result};
 use crate::{
-	interface::{ListAccessors, ObjectAccessors, ValueAccessors},
-	ListAccessorTrait, ObjectAccessorTrait, ValueAccessorTrait,
+	// interface::{ListAccessors, ObjectAccessors, ValueAccessors},
+	ListAccessorTrait,
+	ObjectAccessorTrait,
+	ValueAccessorTrait,
 };
 use crate::{prelude::Name, proto::Value};
 use async_graphql::Upload;
@@ -22,9 +24,9 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 		"ProtoValueAccessor"
 	}
 
-	fn get_accessor<'b>(&'b self) -> ValueAccessors<'b> {
-		todo!()
-	}
+	// fn get_accessor<'b>(&'b self) -> ValueAccessors<'b> {
+	// 	todo!()
+	// }
 
 	/// Returns `true` if the value is null, otherwise returns `false`
 	#[inline]
@@ -146,11 +148,15 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	}
 
 	fn upload(&self) -> Result<Upload, Self::Error> {
-		panic!("ProtoValueAccessor::upload() is not a vailid function use GraphQLValueAccessor::upload() instead")
+		panic!(
+			"ProtoValueAccessor::upload() is not a vailid function use GraphQLValueAccessor::upload() instead"
+		)
 	}
 
 	fn deserialize<T: serde::de::DeserializeOwned>(&self) -> std::result::Result<T, Self::Error> {
-		panic!("ProtoValueAccessor::deserialize() is not a vailid function use GraphQLValueAccessor::deserialize() instead")
+		panic!(
+			"ProtoValueAccessor::deserialize() is not a vailid function use GraphQLValueAccessor::deserialize() instead"
+		)
 	}
 }
 
@@ -167,9 +173,9 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
 		"ProtoObjectAccessor"
 	}
 
-	fn get_accessor(self) -> ObjectAccessors<'a> {
-		ObjectAccessors::proto(self)
-	}
+	// fn get_accessor(self) -> ObjectAccessors<'a> {
+	// 	ObjectAccessors::proto(self)
+	// }
 
 	/// Return a reference to the value stored for `key`, if it is present,
 	/// else `None`.
@@ -233,15 +239,14 @@ impl<'a> ListAccessorTrait<'a> for ListAccessor<'a> {
 	type Value = Value;
 	type Error = Error;
 	type ValueAccessor = ValueAccessor<'a>;
-	type ListAccessor = ListAccessor<'a>;
 
 	fn type_name(&self) -> &'static str {
 		"ProtoListAccessor"
 	}
 
-	fn get_accessor<'b>(&'b self) -> ListAccessors<'b> {
-		todo!()
-	}
+	// fn get_accessor<'b>(&'b self) -> ListAccessors<'b> {
+	// 	todo!()
+	// }
 
 	/// Returns the number of elements in the list
 	#[inline]
@@ -275,7 +280,7 @@ impl<'a> ListAccessorTrait<'a> for ListAccessor<'a> {
 
 	/// Returns a new ListAccessor that represents a slice of the original
 	#[inline]
-	fn as_slice(&self, start: usize, end: usize) -> Result<Self::ListAccessor, Self::Error> {
+	fn as_slice(&self, start: usize, end: usize) -> Result<Self, Self::Error> {
 		if start <= end && end <= self.len() {
 			Ok(ListAccessor(&self.0[start..end]))
 		} else {

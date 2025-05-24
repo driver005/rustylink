@@ -5,10 +5,12 @@ use std::{
 	sync::Arc,
 };
 
-/// An error can occur when building dynamic schema
-#[derive(Debug, thiserror::Error, Eq, PartialEq)]
-#[error("{0}")]
-pub struct SchemaError(pub String);
+use crate::ErrorTrait;
+
+// /// An error can occur when building dynamic schema
+// #[derive(Debug, thiserror::Error, Eq, PartialEq)]
+// #[error("{0}")]
+// pub struct SchemaError(pub String);
 
 /// An error with a message and optional extensions.
 #[derive(Clone)]
@@ -35,6 +37,24 @@ impl Debug for Error {
 impl PartialEq for Error {
 	fn eq(&self, other: &Self) -> bool {
 		self.message.eq(&other.message) && self.decode_error.eq(&other.decode_error)
+	}
+}
+
+impl ErrorTrait for Error {
+	fn new(message: impl Into<String>) -> Self {
+		Self::new(message)
+	}
+
+	fn to<T>(value: T) -> Self
+	where
+		T: Display + Send + Sync + 'static,
+	{
+		Self {
+			message: value.to_string(),
+			source: Some(Arc::new(value)),
+			decode_error: None,
+			encoder_error: None,
+		}
 	}
 }
 

@@ -1,0 +1,22 @@
+[package]
+name = "test_client"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "test_client"
+path = "bin/test.rs"
+
+[dependencies]
+cynic = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+sdk = { path = "../sdk" }
+graphql_client = { version = "0.14.0" }
+
+[build-dependencies]
+sdk = { path = "../sdk" }
+cynic-querygen = "3"
+graphql_client_codegen = "0.14.0"

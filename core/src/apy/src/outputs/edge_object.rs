@@ -47,10 +47,11 @@ impl EdgeObjectBuilder {
 	}
 
 	/// used to get the Node message for a SeaORM entity
-	pub fn to_object<T>(&self) -> Object
+	pub fn to_object<T, Ty>(&self) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
 	{
 		let entity_object_builder = EntityObjectBuilder {
 			context: self.context,
@@ -62,29 +63,20 @@ impl EdgeObjectBuilder {
 			.field(Field::output(
 				&self.context.edge_object.cursor,
 				1u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn(GraphQLTypeRef::STRING),
-					ProtoTypeRef::named_nn(ProtoTypeRef::STRING),
-				),
+				Ty::named_nn(Ty::STRING),
 				|ctx| {
-					FieldFuture::new(ctx.api_type.clone(), async move {
+					FieldFuture::new(async move {
 						let edge = ctx.parent_value.try_downcast_ref::<Edge<T>>()?;
-						Ok(Some(Value::new(
-							GraphQLValue::from(edge.cursor.as_str()),
-							ProtoValue::from(edge.cursor.as_str()),
-						)))
+						Ok(Some(Value::from(edge.cursor.as_str())))
 					})
 				},
 			))
 			.field(Field::output(
 				&self.context.edge_object.node,
 				2u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn(&object_name),
-					ProtoTypeRef::named_nn(&object_name),
-				),
+				Ty::named_nn(&object_name),
 				|ctx| {
-					FieldFuture::new(ctx.api_type.clone(), async move {
+					FieldFuture::new(async move {
 						let edge = ctx.parent_value.try_downcast_ref::<Edge<T>>()?;
 						Ok(Some(FieldValue::borrowed_any(&edge.node)))
 					})

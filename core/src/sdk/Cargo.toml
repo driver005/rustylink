@@ -1,0 +1,39 @@
+[package]
+name = "sdk"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+macros = { path = "../macros" }
+hyper = { workspace = true }
+hyper-util = { workspace = true }
+http-body-util = { workspace = true }
+cynic-introspection = { workspace = true }
+cynic-codegen = { workspace = true }
+cynic = { workspace = true }
+tokio = { workspace = true }
+thiserror = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+strum = { workspace = true }
+strum_macros = { workspace = true }
+
+anyhow = "1.0"
+async-graphql = "6.0.1"
+async-graphql-parser = "7"
+clap = { version = "3.1.0", features = ["derive"] }
+env_logger = "0.8"
+# TODO(tacogips) lazy_static would be deprecated after rust 1.70
+# https://github.com/rust-lang-nursery/lazy-static.rs/issues/214
+lazy_static = "1.4"
+log = "0.4"
+structopt = "0.3"
+proc-macro2 = { version = "1.0", default-features = false }
+quote = "1.0"
+syn = { version = "1.0", features = ["extra-traits", "clone-impls"] }
+heck = "0.3"
+paste = "1.0"
+toml = "0.5"

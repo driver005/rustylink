@@ -32,10 +32,11 @@ impl OrderInputBuilder {
 	}
 
 	/// used to get the OrderInput message of a SeaORM entity
-	pub fn to_object<T>(&self) -> Object
+	pub fn to_object<T, Ty>(&self) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
 	{
 		let entity_object_builder = EntityObjectBuilder {
 			context: self.context,
@@ -50,10 +51,7 @@ impl OrderInputBuilder {
 				object.field(Field::input(
 					entity_object_builder.column_name::<T>(&column),
 					index.add(1) as u32,
-					TypeRef::new(
-						GraphQLTypeRef::named(&self.context.order_by_enum.type_name),
-						ProtoTypeRef::named(&self.context.order_by_enum.type_name),
-					),
+					Ty::named(&self.context.order_by_enum.type_name),
 				))
 			},
 		)
@@ -61,7 +59,7 @@ impl OrderInputBuilder {
 
 	pub fn parse_object<'a, T>(
 		&self,
-		value: Option<ValueAccessors<'a>>,
+		value: Option<ValueAccessor<'a>>,
 	) -> Vec<(T::Column, sea_orm::sea_query::Order)>
 	where
 		T: EntityTrait,

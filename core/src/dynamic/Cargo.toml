@@ -7,7 +7,9 @@ license.workspace = true
 
 [dependencies]
 binary = { path = "../binary"}
+macros = { path = "../macros"}
 
+juniper = { workspace = true }
 async-stream = { workspace = true }
 async-trait = { workspace = true }
 tokio = { workspace = true }
@@ -27,6 +29,5 @@ hex = { workspace = true }
 lazy_static = { workspace = true }
 tonic = { workspace = true }
 async-graphql-actix-web = { workspace = true }
-async-graphql-parser = { workspace = true }
-async-graphql-value = { workspace = true }
 futures = {workspace = true}
+ordered-float = {workspace = true}

@@ -1,6 +1,8 @@
-use crate::prelude::Name;
+use crate::{ValueTrait, prelude::Name};
 use indexmap::IndexMap;
-use std::borrow::Cow;
+use std::{any::Any, borrow::Cow};
+
+use super::FieldValue;
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -34,6 +36,21 @@ pub enum Value {
 	List(Vec<Value>),
 	/// An object, which is a map of field names to values.
 	Message(IndexMap<Name, Value>),
+}
+
+impl<'a> ValueTrait<'a> for Value {
+	type FieldValue = FieldValue<'a>;
+	fn new<T>(val: T) -> Self
+	where
+		T: From<T>,
+		Value: From<T>,
+	{
+		Self::from(val)
+	}
+
+	fn into_field_value(self) -> Self::FieldValue {
+		FieldValue::from(self)
+	}
 }
 
 impl From<()> for Value {

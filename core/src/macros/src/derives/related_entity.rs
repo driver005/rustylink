@@ -71,11 +71,11 @@ impl DeriveRelatedEntity {
 
 				if let Some(def) = def {
 					Result::<_, syn::Error>::Ok(quote! {
-						Self::#enum_name => builder.get_relation::<#entity_ident, #target_entity>(#name, #def)
+						Self::#enum_name => builder.get_relation::<#entity_ident, #target_entity, T, F>(#name, #def)
 					})
 				} else {
 					Result::<_, syn::Error>::Ok(quote! {
-						Self::#enum_name => via_builder.get_relation::<#entity_ident, #target_entity>(#name)
+						Self::#enum_name => via_builder.get_relation::<#entity_ident, #target_entity, T, F>(#name)
 					})
 				}
 			})
@@ -83,7 +83,14 @@ impl DeriveRelatedEntity {
 
 		Ok(quote! {
 			impl apy::RelationBuilder for #ident {
-				fn get_relation(&self, context: & 'static apy::BuilderContext) -> dynamic::prelude::Field {
+				fn get_relation<T, F>(
+					&self,
+					context: &'static apy::BuilderContext,
+				) -> dynamic::prelude::Field<T>
+				where
+					T: dynamic::TypeRefTrait,
+					F: apy::FilterTypeTrait,
+				{
 					let builder = apy::EntityObjectRelationBuilder { context };
 					let via_builder = apy::EntityObjectViaRelationBuilder { context };
 					match self {

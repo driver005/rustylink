@@ -48,15 +48,12 @@ impl OrderByEnumBuilder {
 	}
 
 	/// used to get the GraphQL enumeration config
-	pub fn enumeration(&self) -> Enum {
-		Enum::new(self.type_name())
-			.item(EnumItems::new(
-				GraphQLEnumItem::new(self.asc_variant()),
-				ProtoEnumItem::new(self.asc_variant(), 0u32),
-			))
-			.item(EnumItems::new(
-				GraphQLEnumItem::new(self.desc_variant()),
-				ProtoEnumItem::new(self.desc_variant(), 1u32),
-			))
+	pub fn enumeration<E>(&self) -> E
+	where
+		E: EnumTrait,
+	{
+		E::new(self.type_name())
+			.item(E::Item::new(self.asc_variant(), 0u32))
+			.item(E::Item::new(self.desc_variant(), 1u32))
 	}
 }

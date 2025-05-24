@@ -1,6 +1,6 @@
 use crate::{
-	get_filter_conditions, prepare_active_model, BuilderContext, EntityInputBuilder,
-	EntityObjectBuilder, EntityQueryFieldBuilder, FilterInputBuilder, GuardAction,
+	BuilderContext, EntityInputBuilder, EntityObjectBuilder, EntityQueryFieldBuilder,
+	FilterInputBuilder, FilterTypeTrait, GuardAction, get_filter_conditions, prepare_active_model,
 };
 use dynamic::prelude::*;
 use sea_orm::{
@@ -53,12 +53,14 @@ impl EntityUpdateMutationBuilder {
 	}
 
 	/// used to get the update mutation field for a SeaORM entity
-	pub fn to_field<T, A>(&self) -> Field
+	pub fn to_field<T, A, Ty, F>(&self) -> Field<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
 		<T as EntityTrait>::Model: IntoActiveModel<A>,
 		A: ActiveModelTrait<Entity = T> + sea_orm::ActiveModelBehavior + std::marker::Send,
+		Ty: TypeRefTrait,
+		F: FilterTypeTrait,
 	{
 		let entity_input_builder = EntityInputBuilder {
 			context: self.context,
@@ -79,12 +81,9 @@ impl EntityUpdateMutationBuilder {
 		Field::output(
 			self.type_name::<T>(),
 			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
-				ProtoTypeRef::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
-			),
+			Ty::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
 			move |ctx| {
-				FieldFuture::new(ctx.api_type.clone(), async move {
+				FieldFuture::new(async move {
 					let guard_flag = if let Some(guard) = guard {
 						(*guard)(&ctx)
 					} else {
@@ -93,8 +92,12 @@ impl EntityUpdateMutationBuilder {
 
 					if let GuardAction::Block(reason) = guard_flag {
 						return match reason {
-							Some(reason) => Err::<Option<_>, Error>(Error::new(reason)),
-							None => Err::<Option<_>, Error>(Error::new("Entity guard triggered.")),
+							Some(reason) => {
+								Err::<Option<_>, SeaographyError>(SeaographyError::new(reason))
+							}
+							None => Err::<Option<_>, SeaographyError>(SeaographyError::new(
+								"Entity guard triggered.",
+							)),
 						};
 					}
 
@@ -109,7 +112,7 @@ impl EntityUpdateMutationBuilder {
 					};
 
 					let filters = ctx.args.get(&context.entity_update_mutation.filter_field);
-					let filter_condition = get_filter_conditions::<T>(context, filters);
+					let filter_condition = get_filter_conditions::<T, F>(context, filters);
 
 					let value_accessor =
 						ctx.args.get(&context.entity_update_mutation.data_field).unwrap();
@@ -128,8 +131,10 @@ impl EntityUpdateMutationBuilder {
 						};
 						if let GuardAction::Block(reason) = field_guard_flag {
 							return match reason {
-								Some(reason) => Err::<Option<_>, Error>(Error::new(reason)),
-								None => Err::<Option<_>, Error>(Error::new(
+								Some(reason) => {
+									Err::<Option<_>, SeaographyError>(SeaographyError::new(reason))
+								}
+								None => Err::<Option<_>, SeaographyError>(SeaographyError::new(
 									"GraphQLField guard triggered.",
 								)),
 							};
@@ -160,18 +165,12 @@ impl EntityUpdateMutationBuilder {
 		.argument(Field::input(
 			&context.entity_update_mutation.data_field,
 			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named_nn(entity_input_builder.update_type_name::<T>()),
-				ProtoTypeRef::named_nn(entity_input_builder.update_type_name::<T>()),
-			),
+			Ty::named_nn(entity_input_builder.update_type_name::<T>()),
 		))
 		.argument(Field::input(
 			&context.entity_update_mutation.filter_field,
 			2u32,
-			TypeRef::new(
-				GraphQLTypeRef::named(entity_filter_input_builder.type_name(&object_name)),
-				ProtoTypeRef::named(entity_filter_input_builder.type_name(&object_name)),
-			),
+			Ty::named(entity_filter_input_builder.type_name(&object_name)),
 		))
 	}
 }

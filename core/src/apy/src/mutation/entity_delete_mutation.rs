@@ -1,6 +1,6 @@
 use crate::{
-	get_filter_conditions, BuilderContext, EntityObjectBuilder, EntityQueryFieldBuilder,
-	FilterInputBuilder,
+	BuilderContext, EntityObjectBuilder, EntityQueryFieldBuilder, FilterInputBuilder,
+	FilterTypeTrait, get_filter_conditions,
 };
 use dynamic::prelude::*;
 use sea_orm::{
@@ -48,12 +48,14 @@ impl EntityDeleteMutationBuilder {
 	}
 
 	/// used to get the delete mutation field for a SeaORM entity
-	pub fn to_field<T, A>(&self) -> Field
+	pub fn to_field<T, A, Ty, F>(&self) -> Field<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
 		<T as EntityTrait>::Model: IntoActiveModel<A>,
 		A: ActiveModelTrait<Entity = T> + sea_orm::ActiveModelBehavior + std::marker::Send,
+		Ty: TypeRefTrait,
+		F: FilterTypeTrait,
 	{
 		let entity_filter_input_builder = FilterInputBuilder {
 			context: self.context,
@@ -65,37 +67,22 @@ impl EntityDeleteMutationBuilder {
 
 		let context = self.context;
 
-		Field::output(
-			self.type_name::<T>(),
-			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-				ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
-			),
-			move |ctx| {
-				FieldFuture::new(ctx.api_type.clone(), async move {
-					let db = ctx.data::<DatabaseConnection>()?;
+		Field::output(&self.type_name::<T>(), 1u32, Ty::named_nn(Ty::UINT64), move |ctx| {
+			FieldFuture::new(async move {
+				let db = ctx.data::<DatabaseConnection>()?;
 
-					let filters = ctx.args.get(&context.entity_delete_mutation.filter_field);
-					let filter_condition = get_filter_conditions::<T>(context, filters);
+				let filters = ctx.args.get(&context.entity_delete_mutation.filter_field);
+				let filter_condition = get_filter_conditions::<T, F>(context, filters);
 
-					let res: DeleteResult =
-						T::delete_many().filter(filter_condition).exec(db).await?;
+				let res: DeleteResult = T::delete_many().filter(filter_condition).exec(db).await?;
 
-					Ok(Some(Value::new(
-						GraphQLValue::from(res.rows_affected),
-						ProtoValue::from(res.rows_affected),
-					)))
-				})
-			},
-		)
+				Ok(Some(FieldValue::value(res.rows_affected)))
+			})
+		})
 		.argument(Field::input(
 			&context.entity_delete_mutation.filter_field,
 			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named(entity_filter_input_builder.type_name(&object_name)),
-				ProtoTypeRef::named(entity_filter_input_builder.type_name(&object_name)),
-			),
+			Ty::named(entity_filter_input_builder.type_name(&object_name)),
 		))
 	}
 }

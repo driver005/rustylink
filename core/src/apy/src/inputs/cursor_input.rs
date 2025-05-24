@@ -40,29 +40,18 @@ impl CursorInputBuilder {
 	}
 
 	/// used to get cursor pagination options message
-	pub fn input_object(&self) -> Object {
+	pub fn input_object<Ty>(&self) -> Object<Ty>
+	where
+		Ty: TypeRefTrait,
+	{
 		Object::new(&self.context.cursor_input.type_name, IO::Input)
-			.field(Field::input(
-				&self.context.cursor_input.cursor,
-				1u32,
-				TypeRef::new(
-					GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-					ProtoTypeRef::named(ProtoTypeRef::STRING),
-				),
-			))
-			.field(Field::input(
-				&self.context.cursor_input.limit,
-				2u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
-				),
-			))
+			.field(Field::input(&self.context.cursor_input.cursor, 1u32, Ty::named(Ty::STRING)))
+			.field(Field::input(&self.context.cursor_input.limit, 2u32, Ty::named_nn(Ty::UINT64)))
 	}
 
 	/// used to parse query input to cursor pagination options struct
-	pub fn parse_object<'a>(&self, object: &'a ObjectAccessors<'a>) -> CursorInput {
-		let limit = object.get(&self.context.cursor_input.limit).unwrap().u64().unwrap();
+	pub fn parse_object<'a>(&self, object: &'a ObjectAccessor<'a>) -> CursorInput {
+		let limit = object.get(&self.context.cursor_input.limit).unwrap().uint64().unwrap();
 
 		let cursor = object.get(&self.context.cursor_input.cursor);
 		let cursor: Option<String> = cursor.map(|cursor| cursor.string().unwrap().into());

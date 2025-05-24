@@ -1,7 +1,11 @@
-use super::{BoxFieldFuture, Error, Field, FieldValue, ObjectAccessor, Result, SchemaError, Value};
-use crate::{prelude::Name, Context, ProtobufField, ProtobufKind, Registry};
+use super::{Error, Field, Result};
+use crate::{
+	BoxFieldFuture, ContextBase, FieldValue, ObjectAccessor, ProtoRegistry, ProtobufField,
+	ProtobufKind, SchemaError, Value,
+};
 use binary::proto::Decoder;
 use indexmap::IndexMap;
+use std::collections::BTreeMap;
 
 /// A Protobuf object type
 #[derive(Debug)]
@@ -76,8 +80,8 @@ impl Message {
 		&self,
 		decoder: &mut Decoder,
 		mut buf: Vec<u8>,
-	) -> Result<IndexMap<Name, Value>> {
-		let mut arguments = IndexMap::new();
+	) -> Result<BTreeMap<Value, Value>> {
+		let mut arguments = BTreeMap::new();
 		let mut dst = vec![];
 		decoder.decode(&mut buf, &mut dst)?;
 
@@ -91,7 +95,7 @@ impl Message {
 						"Message `{}` has no field with Tag `{}`",
 						self.type_name(),
 						tag,
-					)))
+					)));
 				}
 			}
 		}
@@ -101,15 +105,15 @@ impl Message {
 
 	pub(crate) fn collect<'a>(
 		&'a self,
-		ctx: &'a Context<'a>,
+		ctx: &'a ContextBase,
 		arguments: &'a ObjectAccessor<'a>,
 		parent_value: Option<&'a FieldValue<'a>>,
 	) -> Vec<BoxFieldFuture<'a>> {
 		self.fields.iter().map(|(_, field)| field.collect(ctx, arguments, parent_value)).collect()
 	}
 
-	pub(crate) fn register(&self, registry: &mut Registry) -> Result<(), SchemaError> {
-		let mut fields = IndexMap::new();
+	pub(crate) fn register(&self, registry: &mut ProtoRegistry) -> Result<(), SchemaError> {
+		let mut fields = BTreeMap::new();
 
 		for field in self.fields.values() {
 			fields.insert(
@@ -124,7 +128,7 @@ impl Message {
 			);
 		}
 
-		registry.types.proto.insert(
+		registry.types.insert(
 			self.name.to_string(),
 			ProtobufKind::Message {
 				name: self.name.to_string(),

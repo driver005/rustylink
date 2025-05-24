@@ -48,19 +48,21 @@ impl ActiveEnumBuilder {
 	}
 
 	/// used to convert SeaORM enumeration to Protobuf enumeration
-	pub fn enumeration<A: ActiveEnum>(&self) -> Enum {
+	pub fn enumeration<A, E>(&self) -> E
+	where
+		A: ActiveEnum,
+		E: EnumTrait,
+	{
 		let enum_name = self.type_name::<A>();
 
 		A::values().into_iter().enumerate().fold(
-			Enum::new(&enum_name),
+			E::new(&enum_name),
 			|enumeration, (index, variant)| {
 				let variant: Value = variant.into();
 				let variant: String = variant.to_string();
 
-				enumeration.item(EnumItems::new(
-					GraphQLEnumItem::new(self.variant_name(&enum_name, &variant)),
-					ProtoEnumItem::new(self.variant_name(&enum_name, &variant), index as u32),
-				))
+				enumeration
+					.item(E::Item::new(self.variant_name(&enum_name, &variant), index as u32))
 			},
 		)
 	}

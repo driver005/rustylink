@@ -1,7 +1,7 @@
-use sea_orm::{sea_query::ValueTuple, Condition, ModelTrait, QueryFilter};
-use std::{collections::HashMap, hash::Hash, marker::PhantomData, sync::Arc};
-
 use crate::apply_order;
+use dataloader::BatchFn;
+use sea_orm::{Condition, ModelTrait, QueryFilter, sea_query::ValueTuple};
+use std::{collections::HashMap, hash::Hash, marker::PhantomData};
 
 #[derive(Clone, Debug)]
 pub struct KeyComplex<T>
@@ -157,6 +157,7 @@ where
 	}
 }
 
+#[derive(Clone)]
 pub struct OneToManyLoader<T>
 where
 	T: sea_orm::EntityTrait,
@@ -178,18 +179,15 @@ where
 	}
 }
 
-impl<T> async_graphql::dataloader::Loader<KeyComplex<T>> for OneToManyLoader<T>
+impl<T> BatchFn<KeyComplex<T>, Vec<T::Model>> for OneToManyLoader<T>
 where
 	T: sea_orm::EntityTrait,
 	T::Model: Sync,
 {
-	type Value = Vec<T::Model>;
-	type Error = std::sync::Arc<sea_orm::DbErr>;
-
-	async fn load(
-		&self,
+	fn load(
+		&mut self,
 		keys: &[KeyComplex<T>],
-	) -> Result<HashMap<KeyComplex<T>, Self::Value>, Self::Error> {
+	) -> impl std::future::Future<Output = HashMap<KeyComplex<T>, Vec<T::Model>>> {
 		let items: HashMap<HashableGroupKey<T>, Vec<Vec<sea_orm::Value>>> = keys
 			.iter()
 			.cloned()
@@ -247,31 +245,44 @@ where
 			})
 			.collect();
 
-		let mut results: HashMap<KeyComplex<T>, Vec<T::Model>> = HashMap::new();
+		async move {
+			let mut results: HashMap<KeyComplex<T>, Vec<T::Model>> = HashMap::new();
 
-		for (key, promise) in promises.into_iter() {
-			let key = key as HashableGroupKey<T>;
-			let result: Vec<T::Model> = promise.await.map_err(Arc::new)?;
-			for item in result.into_iter() {
-				let key = &KeyComplex::<T> {
-					key: key.columns.iter().map(|col: &T::Column| item.get(*col)).collect(),
-					meta: key.clone(),
-				};
-				match results.get_mut(key) {
-					Some(results) => {
-						results.push(item);
+			for (key, promise) in promises.into_iter() {
+				let key = key as HashableGroupKey<T>;
+				match promise.await {
+					Ok(models) => {
+						for item in models {
+							let key = &KeyComplex::<T> {
+								key: key
+									.columns
+									.iter()
+									.map(|col: &T::Column| item.get(*col))
+									.collect(),
+								meta: key.clone(),
+							};
+							match results.get_mut(key) {
+								Some(results) => {
+									results.push(item);
+								}
+								None => {
+									results.insert(key.clone(), vec![item]);
+								}
+							};
+						}
 					}
-					None => {
-						results.insert(key.clone(), vec![item]);
+					Err(err) => {
+						panic!("Error loading data: {:?}", err);
 					}
-				};
+				}
 			}
-		}
 
-		Ok(results)
+			results
+		}
 	}
 }
 
+#[derive(Clone)]
 pub struct OneToOneLoader<T>
 where
 	T: sea_orm::EntityTrait,
@@ -293,18 +304,15 @@ where
 	}
 }
 
-impl<T> async_graphql::dataloader::Loader<KeyComplex<T>> for OneToOneLoader<T>
+impl<T> BatchFn<KeyComplex<T>, T::Model> for OneToOneLoader<T>
 where
 	T: sea_orm::EntityTrait,
 	T::Model: Sync,
 {
-	type Value = T::Model;
-	type Error = std::sync::Arc<sea_orm::DbErr>;
-
-	async fn load(
-		&self,
+	fn load(
+		&mut self,
 		keys: &[KeyComplex<T>],
-	) -> Result<HashMap<KeyComplex<T>, Self::Value>, Self::Error> {
+	) -> impl std::future::Future<Output = HashMap<KeyComplex<T>, T::Model>> {
 		let items: HashMap<HashableGroupKey<T>, Vec<Vec<sea_orm::Value>>> = keys
 			.iter()
 			.cloned()
@@ -362,20 +370,28 @@ where
 			})
 			.collect();
 
-		let mut results: HashMap<KeyComplex<T>, T::Model> = HashMap::new();
+		async move {
+			let mut results: HashMap<KeyComplex<T>, T::Model> = HashMap::new();
 
-		for (key, promise) in promises.into_iter() {
-			let key = key as HashableGroupKey<T>;
-			let result: Vec<T::Model> = promise.await.map_err(Arc::new)?;
-			for item in result.into_iter() {
-				let key = &KeyComplex::<T> {
-					key: key.columns.iter().map(|col: &T::Column| item.get(*col)).collect(),
-					meta: key.clone(),
-				};
-				results.insert(key.clone(), item);
+			for (key, promise) in promises.into_iter() {
+				let key = key as HashableGroupKey<T>;
+				match promise.await {
+					Ok(models) => {
+						for item in models {
+							let key = KeyComplex::<T> {
+								key: key.columns.iter().map(|col| item.get(*col)).collect(),
+								meta: key.clone(),
+							};
+							results.insert(key, item);
+						}
+					}
+					Err(err) => {
+						panic!("Error loading data: {:?}", err);
+					}
+				}
 			}
-		}
 
-		Ok(results)
+			results
+		}
 	}
 }

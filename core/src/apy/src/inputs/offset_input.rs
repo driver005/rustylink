@@ -47,34 +47,23 @@ impl OffsetInputBuilder {
 	}
 
 	/// used to get offset pagination options message
-	pub fn input_object(&self) -> Object {
+	pub fn input_object<Ty>(&self) -> Object<Ty>
+	where
+		Ty: TypeRefTrait,
+	{
 		Object::new(&self.context.offset_input.type_name, IO::Input)
-			.field(Field::input(
-				&self.context.offset_input.limit,
-				1u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
-				),
-			))
-			.field(Field::input(
-				&self.context.offset_input.offset,
-				2u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn(GraphQLTypeRef::INT),
-					ProtoTypeRef::named_nn(ProtoTypeRef::UINT64),
-				),
-			))
+			.field(Field::input(&self.context.offset_input.limit, 1u32, Ty::named_nn(Ty::UINT64)))
+			.field(Field::input(&self.context.offset_input.offset, 2u32, Ty::named_nn(Ty::UINT64)))
 	}
 
 	/// used to parse query input to offset pagination options struct
-	pub fn parse_object<'a>(&self, object: &'a ObjectAccessors) -> OffsetInput {
+	pub fn parse_object<'a>(&self, object: &'a ObjectAccessor) -> OffsetInput {
 		let offset = object
 			.get(&self.context.offset_input.offset)
-			.map_or_else(|| Ok(0), |v| v.u64())
+			.map_or_else(|| Ok(0), |v| v.uint64())
 			.unwrap();
 
-		let limit = object.get(&self.context.offset_input.limit).unwrap().u64().unwrap();
+		let limit = object.get(&self.context.offset_input.limit).unwrap().uint64().unwrap();
 
 		OffsetInput {
 			offset,

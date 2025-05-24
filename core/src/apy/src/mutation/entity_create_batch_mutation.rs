@@ -1,11 +1,11 @@
-use dynamic::prelude::*;
+use dynamic::prelude::{FieldFutureTrait, *};
 use sea_orm::{
 	ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, TransactionTrait,
 };
 
 use crate::{
-	prepare_active_model, BuilderContext, EntityInputBuilder, EntityObjectBuilder,
-	EntityQueryFieldBuilder, GuardAction,
+	BuilderContext, EntityInputBuilder, EntityObjectBuilder, EntityQueryFieldBuilder, GuardAction,
+	prepare_active_model,
 };
 
 /// The configuration structure of EntityCreateBatchMutationBuilder
@@ -48,12 +48,13 @@ impl EntityCreateBatchMutationBuilder {
 	}
 
 	/// used to get the create mutation field for a SeaORM entity
-	pub fn to_field<'a, T, A>(&'a self) -> Field
+	pub fn to_field<T, A, Ty>(&self) -> Field<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
 		<T as EntityTrait>::Model: IntoActiveModel<A>,
 		A: ActiveModelTrait<Entity = T> + sea_orm::ActiveModelBehavior + std::marker::Send,
+		Ty: TypeRefTrait,
 	{
 		let entity_input_builder = EntityInputBuilder {
 			context: self.context,
@@ -69,14 +70,11 @@ impl EntityCreateBatchMutationBuilder {
 		let field_guards = &self.context.guards.field_guards;
 
 		Field::output(
-			self.type_name::<T>(),
+			&self.type_name::<T>(),
 			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
-				ProtoTypeRef::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
-			),
+			Ty::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
 			move |ctx| {
-				FieldFuture::new(ctx.api_type.clone(), async move {
+				FieldFuture::new(async move {
 					let guard_flag = if let Some(guard) = guard {
 						(*guard)(&ctx)
 					} else {
@@ -85,8 +83,12 @@ impl EntityCreateBatchMutationBuilder {
 
 					if let GuardAction::Block(reason) = guard_flag {
 						return match reason {
-							Some(reason) => Err::<Option<_>, Error>(Error::new(reason)),
-							None => Err::<Option<_>, Error>(Error::new("Entity guard triggered.")),
+							Some(reason) => {
+								Err::<Option<_>, SeaographyError>(SeaographyError::new(reason))
+							}
+							None => Err::<Option<_>, SeaographyError>(SeaographyError::new(
+								"Entity guard triggered.",
+							)),
 						};
 					}
 
@@ -121,10 +123,12 @@ impl EntityCreateBatchMutationBuilder {
 							};
 							if let GuardAction::Block(reason) = field_guard_flag {
 								return match reason {
-									Some(reason) => Err::<Option<_>, Error>(Error::new(reason)),
-									None => Err::<Option<_>, Error>(Error::new(
-										"GraphQLField guard triggered.",
-									)),
+									Some(reason) => Err::<Option<_>, SeaographyError>(
+										SeaographyError::new(reason),
+									),
+									None => Err::<Option<_>, SeaographyError>(
+										SeaographyError::new("GraphQLField guard triggered."),
+									),
 								};
 							}
 						}
@@ -134,6 +138,7 @@ impl EntityCreateBatchMutationBuilder {
 							&entity_object_builder,
 							input_object,
 						)?;
+
 						let result = active_model.insert(&transaction).await?;
 						results.push(result);
 					}
@@ -147,10 +152,7 @@ impl EntityCreateBatchMutationBuilder {
 		.argument(Field::input(
 			&context.entity_create_batch_mutation.data_field,
 			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named_nn_list_nn(entity_input_builder.insert_type_name::<T>()),
-				ProtoTypeRef::named_nn_list_nn(entity_input_builder.insert_type_name::<T>()),
-			),
+			Ty::named_nn_list_nn(entity_input_builder.insert_type_name::<T>()),
 		))
 	}
 }

@@ -1,14 +1,16 @@
-use super::{
-	BoxFieldFuture, Enum, FieldValue, Message, ObjectAccessor, Result, Scalar, SchemaError, Service,
+use super::{Enum, Message, Result, Scalar, Service, TypeRef};
+use crate::{
+	BoxFieldFuture, ContextBase, EnumTrait, FieldValue, ObjectAccessor, ProtoRegistry, SchemaError,
+	SeaResult, SeaographyError, TypeRefTrait, Value,
 };
-use crate::{Context, Registry};
-use indexmap::IndexMap;
+use binary::proto::Decoder;
 use lazy_static::lazy_static;
+use std::collections::BTreeMap;
 use std::sync::{Arc, RwLock};
 
 lazy_static! {
-	pub(crate) static ref TYPES: Arc<RwLock<IndexMap<String, Arc<Type>>>> =
-		Arc::new(RwLock::new(IndexMap::new()));
+	pub(crate) static ref TYPES: Arc<RwLock<BTreeMap<String, Arc<Type>>>> =
+		Arc::new(RwLock::new(BTreeMap::new()));
 }
 
 // Functions to interact with TYPES
@@ -57,7 +59,7 @@ impl Type {
 
 	pub(crate) fn collect<'a>(
 		&'a self,
-		ctx: &'a Context<'a>,
+		ctx: &'a ContextBase,
 		arguments: &'a ObjectAccessor<'a>,
 		parent_value: Option<&'a FieldValue<'a>>,
 	) -> Vec<BoxFieldFuture<'a>> {
@@ -69,8 +71,8 @@ impl Type {
 		}
 	}
 
-	pub(crate) fn register(&self, registry: &mut Registry) -> Result<(), SchemaError> {
-		if registry.types.proto.contains_key(self.name()) {
+	pub(crate) fn register(&self, registry: &mut ProtoRegistry) -> Result<(), SchemaError> {
+		if registry.types.contains_key(self.name()) {
 			return Err(SchemaError(format!("Type \"{0}\" already exists", self.name())));
 		}
 

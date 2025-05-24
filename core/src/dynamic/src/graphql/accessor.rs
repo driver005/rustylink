@@ -1,7 +1,9 @@
 use super::{Error, Name, Upload, Value};
 use crate::{
-	interface::{ListAccessors, ObjectAccessors, ValueAccessors},
-	ListAccessorTrait, ObjectAccessorTrait, ValueAccessorTrait,
+	// interface::{ListAccessors, ObjectAccessors, ValueAccessors},
+	ListAccessorTrait,
+	ObjectAccessorTrait,
+	ValueAccessorTrait,
 };
 pub use async_graphql::dynamic::{ListAccessor, ObjectAccessor, ValueAccessor};
 
@@ -17,9 +19,9 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 		"GraphQLValueAccessor"
 	}
 
-	fn get_accessor<'b>(&'b self) -> ValueAccessors<'b> {
-		todo!()
-	}
+	// fn get_accessor<'b>(&'b self) -> ValueAccessors<'b> {
+	// 	todo!()
+	// }
 
 	fn is_null(&self) -> bool {
 		self.is_null()
@@ -34,7 +36,9 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	}
 
 	fn i32(&self) -> Result<i32, Self::Error> {
-		panic!("GraphQLValueAccessor::i32() is not a vailid function use ProtoValueAccessor::i32() instead")
+		panic!(
+			"GraphQLValueAccessor::i32() is not a vailid function use ProtoValueAccessor::i32() instead"
+		)
 	}
 
 	fn i64(&self) -> Result<i64, Self::Error> {
@@ -42,7 +46,9 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	}
 
 	fn u32(&self) -> Result<u32, Self::Error> {
-		panic!("GraphQLValueAccessor::u32() is not a vailid function use ProtoValueAccessor::u32() instead")
+		panic!(
+			"GraphQLValueAccessor::u32() is not a vailid function use ProtoValueAccessor::u32() instead"
+		)
 	}
 
 	fn u64(&self) -> Result<u64, Self::Error> {
@@ -50,11 +56,15 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	}
 
 	fn si32(&self) -> Result<i32, Self::Error> {
-		panic!("GraphQLValueAccessor::si32() is not a vailid function use ProtoValueAccessor::si32() instead")
+		panic!(
+			"GraphQLValueAccessor::si32() is not a vailid function use ProtoValueAccessor::si32() instead"
+		)
 	}
 
 	fn si64(&self) -> Result<i64, Self::Error> {
-		panic!("GraphQLValueAccessor::si64() is not a vailid function use ProtoValueAccessor::si64() instead")
+		panic!(
+			"GraphQLValueAccessor::si64() is not a vailid function use ProtoValueAccessor::si64() instead"
+		)
 	}
 
 	fn f32(&self) -> Result<f32, Self::Error> {
@@ -88,6 +98,78 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	fn deserialize<T: serde::de::DeserializeOwned>(&self) -> Result<T, Self::Error> {
 		self.deserialize::<T>()
 	}
+
+	fn int8(&self) -> Result<i8, Self::Error> {
+		todo!()
+	}
+
+	fn int16(&self) -> Result<i16, Self::Error> {
+		todo!()
+	}
+
+	fn int32(&self) -> Result<i32, Self::Error> {
+		todo!()
+	}
+
+	fn int64(&self) -> Result<i64, Self::Error> {
+		todo!()
+	}
+
+	fn int128(&self) -> Result<i128, Self::Error> {
+		todo!()
+	}
+
+	fn intsize(&self) -> Result<isize, Self::Error> {
+		todo!()
+	}
+
+	fn uint8(&self) -> Result<u8, Self::Error> {
+		todo!()
+	}
+
+	fn uint16(&self) -> Result<u16, Self::Error> {
+		todo!()
+	}
+
+	fn uint32(&self) -> Result<u32, Self::Error> {
+		todo!()
+	}
+
+	fn uint64(&self) -> Result<u64, Self::Error> {
+		todo!()
+	}
+
+	fn uint128(&self) -> Result<u128, Self::Error> {
+		todo!()
+	}
+
+	fn uintsize(&self) -> Result<usize, Self::Error> {
+		todo!()
+	}
+
+	fn float32(&self) -> Result<ordered_float::OrderedFloat<f32>, Self::Error> {
+		todo!()
+	}
+
+	fn float64(&self) -> Result<ordered_float::OrderedFloat<f64>, Self::Error> {
+		todo!()
+	}
+
+	fn bool(&self) -> Result<bool, Self::Error> {
+		todo!()
+	}
+
+	fn char(&self) -> Result<char, Self::Error> {
+		todo!()
+	}
+
+	fn option(&self) -> Result<Option<Self>, Self::Error> {
+		todo!()
+	}
+
+	fn variable(&self) -> Result<(Self, Self), Self::Error> {
+		todo!()
+	}
 }
 
 impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
@@ -99,9 +181,9 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
 		"GraphQLObjectAccessor"
 	}
 
-	fn get_accessor(self) -> ObjectAccessors<'a> {
-		ObjectAccessors::graphql(self)
-	}
+	// fn get_accessor(self) -> ObjectAccessors<'a> {
+	// 	ObjectAccessors::graphql(self)
+	// }
 
 	fn get(&'a self, name: &str) -> Option<Self::ValueAccessor> {
 		self.get(name)
@@ -140,15 +222,14 @@ impl<'a> ListAccessorTrait<'a> for ListAccessor<'a> {
 	type Value = Value;
 	type Error = Error;
 	type ValueAccessor = ValueAccessor<'a>;
-	type ListAccessor = ListAccessor<'a>;
 
 	fn type_name(&self) -> &'static str {
 		"GraphQLListAccessor"
 	}
 
-	fn get_accessor<'b>(&'b self) -> ListAccessors<'b> {
-		todo!()
-	}
+	// fn get_accessor<'b>(&'b self) -> ListAccessors<'b> {
+	// 	todo!()
+	// }
 
 	fn len(&self) -> usize {
 		self.len()
@@ -170,7 +251,7 @@ impl<'a> ListAccessorTrait<'a> for ListAccessor<'a> {
 		self.try_get(idx)
 	}
 
-	fn as_slice(&self, start: usize, end: usize) -> Result<Self::ListAccessor, Self::Error> {
+	fn as_slice(&self, start: usize, end: usize) -> Result<Self, Self::Error> {
 		self.as_slice(start, end)
 	}
 

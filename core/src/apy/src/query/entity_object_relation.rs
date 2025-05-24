@@ -1,10 +1,9 @@
 use crate::{
-	apply_memory_pagination, get_filter_conditions, BuilderContext, Connection,
-	ConnectionObjectBuilder, EntityObjectBuilder, FilterInputBuilder, GuardAction,
-	HashableGroupKey, KeyComplex, OneToManyLoader, OneToOneLoader, OrderInputBuilder,
-	PaginationInputBuilder,
+	BuilderContext, Connection, ConnectionObjectBuilder, EntityObjectBuilder, FilterInputBuilder,
+	FilterTypeTrait, GuardAction, HashableGroupKey, KeyComplex, OneToManyLoader, OneToOneLoader,
+	OrderInputBuilder, PaginationInputBuilder, apply_memory_pagination, get_filter_conditions,
 };
-use async_graphql::dataloader::DataLoader;
+use dataloader::BatchFn;
 use dynamic::prelude::*;
 use heck::ToSnakeCase;
 use sea_orm::{EntityTrait, Iden, ModelTrait, RelationDef};
@@ -17,7 +16,11 @@ pub struct EntityObjectRelationBuilder {
 
 impl EntityObjectRelationBuilder {
 	/// used to get a field for an SeaORM entity relationship
-	pub fn get_relation<T, R>(&self, name: &str, relation_definition: RelationDef) -> Field
+	pub fn get_relation<T, R, Ty, F>(
+		&self,
+		name: &str,
+		relation_definition: RelationDef,
+	) -> Field<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
@@ -25,6 +28,8 @@ impl EntityObjectRelationBuilder {
 		R: EntityTrait,
 		<R as sea_orm::EntityTrait>::Model: Sync,
 		<<R as sea_orm::EntityTrait>::Column as std::str::FromStr>::Err: core::fmt::Debug,
+		Ty: TypeRefTrait,
+		F: FilterTypeTrait,
 	{
 		let context: &'static BuilderContext = self.context;
 		let entity_object_builder = EntityObjectBuilder {
@@ -54,75 +59,68 @@ impl EntityObjectRelationBuilder {
 		.unwrap();
 
 		let field = match relation_definition.is_owner {
-			false => Field::output(
-				name,
-				1u32,
-				TypeRef::new(
-					GraphQLTypeRef::named(&object_name),
-					ProtoTypeRef::named(&object_name),
-				),
-				move |ctx| {
-					FieldFuture::new(ctx.api_type.clone(), async move {
-						let guard_flag = if let Some(guard) = guard {
-							(*guard)(&ctx)
-						} else {
-							GuardAction::Allow
+			false => Field::output(name, 1u32, Ty::named(&object_name), move |ctx| {
+				FieldFuture::new(async move {
+					let guard_flag = if let Some(guard) = guard {
+						(*guard)(&ctx)
+					} else {
+						GuardAction::Allow
+					};
+
+					if let GuardAction::Block(reason) = guard_flag {
+						return match reason {
+							Some(reason) => {
+								Err::<Option<_>, SeaographyError>(SeaographyError::new(reason))
+							}
+							None => Err::<Option<_>, SeaographyError>(SeaographyError::new(
+								"Entity guard triggered.",
+							)),
 						};
+					}
 
-						if let GuardAction::Block(reason) = guard_flag {
-							return match reason {
-								Some(reason) => Err::<Option<_>, Error>(Error::new(reason)),
-								None => {
-									Err::<Option<_>, Error>(Error::new("Entity guard triggered."))
-								}
-							};
-						}
+					let loader = ctx.data_unchecked::<OneToOneLoader<R>>();
 
-						let loader = ctx.data_unchecked::<DataLoader<OneToOneLoader<R>>>();
+					let parent: &T::Model = ctx
+						.parent_value
+						.try_downcast_ref::<T::Model>()
+						.expect("Parent should exist");
 
-						let parent: &T::Model = ctx
-							.parent_value
-							.try_downcast_ref::<T::Model>()
-							.expect("Parent should exist");
+					let stmt = R::find();
+					let filters = ctx.args.get(&context.entity_query_field.filters);
+					let filters = get_filter_conditions::<R, F>(context, filters);
+					let order_by = ctx.args.get(&context.entity_query_field.order_by);
+					let order_by = OrderInputBuilder {
+						context,
+					}
+					.parse_object::<R>(order_by);
+					let key = KeyComplex::<R> {
+						key: vec![parent.get(from_col)],
+						meta: HashableGroupKey::<R> {
+							stmt,
+							columns: vec![to_col],
+							filters: Some(filters),
+							order_by,
+						},
+					};
 
-						let stmt = R::find();
-						let filters = ctx.args.get(&context.entity_query_field.filters);
-						let filters = get_filter_conditions::<R>(context, filters);
-						let order_by = ctx.args.get(&context.entity_query_field.order_by);
-						let order_by = OrderInputBuilder {
-							context,
-						}
-						.parse_object::<R>(order_by);
-						let key = KeyComplex::<R> {
-							key: vec![parent.get(from_col)],
-							meta: HashableGroupKey::<R> {
-								stmt,
-								columns: vec![to_col],
-								filters: Some(filters),
-								order_by,
-							},
-						};
+					let keys = vec![key];
 
-						let data = loader.load_one(key).await?;
+					let mut values = loader.clone().load(&keys).await;
 
-						if let Some(data) = data {
-							Ok(Some(FieldValue::owned_any(data)))
-						} else {
-							Ok(None)
-						}
-					})
-				},
-			),
+					if let Some(data) = values.remove(&keys[0]) {
+						Ok(Some(FieldValue::owned_any(data)))
+					} else {
+						Ok(None)
+					}
+				})
+			}),
 			true => Field::output(
 				name,
 				1u32,
-				TypeRef::new(
-					GraphQLTypeRef::named_nn(connection_object_builder.type_name(&object_name)),
-					ProtoTypeRef::named_nn(connection_object_builder.type_name(&object_name)),
-				),
+				Ty::named_nn(connection_object_builder.type_name(&object_name)),
 				move |ctx| {
 					let context: &'static BuilderContext = context;
-					FieldFuture::new(ctx.api_type.clone(), async move {
+					FieldFuture::new(async move {
 						let guard_flag = if let Some(guard) = guard {
 							(*guard)(&ctx)
 						} else {
@@ -131,14 +129,16 @@ impl EntityObjectRelationBuilder {
 
 						if let GuardAction::Block(reason) = guard_flag {
 							return match reason {
-								Some(reason) => Err::<Option<_>, Error>(Error::new(reason)),
-								None => {
-									Err::<Option<_>, Error>(Error::new("Entity guard triggered."))
+								Some(reason) => {
+									Err::<Option<_>, SeaographyError>(SeaographyError::new(reason))
 								}
+								None => Err::<Option<_>, SeaographyError>(SeaographyError::new(
+									"Entity guard triggered.",
+								)),
 							};
 						}
 
-						let loader = ctx.data_unchecked::<DataLoader<OneToManyLoader<R>>>();
+						let loader = ctx.data_unchecked::<OneToManyLoader<R>>();
 
 						let parent: &T::Model = ctx
 							.parent_value
@@ -147,7 +147,7 @@ impl EntityObjectRelationBuilder {
 
 						let stmt = R::find();
 						let filters = ctx.args.get(&context.entity_query_field.filters);
-						let filters = get_filter_conditions::<R>(context, filters);
+						let filters = get_filter_conditions::<R, F>(context, filters);
 						let order_by = ctx.args.get(&context.entity_query_field.order_by);
 						let order_by = OrderInputBuilder {
 							context,
@@ -163,7 +163,9 @@ impl EntityObjectRelationBuilder {
 							},
 						};
 
-						let values = loader.load_one(key).await?;
+						let keys = vec![key];
+
+						let mut values = loader.clone().load(&keys).await;
 
 						let pagination = ctx.args.get(&context.entity_query_field.pagination);
 						let pagination = PaginationInputBuilder {
@@ -171,7 +173,8 @@ impl EntityObjectRelationBuilder {
 						}
 						.parse_object(pagination);
 
-						let connection: Connection<R> = apply_memory_pagination(values, pagination);
+						let connection: Connection<R> =
+							apply_memory_pagination(values.remove(&keys[0]), pagination);
 
 						Ok(Some(FieldValue::owned_any(connection)))
 					})
@@ -185,26 +188,17 @@ impl EntityObjectRelationBuilder {
 				.argument(Field::input(
 					&context.entity_query_field.filters,
 					1u32,
-					TypeRef::new(
-						GraphQLTypeRef::named(filter_input_builder.type_name(&object_name)),
-						ProtoTypeRef::named(filter_input_builder.type_name(&object_name)),
-					),
+					Ty::named(filter_input_builder.type_name(&object_name)),
 				))
 				.argument(Field::input(
 					&context.entity_query_field.order_by,
 					2u32,
-					TypeRef::new(
-						GraphQLTypeRef::named(order_input_builder.type_name(&object_name)),
-						ProtoTypeRef::named(order_input_builder.type_name(&object_name)),
-					),
+					Ty::named(order_input_builder.type_name(&object_name)),
 				))
 				.argument(Field::input(
 					&context.entity_query_field.pagination,
 					3u32,
-					TypeRef::new(
-						GraphQLTypeRef::named(&context.pagination_input.type_name),
-						ProtoTypeRef::named(&context.pagination_input.type_name),
-					),
+					Ty::named(&context.pagination_input.type_name),
 				)),
 		}
 	}

@@ -1,4 +1,4 @@
-use crate::{ActiveEnumBuilder, BuilderContext, FilterInfo, FilterOperation, SeaResult};
+use crate::{ActiveEnumBuilder, BuilderContext, FilterInfo, FilterOperation};
 use dynamic::prelude::*;
 use heck::ToUpperCamelCase;
 use sea_orm::{ActiveEnum, ColumnTrait, ColumnType, Condition, DynIden, EntityTrait};
@@ -70,7 +70,7 @@ impl ActiveEnumFilterInputBuilder {
 
 /// used to update the query condition with enumeration filters
 pub fn prepare_enumeration_condition<'a, T>(
-	filter: &'a ObjectAccessors,
+	filter: &'a ObjectAccessor,
 	column: &T::Column,
 	condition: Condition,
 ) -> SeaResult<Condition>
@@ -96,7 +96,7 @@ where
 		variant.unwrap().to_string()
 	};
 
-	let extract_condition = |data: &ValueAccessors| -> Vec<String> {
+	let extract_condition = |data: &ValueAccessor| -> Vec<String> {
 		//TODO: implemnt error handling
 		data.list()
 			.unwrap()
@@ -165,7 +165,7 @@ where
 
 	let condition = match filter.get("is_null") {
 		Some(data) => {
-			let data = data.boolean().unwrap();
+			let data = data.bool().unwrap();
 
 			if data {
 				condition.add(column.is_null())

@@ -3,7 +3,7 @@ use crate::{
 	CursorInputBuilder, EdgeObjectBuilder, EntityCreateBatchMutationBuilder,
 	EntityCreateOneMutationBuilder, EntityDeleteMutationBuilder, EntityInputBuilder,
 	EntityObjectBuilder, EntityQueryFieldBuilder, EntityUpdateMutationBuilder, FilterInputBuilder,
-	FilterTypesMapHelper, OffsetInputBuilder, OneToManyLoader, OneToOneLoader, OrderByEnumBuilder,
+	FilterTypeTrait, OffsetInputBuilder, OneToManyLoader, OneToOneLoader, OrderByEnumBuilder,
 	OrderInputBuilder, PageInfoObjectBuilder, PageInputBuilder, PaginationInfoObjectBuilder,
 	PaginationInputBuilder,
 };
@@ -14,50 +14,55 @@ use sea_orm::{ActiveEnum, ActiveModelTrait, EntityTrait, IntoActiveModel};
 /// The Builder is used to create the Schema for GraphQL
 ///
 /// You can populate it with the entities, enumerations of your choice
-pub struct Builder {
+pub struct Builder<Ty, E, F>
+where
+	Ty: TypeRefTrait,
+	E: EnumTrait,
+	F: FilterTypeTrait,
+{
 	//GraphQL
-	pub query: Object,
-	pub mutation: Object,
-	pub builder: DynamicBuilder,
+	pub query: Object<Ty>,
+	pub mutation: Object<Ty>,
+	pub builder: DynamicBuilder<Ty, E>,
 
 	/// holds all output object types
-	pub outputs: Vec<Object>,
+	pub outputs: Vec<Object<Ty>>,
 
 	/// holds all input object types
-	pub inputs: Vec<Object>,
+	pub inputs: Vec<Object<Ty>>,
 
 	/// holds all enumeration types
-	pub enumerations: Vec<Enum>,
+	pub enumerations: Vec<E>,
 
 	/// holds all entities queries
-	pub queries: Vec<Field>,
+	pub queries: Vec<Field<Ty>>,
 
 	/// holds all entities mutations
-	pub mutations: Vec<Field>,
+	pub mutations: Vec<Field<Ty>>,
 
 	/// holds a copy to the database connection
 	pub connection: sea_orm::DatabaseConnection,
 
 	/// configuration for builder
 	pub context: &'static BuilderContext,
+
+	_marker: std::marker::PhantomData<F>,
 }
 
-impl Builder {
+impl<Ty, E, F> Builder<Ty, E, F>
+where
+	Ty: TypeRefTrait,
+	E: EnumTrait,
+	F: FilterTypeTrait,
+{
 	/// Used to create a new Builder from the given configuration context
 	pub fn new(context: &'static BuilderContext, connection: sea_orm::DatabaseConnection) -> Self {
 		let query = Object::new("Query", IO::Output);
 		let mutation = Object::new("Mutation", IO::Output).field(Field::output(
 			"_ping",
 			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named(GraphQLTypeRef::STRING),
-				ProtoTypeRef::named(ProtoTypeRef::STRING),
-			),
-			|ctx| {
-				FieldFuture::new(ctx.api_type.clone(), async move {
-					Ok(Some(Value::new(GraphQLValue::from("pong"), ProtoValue::from("pong"))))
-				})
-			},
+			Ty::named(Ty::STRING),
+			|_| FieldFuture::new(async move { Ok(Some(Value::from("pong"))) }),
 		));
 		let schema_builder = Schema::build(query.type_name(), Some(mutation.type_name()), None);
 
@@ -76,10 +81,11 @@ impl Builder {
 			mutations: Vec::new(),
 			connection,
 			context,
+			_marker: std::marker::PhantomData,
 		}
 	}
 
-	pub fn register_entity<T>(&mut self, relations: Vec<Field>)
+	pub fn register_entity<T>(&mut self, relations: Vec<Field<Ty>>)
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
@@ -89,37 +95,37 @@ impl Builder {
 		};
 		let entity_object = relations
 			.into_iter()
-			.fold(entity_object_builder.to_object::<T>(), |entity_object, field| {
+			.fold(entity_object_builder.to_object::<T, Ty>(), |entity_object, field| {
 				entity_object.field(field)
 			});
 
 		let edge_object_builder = EdgeObjectBuilder {
 			context: self.context,
 		};
-		let edge = edge_object_builder.to_object::<T>();
+		let edge = edge_object_builder.to_object::<T, Ty>();
 
 		let connection_object_builder = ConnectionObjectBuilder {
 			context: self.context,
 		};
-		let connection = connection_object_builder.to_object::<T>();
+		let connection = connection_object_builder.to_object::<T, Ty>();
 
 		self.outputs.extend(vec![entity_object, edge, connection]);
 
 		let filter_input_builder = FilterInputBuilder {
 			context: self.context,
 		};
-		let filter = filter_input_builder.to_object::<T>();
+		let filter = filter_input_builder.to_object::<T, Ty, F>();
 
 		let order_input_builder = OrderInputBuilder {
 			context: self.context,
 		};
-		let order = order_input_builder.to_object::<T>();
+		let order = order_input_builder.to_object::<T, Ty>();
 		self.inputs.extend(vec![filter, order]);
 
 		let entity_query_field_builder = EntityQueryFieldBuilder {
 			context: self.context,
 		};
-		let query = entity_query_field_builder.to_field::<T>();
+		let query = entity_query_field_builder.to_field::<T, Ty, F>();
 		self.queries.push(query);
 	}
 
@@ -133,22 +139,22 @@ impl Builder {
 		let entity_object_builder = EntityObjectBuilder {
 			context: self.context,
 		};
-		let basic_entity_object = entity_object_builder.basic_to_object::<T>();
+		let basic_entity_object = entity_object_builder.basic_to_object::<T, Ty>();
 		self.outputs.push(basic_entity_object);
 
 		let entity_input_builder = EntityInputBuilder {
 			context: self.context,
 		};
 
-		let entity_insert_input_object = entity_input_builder.insert_input_object::<T>();
-		let entity_update_input_object = entity_input_builder.update_input_object::<T>();
+		let entity_insert_input_object = entity_input_builder.insert_input_object::<T, Ty>();
+		let entity_update_input_object = entity_input_builder.update_input_object::<T, Ty>();
 		self.inputs.extend(vec![entity_insert_input_object, entity_update_input_object]);
 
 		// create one mutation
 		let entity_create_one_mutation_builder = EntityCreateOneMutationBuilder {
 			context: self.context,
 		};
-		let create_one_mutation = entity_create_one_mutation_builder.to_field::<T, A>();
+		let create_one_mutation = entity_create_one_mutation_builder.to_field::<T, A, Ty>();
 		self.mutations.push(create_one_mutation);
 
 		// create batch mutation
@@ -156,20 +162,20 @@ impl Builder {
 			EntityCreateBatchMutationBuilder {
 				context: self.context,
 			};
-		let create_batch_mutation = entity_create_batch_mutation_builder.to_field::<T, A>();
+		let create_batch_mutation = entity_create_batch_mutation_builder.to_field::<T, A, Ty>();
 		self.mutations.push(create_batch_mutation);
 
 		// update mutation
 		let entity_update_mutation_builder = EntityUpdateMutationBuilder {
 			context: self.context,
 		};
-		let update_mutation = entity_update_mutation_builder.to_field::<T, A>();
+		let update_mutation = entity_update_mutation_builder.to_field::<T, A, Ty, F>();
 		self.mutations.push(update_mutation);
 
 		let entity_delete_mutation_builder = EntityDeleteMutationBuilder {
 			context: self.context,
 		};
-		let delete_mutation = entity_delete_mutation_builder.to_field::<T, A>();
+		let delete_mutation = entity_delete_mutation_builder.to_field::<T, A, Ty, F>();
 		self.mutations.push(delete_mutation);
 	}
 
@@ -183,14 +189,7 @@ impl Builder {
 			+ Clone
 			+ 'static,
 	{
-		self.builder.schema_builder = self.builder.schema_builder.data(DataLoader::new(
-			OneToOneLoader::<T>::new(self.connection.clone()),
-			spawner.clone(),
-		));
-
-		self.builder = self
-			.builder
-			.data(DataLoader::new(OneToOneLoader::<T>::new(self.connection.clone()), spawner));
+		self.builder = self.builder.data(OneToOneLoader::<T>::new(self.connection.clone()));
 		self
 	}
 
@@ -204,14 +203,7 @@ impl Builder {
 			+ Clone
 			+ 'static,
 	{
-		self.builder.schema_builder = self.builder.schema_builder.data(DataLoader::new(
-			OneToManyLoader::<T>::new(self.connection.clone()),
-			spawner.clone(),
-		));
-
-		self.builder = self
-			.builder
-			.data(DataLoader::new(OneToManyLoader::<T>::new(self.connection.clone()), spawner));
+		self.builder = self.builder.data(OneToManyLoader::<T>::new(self.connection.clone()));
 		self
 	}
 
@@ -226,19 +218,19 @@ impl Builder {
 		let active_enum_filter_input_builder = ActiveEnumFilterInputBuilder {
 			context: self.context,
 		};
-		let filter_types_map_helper = FilterTypesMapHelper {
-			context: self.context,
-		};
+		// let filter_types_map_helper = FilterTypesMapHelper {
+		// 	context: self.context,
+		// };
 
-		let enumeration = active_enum_builder.enumeration::<A>();
+		let enumeration = active_enum_builder.enumeration::<A, E>();
 		self.enumerations.push(enumeration);
 
 		let filter_info = active_enum_filter_input_builder.filter_info::<A>();
-		self.inputs.push(filter_types_map_helper.generate_filter_input(&filter_info));
+		self.inputs.push(filter_info.generate_filter_input());
 	}
 
 	/// used to consume the builder context and generate a ready to be completed GraphQL builder
-	pub fn builder(self) -> DynamicBuilder {
+	pub fn builder(self) -> DynamicBuilder<Ty, E> {
 		let query = self.query;
 		let mutation = self.mutation;
 		let builder = self.builder;
@@ -264,26 +256,17 @@ impl Builder {
 			.fold(builder, |builder, enumeration| builder.register(enumeration));
 
 		// register input filters
-		let filter_types_map_helper = FilterTypesMapHelper {
-			context: self.context,
-		};
 
-		let builder = filter_types_map_helper
-			.get_graphql_input_filters()
+		let builder = F::get_input_filters(self.context)
 			.into_iter()
-			.fold(builder, |builder, cur| builder.register_schema(cur));
-
-		let builder = filter_types_map_helper
-			.get_proto_input_filters()
-			.into_iter()
-			.fold(builder, |builder, cur| builder.register_proto(cur));
+			.fold(builder, |builder, cur| builder.register(cur));
 
 		builder
 			.register(
 				OrderByEnumBuilder {
 					context: self.context,
 				}
-				.enumeration(),
+				.enumeration::<E>(),
 			)
 			.register(
 				CursorInputBuilder {
@@ -333,15 +316,26 @@ impl Builder {
 }
 
 pub trait RelationBuilder {
-	fn get_relation(&self, context: &'static crate::BuilderContext) -> dynamic::prelude::Field;
+	fn get_relation<T, F>(
+		&self,
+		context: &'static crate::BuilderContext,
+	) -> dynamic::prelude::Field<T>
+	where
+		T: TypeRefTrait,
+		F: FilterTypeTrait;
 }
 
 #[macro_export]
 macro_rules! register_entity {
-	($builder:expr, $module_path:ident) => {
+	($builder:expr, $module_path:ident, $type_ref:ty, $filter_type:ty) => {
 		$builder.register_entity::<$module_path::Entity>(
 			<$module_path::RelatedEntity as sea_orm::Iterable>::iter()
-				.map(|rel| apy::RelationBuilder::get_relation(&rel, $builder.context))
+				.map(|rel| {
+					apy::RelationBuilder::get_relation::<$type_ref, $filter_type>(
+						&rel,
+						$builder.context,
+					)
+				})
 				.collect(),
 		);
 		$builder =
@@ -354,8 +348,8 @@ macro_rules! register_entity {
 
 #[macro_export]
 macro_rules! register_entities {
-    ($builder:expr, [$($module_paths:ident),+ $(,)?]) => {
-        $(apy::register_entity!($builder, $module_paths);)*
+    ($builder:expr, [$($module_paths:ident),+ $(,)?], $type_ref:ty, $filter_type:ty) => {
+        $(apy::register_entity!($builder, $module_paths, $type_ref, $filter_type);)*
     };
 }
 

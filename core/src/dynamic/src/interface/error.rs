@@ -1,20 +1,36 @@
 use std::fmt::Display;
 
-use crate::prelude::{GraphQLError, ProtoError};
+use crate::{
+	ErrorTrait,
+	prelude::{GraphQLError, ProtoError},
+};
 
 #[derive(Debug)]
 pub struct Error {
 	pub message: String,
 }
 
+impl ErrorTrait for Error {
+	fn new(message: impl Into<String>) -> Self {
+		Self::new(message)
+	}
+
+	fn to<T>(value: T) -> Self
+	where
+		T: Display + Send + Sync + 'static,
+	{
+		Self {
+			message: value.to_string(),
+		}
+	}
+}
+
 impl Error {
-	/// Create an error from the given error message.
 	pub fn new(message: impl Into<String>) -> Self {
 		Self {
 			message: message.into(),
 		}
 	}
-
 	pub(crate) fn to_graphql(self) -> GraphQLError {
 		GraphQLError::new(self.message)
 	}
@@ -24,13 +40,13 @@ impl Error {
 	}
 }
 
-impl<T: Display + Send + Sync> From<T> for Error {
-	fn from(e: T) -> Self {
-		Self {
-			message: e.to_string(),
-		}
-	}
-}
+// impl<T: Display + Send + Sync> From<T> for Error {
+// 	fn from(e: T) -> Self {
+// 		Self {
+// 			message: e.to_string(),
+// 		}
+// 	}
+// }
 
 /// An alias for `Result<T, Error>`.
 pub type Result<T, E = Error> = std::result::Result<T, E>;

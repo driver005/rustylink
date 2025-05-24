@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="EMPTY_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/core/src/apy/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/binary/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/dynamic/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/generator/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/generator/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/macros/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/sdk/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/service/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/test_client/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sdk/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/worker/src/common/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/worker/src/queue/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/worker/src/sdk/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/worker/src/task/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/worker/src/utils/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/core/target" />
+      <excludeFolder url="file://$MODULE_DIR$/sdk/target" />
+      <excludeFolder url="file://$MODULE_DIR$/worker/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

@@ -10,11 +10,13 @@ dynamic = { path = "../dynamic" }
 macros = { path = "../macros" }
 
 async-graphql = { workspace = true }
+dataloader = { workspace = true }
 sea-orm = { workspace = true }
 itertools = { workspace = true }
 heck = { workspace = true }
 thiserror = { workspace = true }
 fnv = { workspace = true }
+futures = { workspace = true } 
 
 [features]
 default = ["with-json", "with-chrono", "with-uuid"]

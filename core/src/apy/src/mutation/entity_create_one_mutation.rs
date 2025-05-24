@@ -1,6 +1,5 @@
 use crate::{
 	BuilderContext, EntityInputBuilder, EntityObjectBuilder, EntityQueryFieldBuilder, GuardAction,
-	SeaResult,
 };
 use dynamic::prelude::*;
 use sea_orm::{
@@ -48,12 +47,13 @@ impl EntityCreateOneMutationBuilder {
 	}
 
 	/// used to get the create mutation field for a SeaORM entity
-	pub fn to_field<T, A>(&self) -> Field
+	pub fn to_field<T, A, Ty>(&self) -> Field<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
 		<T as EntityTrait>::Model: IntoActiveModel<A>,
 		A: ActiveModelTrait<Entity = T> + sea_orm::ActiveModelBehavior + std::marker::Send,
+		Ty: TypeRefTrait,
 	{
 		let entity_input_builder = EntityInputBuilder {
 			context: self.context,
@@ -69,14 +69,11 @@ impl EntityCreateOneMutationBuilder {
 		let field_guards = &self.context.guards.field_guards;
 
 		Field::output(
-			self.type_name::<T>(),
+			&self.type_name::<T>(),
 			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named_nn(entity_object_builder.basic_type_name::<T>()),
-				ProtoTypeRef::named_nn(entity_object_builder.basic_type_name::<T>()),
-			),
+			Ty::named_nn(entity_object_builder.basic_type_name::<T>()),
 			move |ctx| {
-				FieldFuture::new(ctx.api_type.clone(), async move {
+				FieldFuture::new(async move {
 					let guard_flag = if let Some(guard) = guard {
 						(*guard)(&ctx)
 					} else {
@@ -85,8 +82,12 @@ impl EntityCreateOneMutationBuilder {
 
 					if let GuardAction::Block(reason) = guard_flag {
 						return match reason {
-							Some(reason) => Err::<Option<_>, Error>(Error::new(reason)),
-							None => Err::<Option<_>, Error>(Error::new("Entity guard triggered.")),
+							Some(reason) => {
+								Err::<Option<_>, SeaographyError>(SeaographyError::new(reason))
+							}
+							None => Err::<Option<_>, SeaographyError>(SeaographyError::new(
+								"Entity guard triggered.",
+							)),
 						};
 					}
 
@@ -114,8 +115,10 @@ impl EntityCreateOneMutationBuilder {
 						};
 						if let GuardAction::Block(reason) = field_guard_flag {
 							return match reason {
-								Some(reason) => Err::<Option<_>, Error>(Error::new(reason)),
-								None => Err::<Option<_>, Error>(Error::new(
+								Some(reason) => {
+									Err::<Option<_>, SeaographyError>(SeaographyError::new(reason))
+								}
+								None => Err::<Option<_>, SeaographyError>(SeaographyError::new(
 									"GraphQLField guard triggered.",
 								)),
 							};
@@ -137,10 +140,7 @@ impl EntityCreateOneMutationBuilder {
 		.argument(Field::input(
 			&context.entity_create_one_mutation.data_field,
 			1u32,
-			TypeRef::new(
-				GraphQLTypeRef::named_nn(entity_input_builder.insert_type_name::<T>()),
-				ProtoTypeRef::named_nn(entity_input_builder.insert_type_name::<T>()),
-			),
+			Ty::named_nn(entity_input_builder.insert_type_name::<T>()),
 		))
 	}
 }
@@ -148,7 +148,7 @@ impl EntityCreateOneMutationBuilder {
 pub fn prepare_active_model<'a, T, A>(
 	entity_input_builder: &'a EntityInputBuilder,
 	entity_object_builder: &'a EntityObjectBuilder,
-	input_object: ObjectAccessors<'a>,
+	input_object: ObjectAccessor<'a>,
 ) -> SeaResult<A>
 where
 	T: EntityTrait,
@@ -156,7 +156,7 @@ where
 	<T as EntityTrait>::Model: IntoActiveModel<A>,
 	A: ActiveModelTrait<Entity = T> + sea_orm::ActiveModelBehavior + std::marker::Send,
 {
-	let mut data = entity_input_builder.parse_object::<T>(&input_object.get_accessor())?;
+	let mut data = entity_input_builder.parse_object::<T>(&input_object)?;
 
 	let mut active_model = A::default();
 

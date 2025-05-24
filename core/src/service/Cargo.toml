@@ -9,12 +9,21 @@ license.workspace = true
 name = "test"
 path = "bin/test.rs"
 
+[[bin]]
+name = "rest"
+path = "bin/rest.rs"
+
 [dependencies]
+juniper = { workspace = true }
 tokio = { workspace = true }
 tonic = { workspace = true }
 tonic-build = { workspace = true }
 tower-service = { workspace = true }
 futures = { workspace = true }
+
+dotenv = "0.15.0"
+sdk = { path = "../sdk" }
+
 
 macros = { path = "../macros" }
 dynamic = { path = "../dynamic" }
@@ -23,7 +32,6 @@ serde = { workspace = true }
 actix-web = { workspace = true }
 sea-orm = { workspace = true }
 lazy_static = { workspace = true }
-dotenv = "0.15.0"
 
 [build-dependencies]
 #local

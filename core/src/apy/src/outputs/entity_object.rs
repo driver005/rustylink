@@ -71,32 +71,35 @@ impl EntityObjectBuilder {
 	}
 
 	/// used to get the GraphQL object of a SeaORM entity
-	pub fn to_object<T>(&self) -> Object
+	pub fn to_object<T, Ty>(&self) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
 	{
 		let object_name = self.type_name::<T>();
 
-		self.basic_object::<T>(&object_name)
+		self.basic_object::<T, Ty>(&object_name)
 	}
 
 	/// used to get the GraphQL basic object of a SeaORM entity
-	pub fn basic_to_object<T>(&self) -> Object
+	pub fn basic_to_object<T, Ty>(&self) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
 	{
 		let object_name = self.basic_type_name::<T>();
 
-		self.basic_object::<T>(&object_name)
+		self.basic_object::<T, Ty>(&object_name)
 	}
 
 	/// used to create a SeaORM entity basic Proto message type
-	fn basic_object<T>(&self, object_name: &str) -> Object
+	fn basic_object<T, Ty>(&self, object_name: &str) -> Object<Ty>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
+		Ty: TypeRefTrait,
 	{
 		let entity_name = self.type_name::<T>();
 
@@ -145,8 +148,11 @@ impl EntityObjectBuilder {
 					.output_conversions
 					.get(&format!("{entity_name}.{column_name}"));
 
-				let field =
-					Field::output(column_name, index.add(1) as u32, proto_type, move |ctx| {
+				let field = Field::output(
+					column_name.clone(),
+					index.add(1) as u32,
+					proto_type,
+					move |ctx| {
 						let guard_flag = if let Some(guard) = guard {
 							(*guard)(&ctx)
 						} else {
@@ -154,12 +160,14 @@ impl EntityObjectBuilder {
 						};
 
 						if let GuardAction::Block(reason) = guard_flag {
-							return FieldFuture::new(ctx.api_type.clone(), async move {
+							return FieldFuture::new(async move {
 								match reason {
-									Some(reason) => Err::<Option<()>, Error>(Error::new(reason)),
-									None => Err::<Option<()>, Error>(Error::new(
-										"ProtoField guard triggered.",
-									)),
+									Some(reason) => Err::<Option<()>, SeaographyError>(
+										SeaographyError::new(reason),
+									),
+									None => Err::<Option<()>, SeaographyError>(
+										SeaographyError::new("ProtoField guard triggered."),
+									),
 								}
 							});
 						}
@@ -173,7 +181,7 @@ impl EntityObjectBuilder {
 
 						if let Some(conversion_fn) = conversion_fn {
 							let result = conversion_fn(&object.get(column));
-							return FieldFuture::new(ctx.api_type.clone(), async move {
+							return FieldFuture::new(async move {
 								match result {
 									Ok(value) => Ok(Some(value)),
 									// FIXME: proper error reporting
@@ -182,10 +190,17 @@ impl EntityObjectBuilder {
 							});
 						}
 
-						FieldFuture::new(ctx.api_type.clone(), async move {
+						println!(
+							"column_name: `{}` sea_query_value: `{}`",
+							column_name,
+							object.get(column)
+						);
+
+						FieldFuture::new(async move {
 							Ok(sea_query_value_to_value(object.get(column), is_enum))
 						})
-					});
+					},
+				);
 
 				object.field(field)
 			},
@@ -199,62 +214,29 @@ fn sea_query_value_to_value(
 ) -> Option<Value> {
 	println!("sea_query_value_to_proto_value: {}", sea_query_value);
 	match sea_query_value {
-		sea_orm::Value::Bool(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
+		sea_orm::Value::Bool(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::TinyInt(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::SmallInt(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::Int(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::BigInt(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::TinyUnsigned(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::SmallUnsigned(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::Unsigned(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::BigUnsigned(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::Float(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::Double(value) => value.map(|it| Value::from(it)),
+		sea_orm::Value::String(value) if is_enum => {
+			value.map(|it| Value::from(it.as_str().to_upper_camel_case().to_ascii_uppercase()))
 		}
-		sea_orm::Value::TinyInt(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::SmallInt(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::Int(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::BigInt(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::TinyUnsigned(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::SmallUnsigned(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::Unsigned(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::BigUnsigned(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::Float(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::Double(value) => {
-			value.map(|it| Value::new(GraphQLValue::from(it), ProtoValue::from(it)))
-		}
-		sea_orm::Value::String(value) if is_enum => value.map(|it| {
-			Value::new(
-				GraphQLValue::from(it.as_str().to_upper_camel_case().to_ascii_uppercase()),
-				ProtoValue::from(it.as_str().to_upper_camel_case().to_ascii_uppercase()),
-			)
-		}),
-		sea_orm::Value::String(value) => value
-			.map(|it| Value::new(GraphQLValue::from(it.as_str()), ProtoValue::from(it.as_str()))),
-		sea_orm::Value::Char(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::Value::String(value) => value.map(|it| Value::from(it.as_str())),
+		sea_orm::Value::Char(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[allow(clippy::box_collection)]
-		sea_orm::Value::Bytes(value) => value.map(|it| {
-			Value::new(
-				GraphQLValue::from(String::from_utf8_lossy(&it)),
-				ProtoValue::from(String::from_utf8_lossy(&it)),
-			)
-		}),
+		sea_orm::Value::Bytes(value) => value.map(|it| Value::from(String::from_utf8_lossy(&it))),
 
 		#[cfg(feature = "with-postgres-array")]
 		sea_orm::Value::Array(_array_value, value) => value.map(|it| {
-			ProtoValue::List(
+			Value::List(
 				it.into_iter()
 					.map(|item| sea_query_value_to_value(item, is_enum).unwrap_or(Value::null()))
 					.collect(),
@@ -263,94 +245,74 @@ fn sea_query_value_to_value(
 
 		#[cfg(feature = "with-json")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-json")))]
-		sea_orm::sea_query::Value::Json(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::Json(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-chrono")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-chrono")))]
-		sea_orm::sea_query::Value::ChronoDate(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::ChronoDate(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-chrono")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-chrono")))]
-		sea_orm::sea_query::Value::ChronoTime(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::ChronoTime(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-chrono")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-chrono")))]
-		sea_orm::sea_query::Value::ChronoDateTime(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::ChronoDateTime(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-chrono")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-chrono")))]
-		sea_orm::sea_query::Value::ChronoDateTimeUtc(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::ChronoDateTimeUtc(value) => {
+			value.map(|it| Value::from(it.to_string()))
+		}
 
 		#[cfg(feature = "with-chrono")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-chrono")))]
-		sea_orm::sea_query::Value::ChronoDateTimeLocal(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::ChronoDateTimeLocal(value) => {
+			value.map(|it| Value::from(it.to_string()))
+		}
 
 		#[cfg(feature = "with-chrono")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-chrono")))]
-		sea_orm::sea_query::Value::ChronoDateTimeWithTimeZone(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::ChronoDateTimeWithTimeZone(value) => {
+			value.map(|it| Value::from(it.to_string()))
+		}
 
 		#[cfg(feature = "with-time")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-time")))]
-		sea_orm::sea_query::Value::TimeDate(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::TimeDate(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-time")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-time")))]
-		sea_orm::sea_query::Value::TimeTime(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::TimeTime(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-time")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-time")))]
-		sea_orm::sea_query::Value::TimeDateTime(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::TimeDateTime(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-time")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-time")))]
-		sea_orm::sea_query::Value::TimeDateTimeWithTimeZone(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::TimeDateTimeWithTimeZone(value) => {
+			value.map(|it| Value::from(it.to_string()))
+		}
 
 		#[cfg(feature = "with-uuid")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-uuid")))]
-		sea_orm::sea_query::Value::Uuid(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::Uuid(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-decimal")]
-		sea_orm::sea_query::Value::Decimal(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::Decimal(value) => value.map(|it| Value::from(it.to_string())),
 
 		#[cfg(feature = "with-bigdecimal")]
 		#[cfg_attr(docsrs, doc(cfg(feature = "with-bigdecimal")))]
-		sea_orm::sea_query::Value::BigDecimal(value) => value.map(|it| {
-			Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))
-		}),
+		sea_orm::sea_query::Value::BigDecimal(value) => value.map(|it| Value::from(it.to_string())),
 
 		// #[cfg(feature = "with-ipnetwork")]
 		// #[cfg_attr(docsrs, doc(cfg(feature = "with-ipnetwork")))]
-		// sea_orm::sea_query::Value::IpNetwork(value) => value.map(|it| Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))),
+		// sea_orm::sea_query::Value::IpNetwork(value) => value.map(|it| Value::from(it.to_string())))
 
 		// #[cfg(feature = "with-mac_address")]
 		// #[cfg_attr(docsrs, doc(cfg(feature = "with-mac_address")))]
-		// sea_orm::sea_query::Value::MacAddress(value) => value.map(|it| Value::new(GraphQLValue::from(it.to_string()), ProtoValue::from(it.to_string()))),
+		// sea_orm::sea_query::Value::MacAddress(value) => value.map(|it| Value::from(it.to_string())))
 		#[allow(unreachable_patterns)]
 		_ => panic!("Cannot convert SeaORM value"),
 	}
