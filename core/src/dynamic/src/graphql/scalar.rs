@@ -1,18 +1,13 @@
 use super::{
-	Directive, ExecutionResult, Executor, FieldError, FromInputValue, GraphQLType, GraphQLValue,
-	GraphQLValueAsync, Info, InputValue, IntoFieldError, JuniperType, JuniperValue, MetaType,
-	ParseScalarResult, ParseScalarValue, Registry, ScalarToken, ScalarValue, Selection,
-	ToInputValue,
+	Directive, FieldError, FromInputValue, GraphQLType, GraphQLValue, GraphQLValueAsync,
+	InputValue, IntoFieldError, JuniperValue, MetaType, ParseScalarResult, ParseScalarValue,
+	Registry, ScalarToken, ToInputValue,
 };
 use crate::{
-	BoxFieldFuture, ContextBase, ObjectAccessor, ObjectAccessorTrait, ScalarValidatorFn,
-	SeaographyError, Value, ValueAccessorTrait,
+	BoxFieldFutureJson, ContextBase, ScalarValidatorFn, SeaResult, SeaographyError, Value,
 };
 use core::fmt;
-use futures::{
-	FutureExt,
-	future::{self, BoxFuture},
-};
+use futures::FutureExt;
 use std::{fmt::Debug, sync::Arc};
 
 /// A GraphQL scalar type
@@ -53,10 +48,8 @@ pub struct Scalar {
 	pub(crate) description: Option<String>,
 	pub(crate) specified_by_url: Option<String>,
 	pub(crate) validator: Option<ScalarValidatorFn>,
-	inaccessible: bool,
-	tags: Vec<String>,
+	pub(crate) inaccessible: bool,
 	pub(crate) directives: Vec<Directive>,
-	requires_scopes: Vec<String>,
 }
 
 impl Debug for Scalar {
@@ -66,8 +59,6 @@ impl Debug for Scalar {
 			.field("description", &self.description)
 			.field("specified_by_url", &self.specified_by_url)
 			.field("inaccessible", &self.inaccessible)
-			.field("tags", &self.tags)
-			.field("requires_scopes", &self.requires_scopes)
 			.finish()
 	}
 }
@@ -83,15 +74,12 @@ impl Scalar {
 			specified_by_url: None,
 			validator: None,
 			inaccessible: false,
-			tags: Vec::new(),
 			directives: Vec::new(),
-			requires_scopes: Vec::new(),
 		}
 	}
 
 	impl_set_description!();
 	impl_set_inaccessible!();
-	impl_set_tags!();
 	impl_directive!();
 
 	/// Set the validator
@@ -126,26 +114,25 @@ impl Scalar {
 		&self.name
 	}
 
-	pub(crate) fn collect<'a>(&'a self, arguments: &'a ObjectAccessor<'a>) -> BoxFieldFuture<'a> {
+	pub(crate) fn to_value(&self, value: &Value) -> SeaResult<Value> {
+		if self.inaccessible {
+			return Err(SeaographyError::new(format!(
+				"scalar `{}` is inaccessible",
+				self.type_name()
+			)));
+		}
+		if self.validate(&value) {
+			return Ok(value.to_owned());
+		}
+		Err(SeaographyError::new(format!("invalid value `{}` for scalar `{}`", value, self.name)))
+	}
+
+	pub(crate) fn collect<'a>(&'a self) -> BoxFieldFutureJson<'a> {
 		async move {
-			let resolve_fut = async {
-				let value = match arguments.get(self.name.as_str()) {
-					Some(val) => val.as_value().to_owned(),
-					None => Value::Null,
-				};
-
-				if !self.validate(&value) {
-					return Err(SeaographyError::new(format!(
-						"internal: invalid value for scalar \"{}\"",
-						value
-					)));
-				};
-
-				Ok::<Value, SeaographyError>(value)
-			};
-			futures_util::pin_mut!(resolve_fut);
-
-			Ok((Value::from(self.name.clone()), resolve_fut.await?))
+			return Err(SeaographyError::new(format!(
+				"invalid FieldValue for scalar `{}`, expected `FieldValue::Value`",
+				self.type_name()
+			)));
 		}
 		.boxed()
 	}
@@ -179,7 +166,13 @@ impl GraphQLType<Value> for Scalar {
 	where
 		Value: 'r,
 	{
-		registry.build_scalar_type::<Self>(info).into_meta()
+		let mut meta_type = registry.build_scalar_type::<Self>(info);
+
+		if let Some(description) = &info.description {
+			meta_type = meta_type.description(description);
+		}
+
+		meta_type.into_meta()
 	}
 }
 
@@ -220,15 +213,6 @@ impl GraphQLValue<Value> for Scalar {
 	fn type_name<'i>(&self, info: &'i Self::TypeInfo) -> Option<&'i str> {
 		Some(info.type_name())
 	}
-
-	fn resolve(
-		&self,
-		_info: &Self::TypeInfo,
-		_selection_set: Option<&[Selection<Value>]>,
-		_executor: &Executor<Self::Context, Value>,
-	) -> ExecutionResult<Value> {
-		Ok(JuniperValue::scalar(self.name.clone()))
-	}
 }
 
 impl GraphQLValueAsync<Value> for Scalar
@@ -236,12 +220,91 @@ where
 	Self::TypeInfo: Sync,
 	Self::Context: Sync,
 {
-	fn resolve_async<'a>(
-		&'a self,
-		info: &'a Self::TypeInfo,
-		selection_set: Option<&'a [Selection<Value>]>,
-		executor: &'a Executor<Self::Context, Value>,
-	) -> BoxFuture<'a, ExecutionResult<Value>> {
-		Box::pin(future::ready(GraphQLValue::resolve(self, info, selection_set, executor)))
+}
+
+#[cfg(test)]
+mod tests {
+	use std::collections::BTreeMap;
+
+	use crate::{
+		FieldFuture, FieldValue, SeaographyError, Value,
+		graphql::{Field, IntoFieldError, JuniperValue, Object, Scalar, Schema, TypeRef},
+	};
+	use juniper::{
+		ExecutionError,
+		http::{GraphQLRequest, GraphQLResponse},
+		parser::SourcePosition,
+	};
+
+	#[tokio::test]
+	async fn custom_scalar() {
+		let scalar = Scalar::new("MyScalar");
+		let query = Object::new("Query").field(Field::output(
+			"value",
+			TypeRef::named_nn(scalar.type_name()),
+			|_| {
+				FieldFuture::new(async move {
+					Ok(Some(Value::from(BTreeMap::from_iter(vec![
+						(Value::from("a"), Value::from(1)),
+						(Value::from("b"), Value::from("abc")),
+					]))))
+				})
+			},
+		));
+
+		let schema = Schema::build(query.type_name(), None, None)
+			.register(query)
+			.register(scalar)
+			.finish()
+			.unwrap();
+
+		let res = schema.executer(GraphQLRequest::new("{ value }".to_string(), None, None)).await;
+
+		assert_eq!(
+			res,
+			GraphQLResponse::from_result(Ok((
+				JuniperValue::object(juniper::Object::from_iter(vec![(
+					"value",
+					JuniperValue::scalar(Value::Map(BTreeMap::from_iter(vec![
+						(Value::from("a"), Value::from(1)),
+						(Value::from("b"), Value::from("abc")),
+					])))
+				),])),
+				vec![]
+			)))
+		);
+	}
+
+	#[tokio::test]
+	async fn invalid_scalar_value() {
+		let scalar = Scalar::new("MyScalar");
+		let query = Object::new("Query").field(Field::output(
+			"value",
+			TypeRef::named_nn(scalar.type_name()),
+			|_| FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(10i32))) }),
+		));
+
+		let schema = Schema::build(query.type_name(), None, None)
+			.register(query)
+			.register(scalar)
+			.finish()
+			.unwrap();
+
+		let res = schema.executer(GraphQLRequest::new("{ value }".to_string(), None, None)).await;
+
+		assert_eq!(
+			res,
+			GraphQLResponse::from_result(Ok((
+				JuniperValue::null(),
+				vec![ExecutionError::new(
+					SourcePosition::new(2, 0, 2),
+					&["value"],
+					SeaographyError::new(
+						"invalid FieldValue for scalar `MyScalar`, expected `FieldValue::Value`"
+					)
+					.into_field_error()
+				)]
+			)))
+		);
 	}
 }

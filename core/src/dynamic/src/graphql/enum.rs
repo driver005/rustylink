@@ -1,17 +1,11 @@
 use super::{
-	Directive, EnumValue, ExecutionResult, Executor, FromInputValue, GraphQLType, GraphQLValue,
-	GraphQLValueAsync, InputValue, JuniperValue, MetaType, Registry, ScalarValue, Selection,
-	ToInputValue,
+	DeprecationStatus, Directive, EnumValue, FromInputValue, GraphQLType, GraphQLValue,
+	GraphQLValueAsync, InputValue, MetaType, Registry, ScalarValue,
 };
 use crate::{
-	BoxFieldFuture, ContextBase, EnumItemTrait, EnumTrait, ObjectAccessor, ObjectAccessorTrait,
-	SeaographyError, Value, ValueAccessorTrait,
+	BoxFieldFutureJson, ContextBase, EnumItemTrait, EnumTrait, SeaResult, SeaographyError, Value,
 };
-use async_graphql::registry::Deprecation;
-use futures::{
-	FutureExt,
-	future::{self, BoxFuture},
-};
+use futures::FutureExt;
 use std::collections::BTreeMap;
 
 /// A GraphQL enum item
@@ -19,9 +13,8 @@ use std::collections::BTreeMap;
 pub struct EnumItem {
 	pub(crate) name: String,
 	pub(crate) description: Option<String>,
-	pub(crate) deprecation: Deprecation,
-	inaccessible: bool,
-	tags: Vec<String>,
+	pub(crate) deprecation: DeprecationStatus,
+	pub(crate) inaccessible: bool,
 	pub(crate) directives: Vec<Directive>,
 }
 
@@ -31,9 +24,8 @@ impl<T: Into<String>> From<T> for EnumItem {
 		EnumItem {
 			name: name.into(),
 			description: None,
-			deprecation: Deprecation::NoDeprecated,
+			deprecation: DeprecationStatus::Current,
 			inaccessible: false,
-			tags: Vec::new(),
 			directives: Vec::new(),
 		}
 	}
@@ -49,21 +41,26 @@ impl EnumItem {
 	impl_set_description!();
 	impl_set_deprecation!();
 	impl_set_inaccessible!();
-	impl_set_tags!();
 	impl_directive!();
+
+	/// Returns the type name
+	#[inline]
+	fn type_name(&self) -> &str {
+		&self.name
+	}
 }
 
 impl EnumItemTrait for EnumItem {
 	/// Create a new EnumItem
 	#[inline]
-	fn new(name: impl Into<String>, _tag: u32) -> Self {
+	fn new(name: impl Into<String>) -> Self {
 		EnumItem::new(name)
 	}
 
 	/// Returns the type name
 	#[inline]
 	fn type_name(&self) -> &str {
-		&self.name
+		self.type_name()
 	}
 }
 
@@ -73,10 +70,8 @@ pub struct Enum {
 	pub(crate) name: String,
 	pub(crate) description: Option<String>,
 	pub(crate) enum_values: BTreeMap<String, EnumItem>,
-	inaccessible: bool,
-	tags: Vec<String>,
+	pub(crate) inaccessible: bool,
 	pub(crate) directives: Vec<Directive>,
-	requires_scopes: Vec<String>,
 }
 
 impl Enum {
@@ -88,9 +83,7 @@ impl Enum {
 			description: None,
 			enum_values: Default::default(),
 			inaccessible: false,
-			tags: Vec::new(),
 			directives: Vec::new(),
-			requires_scopes: Vec::new(),
 		}
 	}
 
@@ -115,7 +108,6 @@ impl Enum {
 	}
 
 	impl_set_inaccessible!();
-	impl_set_tags!();
 
 	/// Returns the type name
 	#[inline]
@@ -123,64 +115,37 @@ impl Enum {
 		&self.name
 	}
 
-	pub(crate) fn collect<'a>(&'a self, arguments: &'a ObjectAccessor<'a>) -> BoxFieldFuture<'a> {
-		async move {
-			if !self.enum_values.contains_key(&self.name) {
-				return Err(SeaographyError::new(format!(
-					"internal: invalid item for enum \"{}\"",
-					self.name
-				)));
+	pub(crate) fn to_value(&self, value: &Value) -> SeaResult<Value> {
+		if self.inaccessible {
+			return Err(SeaographyError::new(format!(
+				"enum `{}` is inaccessible",
+				self.type_name()
+			)));
+		}
+		if let Some(name) = value.as_string() {
+			if let Some(item) = self.enum_values.get(&name) {
+				if item.inaccessible {
+					return Err(SeaographyError::new(format!(
+						"enum `{}` with field `{}` is inaccessible",
+						self.type_name(),
+						item.type_name()
+					)));
+				}
+				return Ok(value.to_owned());
 			}
-			let resolve_fut = async {
-				let value = match arguments.get(self.name.as_str()) {
-					Some(val) => val.as_value().to_owned(),
-					None => Value::Null,
-				};
+		}
+		Err(SeaographyError::new(format!("enum `{}` has no value of `{}`", self.name, value)))
+	}
 
-				Ok::<Value, SeaographyError>(value)
-			};
-			futures_util::pin_mut!(resolve_fut);
-
-			Ok((Value::from(self.name.clone()), resolve_fut.await?))
+	pub(crate) fn collect<'a>(&'a self) -> BoxFieldFutureJson<'a> {
+		async move {
+			return Err(SeaographyError::new(format!(
+				"invalid FieldValue for enum `{}`, expected `FieldValue::Value`",
+				self.type_name()
+			)));
 		}
 		.boxed()
 	}
-
-	// pub(crate) fn register(&self, registry: &mut Registry) -> Result<(), SchemaError> {
-	// 	let mut enum_values = IndexMap::new();
-
-	// 	for item in self.enum_values.values() {
-	// 		enum_values.insert(
-	// 			item.name.clone(),
-	// 			MetaEnumValue {
-	// 				name: item.name.as_str().into(),
-	// 				description: item.description.clone(),
-	// 				deprecation: item.deprecation.clone(),
-	// 				visible: None,
-	// 				inaccessible: item.inaccessible,
-	// 				tags: item.tags.clone(),
-	// 				directive_invocations: to_meta_directive_invocation(item.directives.clone()),
-	// 			},
-	// 		);
-	// 	}
-
-	// 	registry.types.insert(
-	// 		self.name.clone(),
-	// 		MetaType::Enum {
-	// 			name: self.name.clone(),
-	// 			description: self.description.clone(),
-	// 			enum_values,
-	// 			visible: None,
-	// 			inaccessible: self.inaccessible,
-	// 			tags: self.tags.clone(),
-	// 			rust_typename: None,
-	// 			directive_invocations: to_meta_directive_invocation(self.directives.clone()),
-	// 			requires_scopes: self.requires_scopes.clone(),
-	// 		},
-	// 	);
-
-	// 	Ok(())
-	// }
 }
 
 impl EnumTrait for Enum {
@@ -222,10 +187,26 @@ impl GraphQLType<Value> for Enum {
 		let mut variants = vec![];
 
 		for (_, item) in info.enum_values.iter() {
-			variants.push(EnumValue::new(&item.name));
+			let mut enum_val = EnumValue::new(&item.name);
+			if let Some(description) = &item.description {
+				enum_val = enum_val.description(description);
+			}
+			if let DeprecationStatus::Deprecated(reason) = &item.deprecation {
+				enum_val = enum_val.deprecated(match reason {
+					None => None,
+					Some(reason) => Some(reason),
+				});
+			}
+			variants.push(enum_val);
 		}
 
-		registry.build_enum_type::<Self>(info, &variants).into_meta()
+		let mut meta_type = registry.build_enum_type::<Self>(info, &variants);
+
+		if let Some(description) = &info.description {
+			meta_type = meta_type.description(description);
+		}
+
+		meta_type.into_meta()
 	}
 }
 
@@ -234,14 +215,11 @@ impl FromInputValue<Value> for Enum {
 
 	fn from_input_value(v: &juniper::InputValue<Value>) -> Result<Self, Self::Error> {
 		println!("v: {:?}", v);
-		todo!()
-	}
-}
-
-impl ToInputValue<Value> for Enum {
-	fn to_input_value(&self) -> InputValue<Value> {
-		let v = JuniperValue::scalar(self.name.clone());
-		ToInputValue::to_input_value(&v)
+		if let InputValue::Enum(name) = v {
+			Ok(Self::new(name))
+		} else {
+			Err(SeaographyError::new(format!("internal: expected enum value, got {:?}", v)))
+		}
 	}
 }
 
@@ -255,15 +233,6 @@ impl GraphQLValue<Value> for Enum {
 	fn concrete_type_name(&self, _context: &Self::Context, info: &Self::TypeInfo) -> String {
 		info.type_name().to_string()
 	}
-
-	fn resolve(
-		&self,
-		info: &Self::TypeInfo,
-		selection_set: Option<&[Selection<Value>]>,
-		executor: &Executor<Self::Context, Value>,
-	) -> ExecutionResult<Value> {
-		todo!()
-	}
 }
 
 impl GraphQLValueAsync<Value> for Enum
@@ -271,12 +240,90 @@ where
 	Self::TypeInfo: Sync,
 	Self::Context: Sync,
 {
-	fn resolve_async<'a>(
-		&'a self,
-		info: &'a Self::TypeInfo,
-		selection_set: Option<&'a [Selection<Value>]>,
-		executor: &'a Executor<Self::Context, Value>,
-	) -> BoxFuture<'a, ExecutionResult<Value>> {
-		Box::pin(future::ready(GraphQLValue::resolve(self, info, selection_set, executor)))
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::{
+		FieldFuture, FieldValue, SeaographyError, Value,
+		graphql::{Enum, Field, IntoFieldError, JuniperValue, Object, Schema, TypeRef},
+	};
+	use juniper::{
+		ExecutionError,
+		http::{GraphQLRequest, GraphQLResponse},
+		parser::SourcePosition,
+	};
+
+	#[tokio::test]
+	async fn enum_type() {
+		let my_enum = Enum::new("MyEnum").item("A").item("B");
+
+		let query = Object::new("Query")
+			.field(Field::output("value", TypeRef::named_nn(my_enum.type_name()), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from("A"))) })
+			}))
+			.field(
+				Field::output("value2", TypeRef::named_nn(my_enum.type_name()), |ctx| {
+					FieldFuture::new(async move {
+						Ok(Some(FieldValue::value(ctx.args.try_get("input")?.enum_name()?)))
+					})
+				})
+				.argument(Field::input("input", TypeRef::named_nn(my_enum.type_name()))),
+			);
+
+		let schema = Schema::build(query.type_name(), None, None)
+			.register(my_enum)
+			.register(query)
+			.finish()
+			.unwrap();
+
+		let res = schema
+			.executer(GraphQLRequest::new("{ value value2(input: B) }".to_string(), None, None))
+			.await;
+		assert_eq!(
+			res,
+			GraphQLResponse::from_result(Ok((
+				JuniperValue::object(juniper::Object::from_iter(
+					vec![
+						("value", JuniperValue::scalar(Value::from("A"))),
+						("value2", JuniperValue::scalar(Value::from("B"))),
+					]
+					.into_iter()
+				)),
+				vec![]
+			)))
+		);
+	}
+
+	#[tokio::test]
+	async fn enum_wrong_value() {
+		let my_enum = Enum::new("MyEnum").item("A").item("B");
+
+		let query = Object::new("Query").field(Field::output(
+			"errValue",
+			TypeRef::named_nn(my_enum.type_name()),
+			|_| FieldFuture::new(async { Ok(Some(Value::from("C"))) }),
+		));
+
+		let schema = Schema::build(query.type_name(), None, None)
+			.register(my_enum)
+			.register(query)
+			.finish()
+			.unwrap();
+
+		let res =
+			schema.executer(GraphQLRequest::new("{ errValue }".to_string(), None, None)).await;
+		assert_eq!(
+			res,
+			GraphQLResponse::from_result(Ok((
+				JuniperValue::null(),
+				vec![ExecutionError::new(
+					SourcePosition::new(2, 0, 2),
+					&["errValue"],
+					SeaographyError::new("enum `MyEnum` has no value of `String: (\"C\")`")
+						.into_field_error()
+				)]
+			)))
+		);
 	}
 }

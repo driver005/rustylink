@@ -17,7 +17,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 sea-orm = { workspace = true }
 actix-web = { workspace = true }
-futures-util = { workspace = true }
+futures = {workspace = true}
 indexmap = { workspace = true }
 fnv = { workspace = true }
 thiserror = { workspace = true }
@@ -27,7 +27,17 @@ async-graphql = { workspace = true }
 heck = { workspace = true }
 hex = { workspace = true }
 lazy_static = { workspace = true }
-tonic = { workspace = true }
 async-graphql-actix-web = { workspace = true }
-futures = {workspace = true}
 ordered-float = {workspace = true}
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+once_cell = { workspace = true }
+prost-types = { workspace = true }
+tonic = { workspace = true }
+tonic-reflection = { workspace = true }
+tonic-health = { workspace = true }
+hyper = { workspace = true }
+
+
+http-body-util = "0.1"
+tonic-web = "0.13"

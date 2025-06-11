@@ -45,20 +45,32 @@ impl CursorInputBuilder {
 		Ty: TypeRefTrait,
 	{
 		Object::new(&self.context.cursor_input.type_name, IO::Input)
-			.field(Field::input(&self.context.cursor_input.cursor, 1u32, Ty::named(Ty::STRING)))
-			.field(Field::input(&self.context.cursor_input.limit, 2u32, Ty::named_nn(Ty::UINT64)))
+			.field(Field::input(&self.context.cursor_input.cursor, Ty::named(Ty::STRING)))
+			.field(Field::input(&self.context.cursor_input.limit, Ty::named_nn(Ty::UINT64)))
 	}
 
 	/// used to parse query input to cursor pagination options struct
-	pub fn parse_object<'a>(&self, object: &'a ObjectAccessor<'a>) -> CursorInput {
-		let limit = object.get(&self.context.cursor_input.limit).unwrap().uint64().unwrap();
-
+	pub fn parse_object<'a>(&self, object: &'a ObjectAccessor<'a>) -> SeaResult<CursorInput> {
 		let cursor = object.get(&self.context.cursor_input.cursor);
-		let cursor: Option<String> = cursor.map(|cursor| cursor.string().unwrap().into());
+		let cursor = match cursor {
+			Some(cursor) => Some(cursor.string()?.to_string()),
+			None => None,
+		};
 
-		CursorInput {
+		let limit = match object.get(&self.context.cursor_input.limit) {
+			Some(value_accessor) => value_accessor,
+			None => {
+				return Err(SeaographyError::new(format!(
+					"{} is a required argument but not provided.",
+					self.context.cursor_input.limit
+				)));
+			}
+		}
+		.uint64()?;
+
+		Ok(CursorInput {
 			cursor,
 			limit,
-		}
+		})
 	}
 }

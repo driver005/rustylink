@@ -7,7 +7,6 @@ use crate::{
 	OrderInputBuilder, PageInfoObjectBuilder, PageInputBuilder, PaginationInfoObjectBuilder,
 	PaginationInputBuilder,
 };
-use async_graphql::dataloader::DataLoader;
 use dynamic::prelude::*;
 use sea_orm::{ActiveEnum, ActiveModelTrait, EntityTrait, IntoActiveModel};
 
@@ -60,15 +59,15 @@ where
 		let query = Object::new("Query", IO::Output);
 		let mutation = Object::new("Mutation", IO::Output).field(Field::output(
 			"_ping",
-			1u32,
 			Ty::named(Ty::STRING),
 			|_| FieldFuture::new(async move { Ok(Some(Value::from("pong"))) }),
 		));
 		let schema_builder = Schema::build(query.type_name(), Some(mutation.type_name()), None);
 
-		let proto_builder = Proto::build(mutation.type_name());
+		let proto_builder = Proto::build(vec![query.type_name(), mutation.type_name()]);
 
 		let builder = DynamicBuilder::new(schema_builder, proto_builder);
+		//.register(my_enum);
 
 		Self {
 			query,
@@ -139,6 +138,7 @@ where
 		let entity_object_builder = EntityObjectBuilder {
 			context: self.context,
 		};
+
 		let basic_entity_object = entity_object_builder.basic_to_object::<T, Ty>();
 		self.outputs.push(basic_entity_object);
 
@@ -179,29 +179,19 @@ where
 		self.mutations.push(delete_mutation);
 	}
 
-	pub fn register_entity_dataloader_one_to_one<T, R, S>(mut self, _entity: T, spawner: S) -> Self
+	pub fn register_entity_dataloader_one_to_one<T>(mut self, _entity: T) -> Self
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
-		S: Fn(async_graphql::futures_util::future::BoxFuture<'static, ()>) -> R
-			+ Send
-			+ Sync
-			+ Clone
-			+ 'static,
 	{
 		self.builder = self.builder.data(OneToOneLoader::<T>::new(self.connection.clone()));
 		self
 	}
 
-	pub fn register_entity_dataloader_one_to_many<T, R, S>(mut self, _entity: T, spawner: S) -> Self
+	pub fn register_entity_dataloader_one_to_many<T>(mut self, _entity: T) -> Self
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
-		S: Fn(async_graphql::futures_util::future::BoxFuture<'static, ()>) -> R
-			+ Send
-			+ Sync
-			+ Clone
-			+ 'static,
 	{
 		self.builder = self.builder.data(OneToManyLoader::<T>::new(self.connection.clone()));
 		self
@@ -275,12 +265,6 @@ where
 				.input_object(),
 			)
 			.register(
-				CursorInputBuilder {
-					context: self.context,
-				}
-				.input_object(),
-			)
-			.register(
 				PageInputBuilder {
 					context: self.context,
 				}
@@ -318,8 +302,8 @@ where
 pub trait RelationBuilder {
 	fn get_relation<T, F>(
 		&self,
-		context: &'static crate::BuilderContext,
-	) -> dynamic::prelude::Field<T>
+		context: &'static BuilderContext,
+	) -> dynamic::SeaResult<dynamic::prelude::Field<T>>
 	where
 		T: TypeRefTrait,
 		F: FilterTypeTrait;
@@ -335,13 +319,12 @@ macro_rules! register_entity {
 						&rel,
 						$builder.context,
 					)
+					.unwrap()
 				})
 				.collect(),
 		);
-		$builder =
-			$builder.register_entity_dataloader_one_to_one($module_path::Entity, tokio::spawn);
-		$builder =
-			$builder.register_entity_dataloader_one_to_many($module_path::Entity, tokio::spawn);
+		$builder = $builder.register_entity_dataloader_one_to_one($module_path::Entity);
+		$builder = $builder.register_entity_dataloader_one_to_many($module_path::Entity);
 		$builder.register_entity_methods::<$module_path::Entity, $module_path::ActiveModel>();
 	};
 }

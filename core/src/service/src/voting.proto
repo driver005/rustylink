@@ -1,0 +1,22 @@
+syntax = "proto3";
+package voting;
+
+import "google/protobuf/wrappers.proto";
+
+service Voting {
+    rpc Vote (VotingRequest) returns (VotingResponse);
+}
+
+message VotingRequest {
+  string url = 1;
+
+    enum Vote {
+        UP = 0;
+        DOWN = 1;
+    }
+    Vote vote = 2;    
+}
+
+message VotingResponse {
+    google.protobuf.StringValue confirmation = 1;
+}

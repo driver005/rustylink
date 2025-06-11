@@ -70,7 +70,6 @@ impl EntityCreateOneMutationBuilder {
 
 		Field::output(
 			&self.type_name::<T>(),
-			1u32,
 			Ty::named_nn(entity_object_builder.basic_type_name::<T>()),
 			move |ctx| {
 				FieldFuture::new(async move {
@@ -99,7 +98,15 @@ impl EntityCreateOneMutationBuilder {
 					};
 					let db = ctx.data::<DatabaseConnection>()?;
 					let value_accessor =
-						ctx.args.get(&context.entity_create_one_mutation.data_field).unwrap();
+						match ctx.args.get(&context.entity_create_one_mutation.data_field) {
+							Some(value_accessor) => value_accessor,
+							None => {
+								return Err(SeaographyError::new(format!(
+									"{} is a required argument but not provided.",
+									context.entity_create_one_mutation.data_field
+								)));
+							}
+						};
 					let input_object = value_accessor.object()?;
 
 					for (column, _) in input_object.to_iter() {
@@ -139,7 +146,6 @@ impl EntityCreateOneMutationBuilder {
 		)
 		.argument(Field::input(
 			&context.entity_create_one_mutation.data_field,
-			1u32,
 			Ty::named_nn(entity_input_builder.insert_type_name::<T>()),
 		))
 	}

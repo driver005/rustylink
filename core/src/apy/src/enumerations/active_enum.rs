@@ -55,15 +55,11 @@ impl ActiveEnumBuilder {
 	{
 		let enum_name = self.type_name::<A>();
 
-		A::values().into_iter().enumerate().fold(
-			E::new(&enum_name),
-			|enumeration, (index, variant)| {
-				let variant: Value = variant.into();
-				let variant: String = variant.to_string();
+		A::values().into_iter().fold(E::new(&enum_name), |enumeration, variant| {
+			let variant: Value = variant.into();
+			let variant: String = variant.to_string();
 
-				enumeration
-					.item(E::Item::new(self.variant_name(&enum_name, &variant), index as u32))
-			},
-		)
+			enumeration.item(E::Item::new(self.variant_name(&enum_name, &variant)))
+		})
 	}
 }

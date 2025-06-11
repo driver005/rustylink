@@ -52,40 +52,38 @@ impl PaginationInputBuilder {
 		Object::new(&self.context.pagination_input.type_name, IO::Input)
 			.field(Field::input(
 				&self.context.pagination_input.cursor,
-				1u32,
 				Ty::named(&self.context.cursor_input.type_name),
 			))
 			.field(Field::input(
 				&self.context.pagination_input.page,
-				2u32,
 				Ty::named(&self.context.page_input.type_name),
 			))
 			.field(Field::input(
 				&self.context.pagination_input.offset,
-				3u32,
 				Ty::named(&self.context.offset_input.type_name),
 			))
 			.oneof()
 	}
 	/// used to parse query input to pagination information structure
-	pub fn parse_object<'a>(&self, value: Option<ValueAccessor<'a>>) -> PaginationInput {
-		if value.is_none() {
-			return PaginationInput {
-				cursor: None,
-				offset: None,
-				page: None,
-			};
-		}
-
-		let binding = value.unwrap();
-		let object = match binding.object() {
-			Ok(obj) => obj,
-			Err(_) => {
-				return PaginationInput {
+	pub fn parse_object<'a>(&self, value: Option<ValueAccessor<'a>>) -> SeaResult<PaginationInput> {
+		let binding = match value {
+			Some(value) => value,
+			None => {
+				return Ok(PaginationInput {
 					cursor: None,
 					offset: None,
 					page: None,
-				};
+				});
+			}
+		};
+		let object = match binding.object() {
+			Ok(obj) => obj,
+			Err(_) => {
+				return Ok(PaginationInput {
+					cursor: None,
+					offset: None,
+					page: None,
+				});
 			}
 		};
 
@@ -100,30 +98,30 @@ impl PaginationInputBuilder {
 		};
 
 		let cursor = if let Some(cursor) = object.get(&self.context.pagination_input.cursor) {
-			let object = cursor.object().unwrap();
-			Some(cursor_input_builder.parse_object(&object))
+			let object = cursor.object()?;
+			Some(cursor_input_builder.parse_object(&object)?)
 		} else {
 			None
 		};
 
 		let page = if let Some(page) = object.get(&self.context.pagination_input.page) {
-			let object = page.object().unwrap();
-			Some(page_input_builder.parse_object(&object))
+			let object = page.object()?;
+			Some(page_input_builder.parse_object(&object)?)
 		} else {
 			None
 		};
 
 		let offset = if let Some(offset) = object.get(&self.context.pagination_input.offset) {
-			let object = offset.object().unwrap();
-			Some(offset_input_builder.parse_object(&object))
+			let object = offset.object()?;
+			Some(offset_input_builder.parse_object(&object)?)
 		} else {
 			None
 		};
 
-		PaginationInput {
+		Ok(PaginationInput {
 			cursor,
 			page,
 			offset,
-		}
+		})
 	}
 }

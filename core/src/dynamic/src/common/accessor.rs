@@ -1,11 +1,4 @@
-use crate::{
-	// interface::{ListAccessors, ObjectAccessors, ValueAccessors},
-	ListAccessorTrait,
-	ObjectAccessorTrait,
-	SeaographyError,
-	Value,
-	ValueAccessorTrait,
-};
+use crate::{SeaResult, SeaographyError, Value};
 use juniper::ScalarValue;
 use ordered_float::OrderedFloat;
 use std::{borrow::Cow, collections::BTreeMap};
@@ -14,141 +7,136 @@ use std::{borrow::Cow, collections::BTreeMap};
 #[derive(Clone, Debug)]
 pub struct ValueAccessor<'a>(pub(crate) &'a Value);
 
-impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
-	type Value = Value;
-	type Error = SeaographyError;
-	type ObjectAccessor = ObjectAccessor<'a>;
-	type ListAccessor = ListAccessor<'a>;
-
-	fn type_name(&self) -> &'static str {
+impl<'a> ValueAccessor<'a> {
+	pub fn type_name(&self) -> &'static str {
 		"ValueAccessor"
 	}
 
 	/// Returns `true` if the value is null, otherwise returns `false`
 	#[inline]
-	fn is_null(&self) -> bool {
+	pub fn is_null(&self) -> bool {
 		matches!(self.0, Value::Null)
 	}
 
 	/// Returns a reference to the underlying `Value`
 	#[inline]
-	fn as_value(&self) -> Self::Value {
+	pub fn as_value(&self) -> Value {
 		self.0.clone()
 	}
 
-	fn int8(&self) -> Result<i8, Self::Error> {
+	pub fn int8(&self) -> SeaResult<i8> {
 		match self.0 {
 			Value::Int8(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a i8")),
 		}
 	}
 
-	fn int16(&self) -> Result<i16, Self::Error> {
+	pub fn int16(&self) -> SeaResult<i16> {
 		match self.0 {
 			Value::Int16(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a i16")),
 		}
 	}
 
-	fn int32(&self) -> Result<i32, Self::Error> {
+	pub fn int32(&self) -> SeaResult<i32> {
 		match self.0 {
 			Value::Int32(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a i32")),
 		}
 	}
 
-	fn int64(&self) -> Result<i64, Self::Error> {
+	pub fn int64(&self) -> SeaResult<i64> {
 		match self.0 {
 			Value::Int64(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a i64")),
 		}
 	}
 
-	fn int128(&self) -> Result<i128, Self::Error> {
+	pub fn int128(&self) -> SeaResult<i128> {
 		match self.0 {
 			Value::Int128(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a i128")),
 		}
 	}
 
-	fn intsize(&self) -> Result<isize, Self::Error> {
+	pub fn intsize(&self) -> SeaResult<isize> {
 		match self.0 {
 			Value::Intsize(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a isize")),
 		}
 	}
 
-	fn uint8(&self) -> Result<u8, Self::Error> {
+	pub fn uint8(&self) -> SeaResult<u8> {
 		match self.0 {
 			Value::UInt8(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a u8")),
 		}
 	}
 
-	fn uint16(&self) -> Result<u16, Self::Error> {
+	pub fn uint16(&self) -> SeaResult<u16> {
 		match self.0 {
 			Value::UInt16(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a u16")),
 		}
 	}
 
-	fn uint32(&self) -> Result<u32, Self::Error> {
+	pub fn uint32(&self) -> SeaResult<u32> {
 		match self.0 {
 			Value::UInt32(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a u32")),
 		}
 	}
 
-	fn uint64(&self) -> Result<u64, Self::Error> {
+	pub fn uint64(&self) -> SeaResult<u64> {
 		match self.0 {
 			Value::UInt64(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a u64")),
 		}
 	}
 
-	fn uint128(&self) -> Result<u128, Self::Error> {
+	pub fn uint128(&self) -> SeaResult<u128> {
 		match self.0 {
 			Value::UInt128(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a u128")),
 		}
 	}
 
-	fn uintsize(&self) -> Result<usize, Self::Error> {
+	pub fn uintsize(&self) -> SeaResult<usize> {
 		match self.0 {
 			Value::UIntsize(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a usize")),
 		}
 	}
 
-	fn float32(&self) -> Result<OrderedFloat<f32>, Self::Error> {
+	pub fn float32(&self) -> SeaResult<OrderedFloat<f32>> {
 		match self.0 {
 			Value::Float32(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a f32")),
 		}
 	}
 
-	fn float64(&self) -> Result<OrderedFloat<f64>, Self::Error> {
+	pub fn float64(&self) -> SeaResult<OrderedFloat<f64>> {
 		match self.0 {
 			Value::Float64(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a f64")),
 		}
 	}
 
-	fn bool(&self) -> Result<bool, Self::Error> {
+	pub fn bool(&self) -> SeaResult<bool> {
 		match self.0 {
 			Value::Bool(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a bool")),
 		}
 	}
 
-	fn char(&self) -> Result<char, Self::Error> {
+	pub fn char(&self) -> SeaResult<char> {
 		match self.0 {
 			Value::Char(b) => Ok(*b),
 			_ => Err(SeaographyError::new("internal: not a char")),
 		}
 	}
 
-	fn string(&self) -> Result<&str, Self::Error> {
+	pub fn string(&self) -> SeaResult<&str> {
 		match self.0 {
 			Value::String(b) => Ok(b),
 			_ => Err(SeaographyError::new("internal: not a String")),
@@ -156,7 +144,7 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	}
 
 	// Returns the object accessor
-	fn object(&self) -> Result<Self::ObjectAccessor, Self::Error> {
+	pub fn object(&self) -> SeaResult<ObjectAccessor<'a>> {
 		if let Value::Map(obj) = self.0 {
 			Ok(ObjectAccessor(Cow::Borrowed(obj)))
 		} else {
@@ -165,7 +153,7 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 	}
 
 	/// Returns the list accessor
-	fn list(&self) -> Result<Self::ListAccessor, Self::Error> {
+	pub fn list(&self) -> SeaResult<ListAccessor<'a>> {
 		if let Value::List(list) = self.0 {
 			Ok(ListAccessor(list))
 		} else {
@@ -173,7 +161,7 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 		}
 	}
 
-	fn option(&self) -> Result<Option<Self>, Self::Error> {
+	pub fn option(&self) -> SeaResult<Option<Self>> {
 		match self.0 {
 			Value::Option(b) => match &**b {
 				Some(v) => Ok(Some(ValueAccessor(v))),
@@ -183,20 +171,26 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 		}
 	}
 
-	fn variable(&self) -> Result<(Self, Self), Self::Error> {
+	pub fn variable(&self) -> SeaResult<(Self, Self)> {
 		match self.0 {
 			Value::Var(b) => Ok((ValueAccessor(&b.0), ValueAccessor(&b.1))),
 			_ => Err(SeaographyError::new("internal: not a variable")),
 		}
 	}
 
-	fn enum_name(&self) -> Result<&str, Self::Error> {
+	pub fn enum_name(&self) -> SeaResult<&str> {
 		match self.0 {
-			Value::Var(b) => match b.0.as_str() {
-				Some(v) => Ok(v),
-				None => Err(SeaographyError::new("internal: var not an enum")),
-			},
-			_ => Err(SeaographyError::new("internal: not a enum")),
+			Value::Map(b) => {
+				for val in b.values() {
+					if val.as_str().is_some() {
+						return Ok(val.as_str().unwrap());
+					}
+				}
+				Err(SeaographyError::new("internal: enum name not a string"))
+			}
+			value => {
+				Err(SeaographyError::new(format!("internal: expected a enum, got {:?}", value)))
+			}
 		}
 	}
 }
@@ -205,32 +199,25 @@ impl<'a> ValueAccessorTrait<'a> for ValueAccessor<'a> {
 #[derive(Clone, Debug)]
 pub struct ObjectAccessor<'a>(pub(crate) Cow<'a, BTreeMap<Value, Value>>);
 
-impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
-	type Value = Value;
-	type Error = SeaographyError;
-	type ValueAccessor = ValueAccessor<'a>;
-
-	fn type_name(&self) -> &'static str {
-		"ProtoObjectAccessor"
+impl<'a> ObjectAccessor<'a> {
+	pub fn insert(&mut self, key: Value, value: Value) {
+		self.0.to_mut().insert(key, value);
 	}
 
-	// fn get_accessor(self) -> ObjectAccessors<'a> {
-	// 	ObjectAccessors::proto(self)
-	// }
+	pub fn type_name(&self) -> &'static str {
+		"ObjectAccessor"
+	}
 
 	/// Return a reference to the value stored for `key`, if it is present,
 	/// else `None`.
 	#[inline]
-	fn get<T: Into<Self::Value>>(&'a self, name: T) -> Option<Self::ValueAccessor> {
+	pub fn get<T: Into<Value>>(&'a self, name: T) -> Option<ValueAccessor<'a>> {
 		self.0.get(&name.into()).map(ValueAccessor)
 	}
 
 	/// Like [`ObjectAccessor::get`], returns `Err` if the index does not exist
 	#[inline]
-	fn try_get<T: Into<Self::Value>>(
-		&'a self,
-		name: T,
-	) -> Result<Self::ValueAccessor, Self::Error> {
+	pub fn try_get<T: Into<Value>>(&'a self, name: T) -> SeaResult<ValueAccessor<'a>> {
 		self.0
 			.get(&name.into())
 			.map(ValueAccessor)
@@ -240,37 +227,37 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
 	/// Return an iterator over the key-value pairs of the object, in their
 	/// order
 	#[inline]
-	fn to_iter(&'a self) -> Box<dyn Iterator<Item = (&'a Self::Value, Self::ValueAccessor)> + 'a> {
+	pub fn to_iter(&'a self) -> Box<dyn Iterator<Item = (&'a Value, ValueAccessor<'a>)> + 'a> {
 		Box::new(self.0.iter().map(|(name, value)| (name, ValueAccessor(value))))
 	}
 
 	/// Return an iterator over the keys of the object, in their order
 	#[inline]
-	fn keys(&'a self) -> Box<dyn Iterator<Item = &'a Self::Value> + 'a> {
+	pub fn keys(&'a self) -> Box<dyn Iterator<Item = &'a Value> + 'a> {
 		Box::new(self.0.keys())
 	}
 
 	/// Return an iterator over the values of the object, in their order
 	#[inline]
-	fn values(&'a self) -> Box<dyn Iterator<Item = Self::ValueAccessor> + 'a> {
+	pub fn values(&'a self) -> Box<dyn Iterator<Item = ValueAccessor<'a>> + 'a> {
 		Box::new(self.0.values().map(ValueAccessor))
 	}
 
 	/// Returns the number of elements in the object
 	#[inline]
-	fn len(&self) -> usize {
+	pub fn len(&self) -> usize {
 		self.0.len()
 	}
 
 	/// Returns `true` if the object has no members
 	#[must_use]
-	fn is_empty(&self) -> bool {
+	pub fn is_empty(&self) -> bool {
 		self.len() == 0
 	}
 
 	/// Returns a reference to the underlying IndexMap
 	#[inline]
-	fn as_index_map(&self) -> BTreeMap<Self::Value, Self::Value> {
+	pub fn as_index_map(&self) -> BTreeMap<Value, Value> {
 		self.0.clone().into_owned()
 	}
 }
@@ -279,53 +266,45 @@ impl<'a> ObjectAccessorTrait<'a> for ObjectAccessor<'a> {
 #[derive(Clone, Debug)]
 pub struct ListAccessor<'a>(pub(crate) &'a [Value]);
 
-impl<'a> ListAccessorTrait<'a> for ListAccessor<'a> {
-	type Value = Value;
-	type Error = SeaographyError;
-	type ValueAccessor = ValueAccessor<'a>;
-
-	fn type_name(&self) -> &'static str {
-		"ProtoListAccessor"
+impl<'a> ListAccessor<'a> {
+	pub fn type_name(&self) -> &'static str {
+		"ListAccessor"
 	}
-
-	// fn get_accessor<'b>(&'b self) -> ListAccessors<'b> {
-	// 	todo!()
-	// }
 
 	/// Returns the number of elements in the list
 	#[inline]
-	fn len(&self) -> usize {
+	pub fn len(&self) -> usize {
 		self.0.len()
 	}
 
 	/// Returns `true` if the list has a length of 0
 	#[inline]
-	fn is_empty(&self) -> bool {
+	pub fn is_empty(&self) -> bool {
 		self.0.is_empty()
 	}
 
 	/// Returns an iterator over the list
 	#[inline]
-	fn to_iter(&'a self) -> Box<dyn Iterator<Item = Self::ValueAccessor> + 'a> {
+	pub fn to_iter(&'a self) -> Box<dyn Iterator<Item = ValueAccessor<'a>> + 'a> {
 		Box::new(self.0.iter().map(ValueAccessor))
 	}
 
 	/// Returns a reference to an element depending on the index
 	#[inline]
-	fn get(&'a self, idx: usize) -> Option<Self::ValueAccessor> {
+	pub fn get(&'a self, idx: usize) -> Option<ValueAccessor<'a>> {
 		self.0.get(idx).map(ValueAccessor)
 	}
 
 	/// Like [`ListAccessor::get`], returns `Err` if the index does not exist
 	#[inline]
-	fn try_get(&'a self, idx: usize) -> Result<Self::ValueAccessor, Self::Error> {
+	pub fn try_get(&'a self, idx: usize) -> SeaResult<ValueAccessor<'a>> {
 		self.get(idx)
 			.ok_or_else(|| SeaographyError::new(format!("internal: index \"{}\" not found", idx)))
 	}
 
 	/// Returns a new ListAccessor that represents a slice of the original
 	#[inline]
-	fn as_slice(&self, start: usize, end: usize) -> Result<Self, Self::Error> {
+	pub fn as_slice(&self, start: usize, end: usize) -> SeaResult<Self> {
 		if start <= end && end <= self.len() {
 			Ok(ListAccessor(&self.0[start..end]))
 		} else {
@@ -335,7 +314,7 @@ impl<'a> ListAccessorTrait<'a> for ListAccessor<'a> {
 
 	/// Returns a reference to the underlying `&[Value]`
 	#[inline]
-	fn as_values_slice(&self) -> Vec<Self::Value> {
+	pub fn as_values_slice(&self) -> Vec<Value> {
 		self.0.to_vec()
 	}
 }

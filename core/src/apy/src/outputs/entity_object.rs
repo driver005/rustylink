@@ -1,7 +1,6 @@
 use dynamic::prelude::*;
 use heck::{ToLowerCamelCase, ToUpperCamelCase};
 use sea_orm::{ColumnTrait, ColumnType, EntityName, EntityTrait, IdenStatic, Iterable, ModelTrait};
-use std::ops::Add;
 
 /// The configuration structure for EntityObjectBuilder
 pub struct EntityObjectConfig {
@@ -107,104 +106,83 @@ impl EntityObjectBuilder {
 			context: self.context,
 		};
 
-		T::Column::iter().enumerate().fold(
-			Object::new(object_name, IO::Output),
-			|object, (index, column)| {
-				let column_name = self.column_name::<T>(&column);
+		T::Column::iter().fold(Object::new(object_name, IO::Output), |object, column| {
+			let column_name = self.column_name::<T>(&column);
 
-				let column_def = column.def();
+			let column_def = column.def();
 
-				let proto_type = match types_map_helper.sea_orm_column_type_to_type(
-					column_def.get_column_type(),
-					!column_def.is_null(),
-				) {
-					Some(type_name) => type_name,
-					None => return object,
+			let proto_type: Ty = match types_map_helper
+				.sea_orm_column_type_to_type(column_def.get_column_type(), !column_def.is_null())
+			{
+				Some(type_name) => type_name,
+				None => return object,
+			};
+
+			// This isn't the most beautiful flag: it's indicating whether the leaf type is an
+			// enum, rather than the type itself. Ideally we'd only calculate this for the leaf
+			// type itself. Could be a good candidate for refactor as this code evolves to support
+			// more container types. For example, this at the very least should be recursive on
+			// Array types such that arrays of arrays of enums would be resolved correctly.
+			let is_enum: bool = match column_def.get_column_type() {
+				ColumnType::Enum {
+					..
+				} => true,
+				#[cfg(feature = "with-postgres-array")]
+				ColumnType::Array(inner) => matches!(inner.as_ref(), ColumnType::Enum { .. }),
+				_ => false,
+			};
+
+			let guard =
+				self.context.guards.field_guards.get(&format!("{}.{}", &object_name, &column_name));
+
+			let conversion_fn =
+				self.context.types.output_conversions.get(&format!("{entity_name}.{column_name}"));
+
+			let field = Field::output(column_name.clone(), proto_type, move |ctx| {
+				let guard_flag = if let Some(guard) = guard {
+					(*guard)(&ctx)
+				} else {
+					GuardAction::Allow
 				};
 
-				// This isn't the most beautiful flag: it's indicating whether the leaf type is an
-				// enum, rather than the type itself. Ideally we'd only calculate this for the leaf
-				// type itself. Could be a good candidate for refactor as this code evolves to support
-				// more container types. For example, this at the very least should be recursive on
-				// Array types such that arrays of arrays of enums would be resolved correctly.
-				let is_enum: bool = match column_def.get_column_type() {
-					ColumnType::Enum {
-						..
-					} => true,
-					#[cfg(feature = "with-postgres-array")]
-					ColumnType::Array(inner) => matches!(inner.as_ref(), ColumnType::Enum { .. }),
-					_ => false,
-				};
-
-				let guard = self
-					.context
-					.guards
-					.field_guards
-					.get(&format!("{}.{}", &object_name, &column_name));
-
-				let conversion_fn = self
-					.context
-					.types
-					.output_conversions
-					.get(&format!("{entity_name}.{column_name}"));
-
-				let field = Field::output(
-					column_name.clone(),
-					index.add(1) as u32,
-					proto_type,
-					move |ctx| {
-						let guard_flag = if let Some(guard) = guard {
-							(*guard)(&ctx)
-						} else {
-							GuardAction::Allow
-						};
-
-						if let GuardAction::Block(reason) = guard_flag {
-							return FieldFuture::new(async move {
-								match reason {
-									Some(reason) => Err::<Option<()>, SeaographyError>(
-										SeaographyError::new(reason),
-									),
-									None => Err::<Option<()>, SeaographyError>(
-										SeaographyError::new("ProtoField guard triggered."),
-									),
-								}
-							});
+				if let GuardAction::Block(reason) = guard_flag {
+					return FieldFuture::new(async move {
+						match reason {
+							Some(reason) => {
+								Err::<Option<()>, SeaographyError>(SeaographyError::new(reason))
+							}
+							None => Err::<Option<()>, SeaographyError>(SeaographyError::new(
+								"ProtoField guard triggered.",
+							)),
 						}
+					});
+				}
 
-						// convert SeaQL value to GraphQL value
-						// FIXME: move to types_map file
-						let object = ctx
-							.parent_value
-							.try_downcast_ref::<T::Model>()
-							.expect("Something went wrong when trying to downcast entity object.");
+				// convert SeaQL value to GraphQL value
+				// FIXME: move to types_map file
+				let object = ctx
+					.parent_value
+					.try_downcast_ref::<T::Model>()
+					.expect("Something went wrong when trying to downcast entity object.");
 
-						if let Some(conversion_fn) = conversion_fn {
-							let result = conversion_fn(&object.get(column));
-							return FieldFuture::new(async move {
-								match result {
-									Ok(value) => Ok(Some(value)),
-									// FIXME: proper error reporting
-									Err(_) => Ok(None),
-								}
-							});
+				if let Some(conversion_fn) = conversion_fn {
+					let result = conversion_fn(&object.get(column));
+					return FieldFuture::new(async move {
+						match result {
+							Ok(value) => Ok(Some(value)),
+							// FIXME: proper error reporting
+							Err(_) => Ok(None),
 						}
+					});
+				}
 
-						println!(
-							"column_name: `{}` sea_query_value: `{}`",
-							column_name,
-							object.get(column)
-						);
+				FieldFuture::new(async move {
+					Ok(sea_query_value_to_value(object.get(column), is_enum))
+				})
+			});
 
-						FieldFuture::new(async move {
-							Ok(sea_query_value_to_value(object.get(column), is_enum))
-						})
-					},
-				);
-
-				object.field(field)
-			},
-		)
+			object.field(field)
+		})
 	}
 }
 
@@ -212,7 +190,6 @@ fn sea_query_value_to_value(
 	sea_query_value: sea_orm::sea_query::Value,
 	is_enum: bool,
 ) -> Option<Value> {
-	println!("sea_query_value_to_proto_value: {}", sea_query_value);
 	match sea_query_value {
 		sea_orm::Value::Bool(value) => value.map(|it| Value::from(it)),
 		sea_orm::Value::TinyInt(value) => value.map(|it| Value::from(it)),

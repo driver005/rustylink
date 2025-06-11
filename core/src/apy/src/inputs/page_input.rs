@@ -45,21 +45,30 @@ impl PageInputBuilder {
 		Ty: TypeRefTrait,
 	{
 		Object::new(&self.context.page_input.type_name, IO::Input)
-			.field(Field::input(&self.context.page_input.limit, 1u32, Ty::named_nn(Ty::UINT64)))
-			.field(Field::input(&self.context.page_input.page, 2u32, Ty::named_nn(Ty::UINT64)))
+			.field(Field::input(&self.context.page_input.limit, Ty::named_nn(Ty::UINT64)))
+			.field(Field::input(&self.context.page_input.page, Ty::named_nn(Ty::UINT64)))
 	}
 
 	/// used to parse query input to page pagination options struct
-	pub fn parse_object<'a>(&self, object: &'a ObjectAccessor<'a>) -> PageInput {
+	pub fn parse_object<'a>(&self, object: &'a ObjectAccessor<'a>) -> SeaResult<PageInput> {
 		let page = object
 			.get(&self.context.page_input.page)
 			.map_or_else(|| Ok(0), |v| v.uint64())
 			.unwrap_or(0);
-		let limit = object.get(&self.context.page_input.limit).unwrap().uint64().unwrap();
+		let limit = match object.get(&self.context.page_input.limit) {
+			Some(value_accessor) => value_accessor,
+			None => {
+				return Err(SeaographyError::new(format!(
+					"{} is a required argument but not provided.",
+					self.context.page_input.limit
+				)));
+			}
+		}
+		.uint64()?;
 
-		PageInput {
+		Ok(PageInput {
 			page,
 			limit,
-		}
+		})
 	}
 }

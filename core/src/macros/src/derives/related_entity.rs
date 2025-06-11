@@ -86,7 +86,7 @@ impl DeriveRelatedEntity {
 				fn get_relation<T, F>(
 					&self,
 					context: &'static apy::BuilderContext,
-				) -> dynamic::prelude::Field<T>
+				) -> dynamic::SeaResult<dynamic::prelude::Field<T>>
 				where
 					T: dynamic::TypeRefTrait,
 					F: apy::FilterTypeTrait,

@@ -1,4 +1,4 @@
-use dynamic::prelude::{FieldFutureTrait, *};
+use dynamic::prelude::*;
 use sea_orm::{
 	ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, TransactionTrait,
 };
@@ -71,7 +71,6 @@ impl EntityCreateBatchMutationBuilder {
 
 		Field::output(
 			&self.type_name::<T>(),
-			1u32,
 			Ty::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
 			move |ctx| {
 				FieldFuture::new(async move {
@@ -103,11 +102,18 @@ impl EntityCreateBatchMutationBuilder {
 					};
 
 					let mut results: Vec<_> = Vec::new();
-					let binding = ctx
-						.args
-						.get(&context.entity_create_batch_mutation.data_field)
-						.unwrap()
+					let binding =
+						match ctx.args.get(&context.entity_create_batch_mutation.data_field) {
+							Some(value_accessor) => value_accessor,
+							None => {
+								return Err(SeaographyError::new(format!(
+									"{} is a required argument but not provided.",
+									context.entity_create_batch_mutation.data_field
+								)));
+							}
+						}
 						.list()?;
+
 					for input in binding.to_iter().collect::<Vec<_>>() {
 						let input_object = input.object()?;
 						for (column, _) in input_object.to_iter() {
@@ -151,7 +157,6 @@ impl EntityCreateBatchMutationBuilder {
 		)
 		.argument(Field::input(
 			&context.entity_create_batch_mutation.data_field,
-			1u32,
 			Ty::named_nn_list_nn(entity_input_builder.insert_type_name::<T>()),
 		))
 	}

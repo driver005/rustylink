@@ -88,68 +88,74 @@ where
 		return Ok(condition);
 	};
 
-	let extract_variant = move |input: &str| -> String {
+	let extract_variant = move |input: &str| -> SeaResult<String> {
 		let variant = variants.iter().find(|variant| {
 			let variant = variant.to_string().to_upper_camel_case().to_ascii_uppercase();
 			variant.eq(input)
 		});
-		variant.unwrap().to_string()
+		match variant {
+			Some(variant) => Ok(variant.to_string()),
+			None => {
+				return Err(SeaographyError::new(format!("Cannot find variant {}", input)));
+			}
+		}
 	};
 
-	let extract_condition = |data: &ValueAccessor| -> Vec<String> {
-		//TODO: implemnt error handling
-		data.list()
-			.unwrap()
-			.to_iter()
-			.map(|item| extract_variant(&item.enum_name().unwrap().to_string()))
-			.collect::<Vec<String>>()
+	let extract_condition = |data: &ValueAccessor| -> SeaResult<Vec<String>> {
+		let mut res = Vec::new();
+
+		for item in data.list()?.to_iter() {
+			res.push(extract_variant(&item.enum_name()?.to_string())?)
+		}
+
+		Ok(res)
 	};
 
 	let condition = if let Some(data) = filter.get("eq") {
-		let data = data.enum_name().unwrap();
-		condition.add(column.eq(extract_variant(data)))
+		let data = data.enum_name()?;
+		condition.add(column.eq(extract_variant(data)?))
 	} else {
 		condition
 	};
 
 	let condition = if let Some(data) = filter.get("ne") {
-		let data = data.enum_name().unwrap();
-		condition.add(column.ne(extract_variant(data)))
+		let data = data.enum_name()?;
+		condition.add(column.ne(extract_variant(data)?))
 	} else {
 		condition
 	};
 
 	let condition = if let Some(data) = filter.get("gt") {
-		let data = data.enum_name().unwrap();
-		condition.add(column.gt(extract_variant(data)))
+		let data = data.enum_name()?;
+		condition.add(column.gt(extract_variant(data)?))
 	} else {
 		condition
 	};
 
 	let condition = if let Some(data) = filter.get("gte") {
-		let data = data.enum_name().unwrap();
-		condition.add(column.gte(extract_variant(data)))
+		let data = data.enum_name()?;
+		condition.add(column.gte(extract_variant(data)?))
 	} else {
 		condition
 	};
 
 	let condition = if let Some(data) = filter.get("lt") {
-		let data = data.enum_name().unwrap();
-		condition.add(column.lt(extract_variant(data)))
+		let data = data.enum_name()?;
+		condition.add(column.lt(extract_variant(data)?))
 	} else {
 		condition
 	};
 
 	let condition = if let Some(data) = filter.get("lte") {
-		let data = data.enum_name().unwrap();
-		condition.add(column.lte(extract_variant(data)))
+		let data = data.enum_name()?;
+		condition.add(column.lte(extract_variant(data)?))
 	} else {
 		condition
 	};
 
 	let condition = match filter.get("is_in") {
 		Some(data) => {
-			let data: Vec<String> = extract_condition(&data);
+			let data: Vec<String> = extract_condition(&data)?;
 			condition.add(column.is_in(data))
 		}
 		None => condition,
@@ -157,7 +163,7 @@ where
 
 	let condition = match filter.get("is_not_in") {
 		Some(data) => {
-			let data: Vec<String> = extract_condition(&data);
+			let data: Vec<String> = extract_condition(&data)?;
 			condition.add(column.is_not_in(data))
 		}
 		None => condition,
@@ -165,7 +171,7 @@ where
 
 	let condition = match filter.get("is_null") {
 		Some(data) => {
-			let data = data.bool().unwrap();
+			let data = data.bool()?;
 
 			if data {
 				condition.add(column.is_null())

@@ -1,10 +1,12 @@
-use super::{Error, Field, Result};
-use crate::{
-	BoxFieldFuture, ContextBase, FieldValue, ObjectAccessor, ProtoRegistry, ProtobufField,
-	ProtobufKind, SchemaError, Value,
-};
+use super::{Error, Field, Result, descriptor};
+use crate::{BoxFieldFutureByte, ContextBase, FieldValue, ObjectAccessor, Value};
 use binary::proto::Decoder;
-use indexmap::IndexMap;
+use bytes::{Buf, BufMut, BytesMut};
+use prost::{
+	DecodeError,
+	encoding::{DecodeContext, WireType, decode_key, merge_loop},
+};
+use prost_types::{FileDescriptorProto, ServiceDescriptorProto, ServiceOptions};
 use std::collections::BTreeMap;
 
 /// A Protobuf object type
@@ -12,9 +14,9 @@ use std::collections::BTreeMap;
 pub struct Message {
 	pub(crate) name: String,
 	pub(crate) description: Option<String>,
-	pub(crate) fields: IndexMap<String, Field>,
+	pub(crate) fields: BTreeMap<String, Field>,
 	pub(crate) oneof: bool,
-	deprecated: bool,
+	pub(crate) deprecated: bool,
 }
 
 impl Message {
@@ -27,9 +29,10 @@ impl Message {
 			fields: Default::default(),
 			deprecated: false,
 			oneof: false,
-			// arguments: Default::default(),
 		}
 	}
+
+	impl_set_description!();
 
 	/// Add an field to the object
 	#[inline]
@@ -50,7 +53,7 @@ impl Message {
 	}
 
 	/// Indicates this Message is a OneOf Message
-	pub fn oneof(self) -> Self {
+	pub fn set_oneof(self) -> Self {
 		Self {
 			oneof: true,
 			..self
@@ -76,31 +79,33 @@ impl Message {
 		}
 	}
 
-	pub(crate) fn decode(
-		&self,
-		decoder: &mut Decoder,
-		mut buf: Vec<u8>,
-	) -> Result<BTreeMap<Value, Value>> {
-		let mut arguments = BTreeMap::new();
-		let mut dst = vec![];
-		decoder.decode(&mut buf, &mut dst)?;
-
-		for (tag, _, byt) in dst.drain(..) {
-			match self.field_by_tag(tag) {
-				Some(field) => {
-					field.decode(decoder, byt, tag, &mut arguments)?;
-				}
-				None => {
-					return Err(Error::new(format!(
-						"Message `{}` has no field with Tag `{}`",
-						self.type_name(),
-						tag,
-					)));
-				}
-			}
+	pub fn field_by_name(&self, name: &str) -> Option<&Field> {
+		match self.fields.iter().find(|(_, field)| field.type_name() == name) {
+			Some((_, field)) => Some(field),
+			None => None,
 		}
+	}
 
-		Ok(arguments)
+	pub(crate) fn decode<B>(
+		&self,
+		buf: &mut B,
+		ctx: DecodeContext,
+		arguments: &mut BTreeMap<Value, Value>,
+	) -> Result<(), DecodeError>
+	where
+		B: Buf,
+	{
+		merge_loop(arguments, buf, ctx, |msg, buffer, ctx| {
+			let (tag, wire_type) = decode_key(buffer)?;
+			match self.field_by_tag(tag) {
+				Some(field) => field.decode(buffer, ctx, wire_type, msg),
+				None => Err(DecodeError::new(format!(
+					"Message `{}` has no field with Tag `{}`",
+					self.type_name(),
+					tag,
+				))),
+			}
+		})
 	}
 
 	pub(crate) fn collect<'a>(
@@ -108,38 +113,49 @@ impl Message {
 		ctx: &'a ContextBase,
 		arguments: &'a ObjectAccessor<'a>,
 		parent_value: Option<&'a FieldValue<'a>>,
-	) -> Vec<BoxFieldFuture<'a>> {
-		self.fields.iter().map(|(_, field)| field.collect(ctx, arguments, parent_value)).collect()
+		mut recursion: u32,
+	) -> Vec<BoxFieldFutureByte<'a, BytesMut>> {
+		self.fields
+			.iter()
+			.map(|(_, field)| field.collect(ctx, arguments, parent_value, recursion, false))
+			.collect()
 	}
 
-	pub(crate) fn register(&self, registry: &mut ProtoRegistry) -> Result<(), SchemaError> {
-		let mut fields = BTreeMap::new();
+	pub(crate) fn register(&self, file: &mut FileDescriptorProto, is_service: bool) {
+		if is_service {
+			let mut service = ServiceDescriptorProto::default();
+			service.name = Some(self.name.clone());
 
-		for field in self.fields.values() {
-			fields.insert(
-				field.name.to_string(),
-				ProtobufField {
-					name: field.name.to_string(),
-					description: field.description.clone(),
-					field_type: field.ty.to_proto(),
-					tag: field.tag,
-					label: None,
-				},
-			);
+			let mut methods = vec![];
+
+			for method in self.fields.values() {
+				if !method.arguments.is_empty() {
+					let name = format!("Input{}", method.name);
+					descriptor(
+						file,
+						Some(name.clone()),
+						&method.arguments,
+						false,
+						method.deprecated,
+					);
+					methods.push(method.method_descriptor(Some(name)));
+				} else {
+					methods.push(method.method_descriptor(None));
+				}
+			}
+
+			if !methods.is_empty() {
+				service.method = methods;
+			}
+
+			service.options = Some(ServiceOptions {
+				deprecated: Some(self.deprecated),
+				..Default::default()
+			});
+
+			file.service.push(service);
+		} else {
+			descriptor(file, Some(self.name.clone()), &self.fields, self.oneof, self.deprecated);
 		}
-
-		registry.types.insert(
-			self.name.to_string(),
-			ProtobufKind::Message {
-				name: self.name.to_string(),
-				description: self.description.clone(),
-				fields,
-				oneof_groups: Default::default(),
-				visible: None,
-				rust_typename: None,
-			},
-		);
-
-		Ok(())
 	}
 }

@@ -20,7 +20,7 @@ impl EntityObjectRelationBuilder {
 		&self,
 		name: &str,
 		relation_definition: RelationDef,
-	) -> Field<Ty>
+	) -> SeaResult<Field<Ty>>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
@@ -51,15 +51,15 @@ impl EntityObjectRelationBuilder {
 		let from_col = <T::Column as std::str::FromStr>::from_str(
 			relation_definition.from_col.to_string().to_snake_case().as_str(),
 		)
-		.unwrap();
+		.map_err(|err| SeaographyError::new(format!("{:#?}", err)))?;
 
 		let to_col = <R::Column as std::str::FromStr>::from_str(
 			relation_definition.to_col.to_string().to_snake_case().as_str(),
 		)
-		.unwrap();
+		.map_err(|err| SeaographyError::new(format!("{:#?}", err)))?;
 
 		let field = match relation_definition.is_owner {
-			false => Field::output(name, 1u32, Ty::named(&object_name), move |ctx| {
+			false => Field::output(name, Ty::named(&object_name), move |ctx| {
 				FieldFuture::new(async move {
 					let guard_flag = if let Some(guard) = guard {
 						(*guard)(&ctx)
@@ -87,12 +87,12 @@ impl EntityObjectRelationBuilder {
 
 					let stmt = R::find();
 					let filters = ctx.args.get(&context.entity_query_field.filters);
-					let filters = get_filter_conditions::<R, F>(context, filters);
+					let filters = get_filter_conditions::<R, F>(context, filters)?;
 					let order_by = ctx.args.get(&context.entity_query_field.order_by);
 					let order_by = OrderInputBuilder {
 						context,
 					}
-					.parse_object::<R>(order_by);
+					.parse_object::<R>(order_by)?;
 					let key = KeyComplex::<R> {
 						key: vec![parent.get(from_col)],
 						meta: HashableGroupKey::<R> {
@@ -116,7 +116,6 @@ impl EntityObjectRelationBuilder {
 			}),
 			true => Field::output(
 				name,
-				1u32,
 				Ty::named_nn(connection_object_builder.type_name(&object_name)),
 				move |ctx| {
 					let context: &'static BuilderContext = context;
@@ -147,12 +146,12 @@ impl EntityObjectRelationBuilder {
 
 						let stmt = R::find();
 						let filters = ctx.args.get(&context.entity_query_field.filters);
-						let filters = get_filter_conditions::<R, F>(context, filters);
+						let filters = get_filter_conditions::<R, F>(context, filters)?;
 						let order_by = ctx.args.get(&context.entity_query_field.order_by);
 						let order_by = OrderInputBuilder {
 							context,
 						}
-						.parse_object::<R>(order_by);
+						.parse_object::<R>(order_by)?;
 						let key = KeyComplex::<R> {
 							key: vec![parent.get(from_col)],
 							meta: HashableGroupKey::<R> {
@@ -171,10 +170,10 @@ impl EntityObjectRelationBuilder {
 						let pagination = PaginationInputBuilder {
 							context,
 						}
-						.parse_object(pagination);
+						.parse_object(pagination)?;
 
 						let connection: Connection<R> =
-							apply_memory_pagination(values.remove(&keys[0]), pagination);
+							apply_memory_pagination(values.remove(&keys[0]), pagination)?;
 
 						Ok(Some(FieldValue::owned_any(connection)))
 					})
@@ -182,24 +181,21 @@ impl EntityObjectRelationBuilder {
 			),
 		};
 
-		match relation_definition.is_owner {
+		Ok(match relation_definition.is_owner {
 			false => field,
 			true => field
 				.argument(Field::input(
 					&context.entity_query_field.filters,
-					1u32,
 					Ty::named(filter_input_builder.type_name(&object_name)),
 				))
 				.argument(Field::input(
 					&context.entity_query_field.order_by,
-					2u32,
 					Ty::named(order_input_builder.type_name(&object_name)),
 				))
 				.argument(Field::input(
 					&context.entity_query_field.pagination,
-					3u32,
 					Ty::named(&context.pagination_input.type_name),
 				)),
-		}
+		})
 	}
 }

@@ -1,42 +1,97 @@
-use std::{any::Any, borrow::Cow, collections::BTreeMap, fmt::Debug, sync::Arc, sync::Mutex};
-
-use crate::{
-	BoxResolverFn, ContextBase, Data, FieldFuture, FieldValue, ObjectAccessor, ResolverContext,
-	SchemaError, SeaResult, SeaographyError, Value,
-};
-use actix_web::HttpResponse;
-use async_graphql::{
-	InputType, Positioned, Request, ServerResult, Variables,
-	parser::{
-		parse_query,
-		types::{Directive, ExecutableDocument, Field, Selection, SelectionSet},
-	},
-};
-use futures::TryFutureExt;
-use juniper::{
-	EmptyMutation, EmptySubscription, GraphQLType, GraphQLValue, RootNode, http::GraphQLRequest,
-};
-
 use super::{
-	Info, IntrospectionMode, Object, QueryWrapper, Registry, Scalar, ServerError, Subscription,
-	Type, TypeRef, Union, ValidationMode, add_type, get_type,
+	Arguments, ExecutionResult, Executor, FieldError, GraphQLType, GraphQLValue, GraphQLValueAsync,
+	IntrospectionMode, MetaType, NodeInfo, NodeType, Registry, Scalar, TYPE_REGISTRY, Type,
+	ValidationMode,
 };
+use crate::{BoxResolverFn, ContextBase, Data, FieldFuture, ResolverContext, SchemaError, Value};
+use actix_web::HttpResponse;
+use futures::{FutureExt, future::BoxFuture};
+use juniper::{
+	EmptySubscription, RootNode,
+	http::{GraphQLRequest, GraphQLResponse},
+};
+use std::{any::Any, collections::BTreeMap, fmt::Debug, sync::Arc};
 
-pub type Root = RootNode<
-	'static,
-	QueryWrapper,
-	EmptyMutation<ContextBase>,
-	EmptySubscription<ContextBase>,
-	Value,
->;
+pub struct NodeWrapper {}
+
+impl NodeWrapper {
+	pub fn new() -> Self {
+		Self {}
+	}
+}
+
+#[async_trait::async_trait]
+impl GraphQLType<Value> for NodeWrapper {
+	fn name(info: &Self::TypeInfo) -> Option<&str> {
+		Some(info.type_name())
+	}
+
+	fn meta<'r>(info: &Self::TypeInfo, registry: &mut Registry<'r, Value>) -> MetaType<'r, Value>
+	where
+		Value: 'r,
+	{
+		if info.type_name().contains("Empty") {
+			return registry.build_object_type::<Self>(info, &vec![]).into_meta();
+		}
+		match TYPE_REGISTRY.get(info.type_name()) {
+			Some(obj) => obj.meta(registry),
+			None => {
+				panic!(
+					"`{}` with name `{}` not found",
+					info.node_type.type_name(),
+					info.type_name()
+				);
+			}
+		}
+	}
+}
+
+impl GraphQLValue<Value> for NodeWrapper {
+	type Context = ContextBase;
+	type TypeInfo = NodeInfo;
+	fn type_name<'i>(&self, info: &'i Self::TypeInfo) -> Option<&'i str> {
+		Some(info.type_name())
+	}
+
+	fn concrete_type_name(&self, _context: &Self::Context, info: &Self::TypeInfo) -> String {
+		info.type_name().to_string()
+	}
+}
+
+impl GraphQLValueAsync<Value> for NodeWrapper
+where
+	Self::TypeInfo: Sync,
+	Self::Context: Sync,
+{
+	fn resolve_field_async<'a>(
+		&'a self,
+		info: &'a Self::TypeInfo,
+		field_name: &'a str,
+		arguments: &'a Arguments<Value>,
+		executor: &'a Executor<Self::Context, Value>,
+	) -> BoxFuture<'a, ExecutionResult<Value>> {
+		async move {
+			match TYPE_REGISTRY.get(info.type_name()) {
+				Some(obj) => obj.resolve(field_name, arguments, executor).await,
+				None => Err(FieldError::from(format!(
+					"`{}` with name `{}` not found",
+					info.node_type.type_name(),
+					info.type_name()
+				))),
+			}
+		}
+		.boxed()
+	}
+}
+
+pub type Root = RootNode<'static, NodeWrapper, NodeWrapper, EmptySubscription<ContextBase>, Value>;
 
 /// Dynamic schema builder
 pub struct SchemaBuilder {
-	query_type: Info,
-	mutation_type: Option<String>,
-	subscription_type: Option<String>,
-	types: BTreeMap<String, Type>,
-	pub data: Data,
+	query_type: NodeInfo,
+	mutation_type: Option<NodeInfo>,
+	subscription_type: Option<NodeInfo>,
+	pub(crate) data: Data,
 	validation_mode: ValidationMode,
 	recursive_depth: usize,
 	max_directives: Option<usize>,
@@ -53,8 +108,7 @@ impl SchemaBuilder {
 	#[must_use]
 	pub fn register(self, ty: impl Into<Type>) -> Self {
 		let ty = ty.into();
-		add_type(ty.name().to_owned(), ty);
-		// self.types.insert(ty.name().to_owned(), ty);
+		TYPE_REGISTRY.add(ty.name().to_owned(), ty);
 		self
 	}
 
@@ -150,31 +204,22 @@ impl SchemaBuilder {
 	pub fn finish(self) -> Result<Schema, SchemaError> {
 		// create system scalars
 		for ty in ["Int", "Float", "Boolean", "String", "ID"] {
-			add_type(ty.to_string(), Scalar::new(ty).into());
+			TYPE_REGISTRY.add(ty.to_string(), Scalar::new(ty).into());
 		}
 
 		let inner = SchemaInner {
 			root_node: Root::new_with_info(
-				QueryWrapper::new(),
-				EmptyMutation::new(),
+				NodeWrapper::new(),
+				NodeWrapper::new(),
 				EmptySubscription::new(),
 				self.query_type,
-				(),
+				match self.mutation_type {
+					Some(ty) => ty,
+					None => NodeInfo::new("EmptyMutation".to_string(), NodeType::Mutation),
+				},
 				(),
 			),
-			// env: SchemaEnv(Arc::new(SchemaEnvInner {
-			// 	registry,
-			// 	data: Default::default(),
-			// 	custom_directives: Default::default(),
-			// })),
-			// registry,
 			data: Arc::new(self.data),
-			recursive_depth: self.recursive_depth,
-			max_directives: self.max_directives,
-			complexity: self.complexity,
-			depth: self.depth,
-			validation_mode: self.validation_mode,
-			entity_resolver: self.entity_resolver,
 		};
 		Ok(Schema(Arc::new(inner)))
 	}
@@ -194,25 +239,22 @@ impl Debug for Schema {
 
 pub struct SchemaInner {
 	root_node: Root,
-	// pub(crate) env: SchemaEnv,
-	// pub(crate) registry: Registry,
 	pub(crate) data: Arc<Data>,
-	recursive_depth: usize,
-	max_directives: Option<usize>,
-	complexity: Option<usize>,
-	depth: Option<usize>,
-	validation_mode: ValidationMode,
-	pub(crate) entity_resolver: Option<BoxResolverFn>,
 }
 
 impl Schema {
 	/// Create a schema builder
 	pub fn build(query: &str, mutation: Option<&str>, subscription: Option<&str>) -> SchemaBuilder {
+		#[cfg(test)]
+		TYPE_REGISTRY.clear();
+
 		SchemaBuilder {
-			query_type: Info::new(query.to_string()),
-			mutation_type: mutation.map(ToString::to_string),
-			subscription_type: subscription.map(ToString::to_string),
-			types: Default::default(),
+			query_type: NodeInfo::new(query.to_string(), NodeType::Query),
+			mutation_type: mutation
+				.map(|mutation| NodeInfo::new(mutation.to_string(), NodeType::Mutation)),
+			subscription_type: subscription.map(|subscription| {
+				NodeInfo::new(subscription.to_string(), NodeType::Subscription)
+			}),
 			data: Default::default(),
 			validation_mode: ValidationMode::Strict,
 			recursive_depth: 32,
@@ -226,125 +268,6 @@ impl Schema {
 		}
 	}
 
-	// fn create_extensions(&self, session_data: Arc<async_graphql::Data>) -> Extensions {
-	// 	Extensions::new(
-	// 		// self.0.extensions.iter().map(|f| f.create()),
-	// 		vec![].into_iter(),
-	// 		self.0.env.clone(),
-	// 		session_data,
-	// 	)
-	// }
-
-	// fn query_root(&self) -> SeaResult<&Object> {
-	// 	self.0.types.get(&self.0.registry.query_type).and_then(Type::as_object).ok_or_else(|| {
-	// 		SeaographyError::AsyncGraphQLError(ServerError::new("Query root not found", None))
-	// 	})
-	// }
-
-	// fn mutation_root(&self) -> SeaResult<&Object> {
-	// 	self.0
-	// 		.env
-	// 		.registry
-	// 		.mutation_type
-	// 		.as_ref()
-	// 		.and_then(|mutation_name| self.0.types.get(mutation_name))
-	// 		.and_then(Type::as_object)
-	// 		.ok_or_else(|| {
-	// 			SeaographyError::AsyncGraphQLError(ServerError::new(
-	// 				"Mutation root not found",
-	// 				None,
-	// 			))
-	// 		})
-	// }
-
-	// fn subscription_root(&self) -> SeaResult<&Subscription> {
-	// 	self.0
-	// 		.env
-	// 		.registry
-	// 		.subscription_type
-	// 		.as_ref()
-	// 		.and_then(|subscription_name| self.0.types.get(subscription_name))
-	// 		.and_then(Type::as_subscription)
-	// 		.ok_or_else(|| {
-	// 			SeaographyError::AsyncGraphQLError(ServerError::new(
-	// 				"Subscription root not found",
-	// 				None,
-	// 			))
-	// 		})
-	// }
-
-	// /// Returns SDL(Schema Definition Language) of this schema.
-	// pub fn sdl(&self) -> String {
-	// 	self.0.env.registry.export_sdl(Default::default())
-	// }
-
-	// /// Returns SDL(Schema Definition Language) of this schema with options.
-	// pub fn sdl_with_options(&self, options: SDLExportOptions) -> String {
-	// 	self.0.env.registry.export_sdl(options)
-	// }
-
-	// async fn execute_once(
-	// 	&self,
-	// 	env: QueryEnv,
-	// 	root_value: &FieldValue<'static>,
-	// 	// execute_data: Option<Data>,
-	// ) -> Response {
-	// 	// execute
-	// 	let ctx = env.create_context(
-	// 		&self.0.env,
-	// 		None,
-	// 		&env.operation.node.selection_set,
-	// 		Default::default(),
-	// 	);
-
-	// 	let res = match &env.operation.node.ty {
-	// 		OperationType::Query => {
-	// 			async move { self.query_root() }
-	// 				.and_then(|query_root| {
-	// 					resolve_container(self, query_root, &ctx, root_value, false)
-	// 				})
-	// 				.await
-	// 		}
-	// 		OperationType::Mutation => {
-	// 			async move { self.mutation_root() }
-	// 				.and_then(|query_root| {
-	// 					resolve_container(self, query_root, &ctx, root_value, true)
-	// 				})
-	// 				.await
-	// 		}
-	// 		OperationType::Subscription => {
-	// 			Err(ServerError::new("Subscriptions are not supported on this transport.", None))
-	// 		}
-	// 	};
-
-	// 	let mut resp = match res {
-	// 		Ok(value) => Response::new(value.unwrap_or_default()),
-	// 		Err(err) => Response::from_errors(vec![err]),
-	// 	}
-	// 	.http_headers(std::mem::take(&mut *env.http_headers.lock().unwrap()));
-
-	// 	resp.errors.extend(std::mem::take(&mut *env.errors.lock().unwrap()));
-	// 	resp
-	// }
-	// pub(crate) fn to_object_accessor(
-	// 	&self,
-	// 	buf: &mut Vec<u8>,
-	// 	field: &Positioned<Field>,
-	// ) -> SeaResult<ObjectAccessor> {
-	// 	Ok(ObjectAccessor(Cow::Owned(
-	// 		field
-	// 			.node
-	// 			.arguments
-	// 			.iter()
-	// 			.map(|(name, value)| {
-	// 				ctx_field
-	// 					.resolve_input_value(value.clone())
-	// 					.map(|value| (name.node.clone(), value))
-	// 			})
-	// 			.collect::<ServerResult<IndexMap<Name, Value>>>()?,
-	// 	)))
-	// }
-
 	/// Execute a GraphQL query.
 	pub async fn execute(&self, request: GraphQLRequest<Value>) -> HttpResponse {
 		let mut ctx = ContextBase::new(crate::ApiType::GraphQL);
@@ -354,6 +277,15 @@ impl Schema {
 		let res = request.execute(&self.0.root_node, &ctx).await;
 
 		HttpResponse::Ok().json(res)
+	}
+
+	#[cfg(test)]
+	pub(crate) async fn executer(&self, request: GraphQLRequest<Value>) -> GraphQLResponse<Value> {
+		let mut ctx = ContextBase::new(crate::ApiType::GraphQL);
+
+		ctx.execute_data = Some(self.0.data.clone());
+
+		request.execute(&self.0.root_node, &ctx).await
 	}
 
 	// /// Execute a GraphQL subscription with session data.

@@ -79,7 +79,6 @@ impl ConnectionObjectBuilder {
 		Object::new(name, IO::Output)
 			.field(Field::output(
 				&self.context.connection_object.page_info,
-				1u32,
 				Ty::named_nn(&self.context.page_info_object.type_name),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -90,7 +89,6 @@ impl ConnectionObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.connection_object.pagination_info,
-				2u32,
 				Ty::named(&self.context.pagination_info_object.type_name),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -107,7 +105,6 @@ impl ConnectionObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.connection_object.nodes,
-				3u32,
 				Ty::named_nn_list_nn(&object_name),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -123,7 +120,6 @@ impl ConnectionObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.connection_object.edges,
-				4u32,
 				Ty::named_nn_list_nn(edge_object_builder.type_name(&object_name)),
 				|ctx| {
 					FieldFuture::new(async move {

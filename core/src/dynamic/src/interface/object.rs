@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use super::Field;
 use crate::{
 	TypeRefTrait,
@@ -19,6 +21,7 @@ where
 	pub(crate) description: Option<String>,
 	pub(crate) fields: IndexMap<String, Field<T>>,
 	pub(crate) io: IO,
+	pub(crate) namespace: Option<String>,
 }
 
 impl<T> Object<T>
@@ -33,6 +36,7 @@ where
 			description: None,
 			fields: Default::default(),
 			io, // arguments: Default::default(),
+			namespace: None,
 		}
 	}
 
@@ -54,6 +58,11 @@ where
 		self
 	}
 
+	pub fn namespace(mut self, namespace: impl Into<String>) -> Self {
+		self.namespace = Some(namespace.into());
+		self
+	}
+
 	/// Returns the type name
 	#[inline]
 	pub fn type_name(&self) -> &str {
@@ -63,20 +72,32 @@ where
 
 impl Object<GraphQLTypeRef> {
 	pub fn to_type(self) -> GraphQLType {
-		GraphQLType::Object(
-			self.fields.into_iter().fold(GraphQLObject::new(self.name), |builder, (_, field)| {
-				builder.field(field.to_field(&self.io))
-			}),
-		)
+		GraphQLType::Object(self.fields.into_iter().fold(
+			match self.description {
+				Some(description) => GraphQLObject::new(self.name).description(description),
+				None => GraphQLObject::new(self.name),
+			},
+			|builder, (_, field)| builder.field(field.to_field(&self.io)),
+		))
 	}
 }
 
 impl Object<ProtoTypeRef> {
 	pub fn to_type(self) -> ProtoType {
 		ProtoType::Message(
-			self.fields.into_iter().fold(ProtoMessage::new(self.name), |builder, (_, field)| {
-				builder.field(field.to_field(&self.io))
-			}),
+			self.fields
+				.into_iter()
+				.enumerate()
+				.filter(|(_, (_, field))| !field.name.contains("edges"))
+				.fold(
+					match self.description {
+						Some(description) => ProtoMessage::new(self.name).description(description),
+						None => ProtoMessage::new(self.name),
+					},
+					|builder, (index, (_, field))| {
+						builder.field(field.to_field(index.add(1) as u32, &self.io))
+					},
+				),
 		)
 	}
 }

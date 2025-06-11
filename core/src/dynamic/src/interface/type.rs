@@ -16,6 +16,19 @@ where
 	Enum(E),
 }
 
+impl<T, E> Type<T, E>
+where
+	T: TypeRefTrait,
+	E: EnumTrait,
+{
+	pub fn type_name(&self) -> &str {
+		match self {
+			Type::Object(o) => o.type_name(),
+			Type::Enum(e) => e.type_name(),
+		}
+	}
+}
+
 impl Type<GraphQLTypeRef, GraphQLEnum> {
 	pub(crate) fn register(self) -> GraphQLType {
 		match self {

@@ -1,4 +1,3 @@
-use super::Registry;
 use crate::TypeRefTrait;
 use std::{
 	borrow::Cow,
@@ -112,32 +111,32 @@ impl TypeRef {
 		}
 	}
 
-	#[inline]
-	pub(crate) fn is_nullable(&self) -> bool {
-		match self {
-			TypeRef::Named(_) => true,
-			TypeRef::NonNull(_) => false,
-			TypeRef::List(_) => true,
-		}
-	}
+	// #[inline]
+	// pub(crate) fn is_nullable(&self) -> bool {
+	// 	match self {
+	// 		TypeRef::Named(_) => true,
+	// 		TypeRef::NonNull(_) => false,
+	// 		TypeRef::List(_) => true,
+	// 	}
+	// }
 
-	pub(crate) fn is_subtype(&self, sub: &TypeRef) -> bool {
-		fn is_subtype(cur: &TypeRef, sub: &TypeRef) -> bool {
-			match (cur, sub) {
-				(TypeRef::NonNull(super_type), TypeRef::NonNull(sub_type)) => {
-					is_subtype(&super_type, &sub_type)
-				}
-				(_, TypeRef::NonNull(sub_type)) => is_subtype(cur, &sub_type),
-				(TypeRef::Named(super_type), TypeRef::Named(sub_type)) => super_type == sub_type,
-				(TypeRef::List(super_type), TypeRef::List(sub_type)) => {
-					is_subtype(super_type, sub_type)
-				}
-				_ => false,
-			}
-		}
+	// pub(crate) fn is_subtype(&self, sub: &TypeRef) -> bool {
+	// 	fn is_subtype(cur: &TypeRef, sub: &TypeRef) -> bool {
+	// 		match (cur, sub) {
+	// 			(TypeRef::NonNull(super_type), TypeRef::NonNull(sub_type)) => {
+	// 				is_subtype(&super_type, &sub_type)
+	// 			}
+	// 			(_, TypeRef::NonNull(sub_type)) => is_subtype(cur, &sub_type),
+	// 			(TypeRef::Named(super_type), TypeRef::Named(sub_type)) => super_type == sub_type,
+	// 			(TypeRef::List(super_type), TypeRef::List(sub_type)) => {
+	// 				is_subtype(super_type, sub_type)
+	// 			}
+	// 			_ => false,
+	// 		}
+	// 	}
 
-		is_subtype(self, sub)
-	}
+	// 	is_subtype(self, sub)
+	// }
 }
 
 impl TypeRefTrait for TypeRef {

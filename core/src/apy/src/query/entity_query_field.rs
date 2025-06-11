@@ -81,7 +81,7 @@ impl EntityQueryFieldBuilder {
 		let guard = self.context.guards.entity_guards.get(&object_name);
 
 		let context: &'static BuilderContext = self.context;
-		Field::output(self.type_name::<T>(), 1u32, Ty::named_nn(&type_name), move |ctx| {
+		Field::output(self.type_name::<T>(), Ty::named_nn(&type_name), move |ctx| {
 			let context: &'static BuilderContext = context;
 			FieldFuture::new(async move {
 				let guard_flag = if let Some(guard) = guard {
@@ -102,17 +102,17 @@ impl EntityQueryFieldBuilder {
 				}
 
 				let filters = ctx.args.get(&context.entity_query_field.filters);
-				let filters = get_filter_conditions::<T, F>(context, filters);
+				let filters = get_filter_conditions::<T, F>(context, filters)?;
 				let order_by = ctx.args.get(&context.entity_query_field.order_by);
 				let order_by = OrderInputBuilder {
 					context,
 				}
-				.parse_object::<T>(order_by);
+				.parse_object::<T>(order_by)?;
 				let pagination = ctx.args.get(&context.entity_query_field.pagination);
 				let pagination = PaginationInputBuilder {
 					context,
 				}
-				.parse_object(pagination);
+				.parse_object(pagination)?;
 
 				let stmt = T::find();
 				let stmt = stmt.filter(filters);
@@ -127,17 +127,14 @@ impl EntityQueryFieldBuilder {
 		})
 		.argument(Field::input(
 			&self.context.entity_query_field.filters,
-			1u32,
 			Ty::named(filter_input_builder.type_name(&object_name)),
 		))
 		.argument(Field::input(
 			&self.context.entity_query_field.order_by,
-			2u32,
 			Ty::named(order_input_builder.type_name(&object_name)),
 		))
 		.argument(Field::input(
 			&self.context.entity_query_field.pagination,
-			3u32,
 			Ty::named(pagination_input_builder.type_name()),
 		))
 	}

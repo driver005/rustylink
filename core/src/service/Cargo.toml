@@ -22,9 +22,8 @@ tower-service = { workspace = true }
 futures = { workspace = true }
 
 dotenv = "0.15.0"
+
 sdk = { path = "../sdk" }
-
-
 macros = { path = "../macros" }
 dynamic = { path = "../dynamic" }
 apy = { path = "../apy" }
@@ -40,5 +39,6 @@ generator = { path = "../generator" }
 sea-orm = { workspace = true }
 lazy_static = { workspace = true }
 tokio = { workspace = true }
+tonic-build = { workspace = true }
 
 dotenv = "0.15.0"

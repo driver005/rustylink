@@ -1,13 +1,8 @@
-use binary::proto::{Encoder, EncoderLit};
-use indexmap::IndexMap;
-use juniper::{ParseError, ParseScalarResult, ScalarToken, ScalarValue};
+use binary::proto::EncoderLit;
+use juniper::{LookAheadValue, ScalarValue, Value as JuniperValue};
 use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
-use serde_json::Number;
-use std::str::FromStr;
 use std::{borrow::Cow, collections::BTreeMap, fmt};
-
-use crate::{SeaResult, SeaographyError};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -80,55 +75,14 @@ impl Value {
 		}
 	}
 
-	pub(crate) fn encode(
-		&self,
-		encoder: &Encoder,
-		tag: u32,
-		buf: &mut Vec<u8>,
-	) -> SeaResult<usize> {
+	pub fn is_repeated(&self) -> bool {
+		matches!(self, Value::List(_))
+	}
+
+	pub fn as_var(&self) -> Option<(Value, Value)> {
 		match self {
-			Value::Int8(data) => {
-				Ok(encoder.encode((&tag, EncoderLit::Int32(&i32::from(*data))), buf)?)
-			}
-			Value::Int16(data) => {
-				Ok(encoder.encode((&tag, EncoderLit::Int32(&i32::from(*data))), buf)?)
-			}
-			Value::Int32(data) => Ok(encoder.encode((&tag, EncoderLit::Int32(&data)), buf)?),
-			Value::Int64(data) => Ok(encoder.encode((&tag, EncoderLit::Int64(&data)), buf)?),
-			Value::UInt8(data) => {
-				Ok(encoder.encode((&tag, EncoderLit::UInt32(&u32::from(*data))), buf)?)
-			}
-			Value::UInt16(data) => {
-				Ok(encoder.encode((&tag, EncoderLit::UInt32(&u32::from(*data))), buf)?)
-			}
-			Value::UInt32(data) => Ok(encoder.encode((&tag, EncoderLit::UInt32(data)), buf)?),
-			Value::UInt64(data) => Ok(encoder.encode((&tag, EncoderLit::UInt64(data)), buf)?),
-			Value::Float32(data) => Ok(encoder.encode((&tag, EncoderLit::Float(data)), buf)?),
-			Value::Float64(data) => Ok(encoder.encode((&tag, EncoderLit::Double(data)), buf)?),
-			Value::Bool(data) => Ok(encoder.encode((&tag, EncoderLit::Bool(data)), buf)?),
-			Value::Char(data) => {
-				Ok(encoder.encode((&tag, EncoderLit::Bytes(&vec![*data as u8])), buf)?)
-			}
-			Value::String(data) => {
-				Ok(encoder.encode((&tag, EncoderLit::Bytes(&data.to_owned().into_bytes())), buf)?)
-			}
-			Value::List(values) => values.iter().map(|value| value.encode(encoder, tag, buf)).sum(),
-			Value::Map(btree_map) => {
-				btree_map.iter().map(|(_, value)| value.encode(encoder, tag, buf)).sum()
-			}
-			Value::Option(value) => match &**value {
-				Some(data) => data.encode(encoder, tag, buf),
-				None => Ok(0),
-			},
-			Value::Var(data) => {
-				let val = &**data;
-				Ok(val.0.encode(encoder, tag, buf)?)
-			}
-			Value::Null => Ok(0),
-			name => Err(SeaographyError::new(format!(
-				"Unsupported type or wire type combination: {:?}",
-				name
-			))),
+			Value::Var(data) => Some(*data.to_owned()),
+			_ => None,
 		}
 	}
 }
@@ -376,213 +330,213 @@ impl From<BTreeMap<Value, Value>> for Value {
 	}
 }
 
-impl From<Value> for Option<()> {
-	fn from(value: Value) -> Self {
-		if let Value::Null = value {
-			Some(())
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<()> {
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Null = value {
+// 			Some(())
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
-impl From<Value> for Option<i8> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Int8(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<i16> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Int16(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<i32> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Int32(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<i64> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Int64(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<i128> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Int128(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<isize> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Intsize(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<u8> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::UInt8(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<u16> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::UInt16(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<u32> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::UInt32(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<u64> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::UInt64(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<u128> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::UInt128(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
-impl From<Value> for Option<usize> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::UIntsize(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<i8> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Int8(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<i16> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Int16(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<i32> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Int32(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<i64> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Int64(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<i128> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Int128(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<isize> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Intsize(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<u8> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::UInt8(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<u16> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::UInt16(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<u32> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::UInt32(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<u64> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::UInt64(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<u128> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::UInt128(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
+// impl From<Value> for Option<usize> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::UIntsize(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
-impl From<Value> for Option<bool> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Bool(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<bool> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Bool(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
-impl From<Value> for Option<f32> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Float32(data) = value {
-			Some(*data)
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<f32> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Float32(data) = value {
+// 			Some(*data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
-impl From<Value> for Option<f64> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Float64(data) = value {
-			Some(*data)
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<f64> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Float64(data) = value {
+// 			Some(*data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
-impl From<Value> for Option<String> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::String(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<String> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::String(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
-impl From<Value> for Option<(Value, Value)> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Var(data) = value {
-			Some(*data)
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<(Value, Value)> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Var(data) = value {
+// 			Some(*data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
-impl From<Value> for Option<Vec<Value>> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::List(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<Vec<Value>> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::List(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
-impl From<Value> for Option<BTreeMap<Value, Value>> {
-	#[inline]
-	fn from(value: Value) -> Self {
-		if let Value::Map(data) = value {
-			Some(data)
-		} else {
-			None
-		}
-	}
-}
+// impl From<Value> for Option<BTreeMap<Value, Value>> {
+// 	#[inline]
+// 	fn from(value: Value) -> Self {
+// 		if let Value::Map(data) = value {
+// 			Some(data)
+// 		} else {
+// 			None
+// 		}
+// 	}
+// }
 
 impl<'a> From<EncoderLit<'a>> for Value {
 	fn from(value: EncoderLit<'a>) -> Self {
@@ -642,6 +596,45 @@ impl<'a> From<EncoderLit<'a>> for Value {
 			EncoderLit::SFixed64Vec(data) => {
 				Value::List(data.iter().map(|var| Value::Int64(*var)).collect())
 			}
+		}
+	}
+}
+
+impl From<JuniperValue<Value>> for Value {
+	fn from(value: JuniperValue<Value>) -> Self {
+		match value {
+			JuniperValue::Null => Value::Null,
+			JuniperValue::Scalar(s) => s,
+			JuniperValue::List(values) => {
+				Value::List(values.into_iter().map(Value::from).collect())
+			}
+			JuniperValue::Object(object) => Value::Map(
+				object
+					.into_iter()
+					.map(|(key, value)| (Value::String(key.to_string()), Value::from(value)))
+					.collect(),
+			),
+		}
+	}
+}
+
+impl<'a> From<LookAheadValue<'a, Value>> for Value {
+	fn from(value: LookAheadValue<'a, Value>) -> Self {
+		match value {
+			LookAheadValue::Null => Value::Null,
+			LookAheadValue::Scalar(s) => s.clone(),
+			LookAheadValue::Enum(e) => Value::String(e.to_string()),
+			LookAheadValue::List(look_ahead_list) => {
+				look_ahead_list.iter().map(|value| Value::from(value.item)).collect()
+			}
+			LookAheadValue::Object(look_ahead_object) => Value::Map(
+				look_ahead_object
+					.iter()
+					.map(|(key, value)| {
+						(Value::String(key.item.to_string()), Value::from(value.item))
+					})
+					.collect(),
+			),
 		}
 	}
 }

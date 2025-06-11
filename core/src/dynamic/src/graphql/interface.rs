@@ -1,11 +1,9 @@
 use super::{
-	Arguments, Deprecation, Directive, ExecutionResult, Executor, Field, FieldError, GraphQLType,
-	GraphQLValue, GraphQLValueAsync, IntoResolvable, JuniperField, MetaType, Registry, ScalarValue,
-	TypeRef, TypeRefToMeta, get_type,
+	DeprecationStatus, Directive, Field, GraphQLType, GraphQLValue, GraphQLValueAsync,
+	JuniperField, MetaType, Registry, TYPE_REGISTRY, Type, TypeRef, TypeRefToMeta,
 };
-use crate::{ContextBase, Value};
-use futures::future::BoxFuture;
-use futures::{FutureExt, future};
+use crate::{BoxFieldFutureJson, ContextBase, SeaResult, SeaographyError, Value};
+use futures::FutureExt;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// A GraphQL interface field type
@@ -90,16 +88,9 @@ pub struct InterfaceField {
 	pub(crate) description: Option<String>,
 	pub(crate) arguments: BTreeMap<String, Field>,
 	pub(crate) ty: TypeRef,
-	pub(crate) deprecation: Deprecation,
-	pub(crate) external: bool,
-	pub(crate) requires: Option<String>,
-	pub(crate) provides: Option<String>,
-	pub(crate) shareable: bool,
+	pub(crate) deprecation: DeprecationStatus,
 	pub(crate) inaccessible: bool,
-	pub(crate) tags: Vec<String>,
-	pub(crate) override_from: Option<String>,
 	pub(crate) directives: Vec<Directive>,
-	pub(crate) requires_scopes: Vec<String>,
 }
 
 impl InterfaceField {
@@ -110,28 +101,15 @@ impl InterfaceField {
 			description: None,
 			arguments: Default::default(),
 			ty: ty.into(),
-			deprecation: Deprecation::NoDeprecated,
-			external: false,
-			requires: None,
-			provides: None,
-			shareable: false,
+			deprecation: DeprecationStatus::Current,
 			inaccessible: false,
-			tags: Vec::new(),
-			override_from: None,
 			directives: Vec::new(),
-			requires_scopes: Vec::new(),
 		}
 	}
 
 	impl_set_description!();
 	impl_set_deprecation!();
-	impl_set_external!();
-	impl_set_requires!();
-	impl_set_provides!();
-	impl_set_shareable!();
 	impl_set_inaccessible!();
-	impl_set_tags!();
-	impl_set_override_from!();
 	impl_directive!();
 
 	/// Returns the type name
@@ -170,12 +148,8 @@ pub struct Interface {
 	pub(crate) description: Option<String>,
 	pub(crate) fields: BTreeMap<String, InterfaceField>,
 	pub(crate) implements: BTreeSet<String>,
-	keys: Vec<String>,
-	extends: bool,
-	inaccessible: bool,
-	tags: Vec<String>,
 	pub(crate) directives: Vec<Directive>,
-	requires_scopes: Vec<String>,
+	pub(crate) inaccessible: bool,
 }
 
 impl Interface {
@@ -187,19 +161,13 @@ impl Interface {
 			description: None,
 			fields: Default::default(),
 			implements: Default::default(),
-			keys: Vec::new(),
-			extends: false,
-			inaccessible: false,
-			tags: Vec::new(),
 			directives: Vec::new(),
-			requires_scopes: Vec::new(),
+			inaccessible: false,
 		}
 	}
 
 	impl_set_description!();
-	impl_set_extends!();
 	impl_set_inaccessible!();
-	impl_set_tags!();
 	impl_directive!();
 
 	/// Returns the type name
@@ -225,79 +193,73 @@ impl Interface {
 		self
 	}
 
-	/// Add an entity key
-	///
-	/// See also: [`Object::key`](crate::dynamic::Object::key)
-	pub fn key(mut self, fields: impl Into<String>) -> Self {
-		self.keys.push(fields.into());
-		self
+	pub(crate) fn check(&self, type_name: &str) -> SeaResult<()> {
+		if self.inaccessible {
+			return Err(SeaographyError::new(format!(
+				"interface `{}` is inaccessible",
+				self.type_name()
+			)));
+		}
+		if let Some(ty) = TYPE_REGISTRY.get(type_name) {
+			if let Some(interface) = ty.as_interface() {
+				if self.implements.get(interface.type_name()).is_some() {
+					for interface_field in interface.fields.values() {
+						match self.fields.get(&interface_field.name) {
+							Some(field) => {
+								if field.ty != interface_field.ty {
+									return Err(SeaographyError::new(format!(
+										"interface `{}` field `{}` has different type `{}` than implemented type `{}`",
+										self.name, field.name, field.ty, interface_field.ty
+									)));
+								}
+								for arg in interface_field.arguments.values() {
+									if let None = field.arguments.get(&arg.name) {
+										return Err(SeaographyError::new(format!(
+											"interface `{}` field `{}` does not implement argument `{}`",
+											self.name, interface_field.name, arg.name
+										)));
+									}
+								}
+							}
+							None => {
+								return Err(SeaographyError::new(format!(
+									"interface `{}` does not implement field `{}`",
+									self.name, interface_field.name
+								)));
+							}
+						}
+					}
+				} else {
+					return Err(SeaographyError::new(format!(
+						"interface `{}` does not implement interface `{}`",
+						self.name,
+						interface.type_name()
+					)));
+				}
+			}
+
+			if let Some(union) = ty.as_union() {
+				return union.check(self.type_name());
+			}
+
+			Ok(())
+		} else {
+			return Err(SeaographyError::new(format!(
+				"object `{}` implements unknown CUSTOM type `{}`",
+				self.name, type_name
+			)));
+		}
 	}
 
-	#[inline]
-	#[doc(hidden)]
-	pub fn is_entity(&self) -> bool {
-		!self.keys.is_empty()
+	pub(crate) fn collect<'a>(&'a self) -> BoxFieldFutureJson<'a> {
+		async move {
+			return Err(SeaographyError::new(format!(
+				"invalid FieldValue for interface `{}`, expected `FieldValue::with_type`",
+				self.type_name()
+			)));
+		}
+		.boxed()
 	}
-
-	// #[doc(hidden)]
-	// pub fn register(&self, registry: &mut Registry) -> Result<(), SchemaError> {
-	// 	let mut fields = BTreeMap::new();
-
-	// 	for field in self.fields.values() {
-	// 		let mut args = BTreeMap::new();
-
-	// 		for argument in field.arguments.values() {
-	// 			args.insert(argument.name.clone(), argument.to_meta_input_value());
-	// 		}
-
-	// 		fields.insert(
-	// 			field.name.clone(),
-	// 			MetaField {
-	// 				name: field.name.clone(),
-	// 				description: field.description.clone(),
-	// 				args,
-	// 				ty: field.ty.to_string(),
-	// 				deprecation: field.deprecation.clone(),
-	// 				cache_control: Default::default(),
-	// 				external: field.external,
-	// 				requires: field.requires.clone(),
-	// 				provides: field.provides.clone(),
-	// 				visible: None,
-	// 				shareable: field.shareable,
-	// 				inaccessible: field.inaccessible,
-	// 				tags: field.tags.clone(),
-	// 				override_from: field.override_from.clone(),
-	// 				compute_complexity: None,
-	// 				directive_invocations: to_meta_directive_invocation(field.directives.clone()),
-	// 				requires_scopes: field.requires_scopes.clone(),
-	// 			},
-	// 		);
-	// 	}
-
-	// 	registry.types.insert(
-	// 		self.name.clone(),
-	// 		MetaType::Interface {
-	// 			name: self.name.clone(),
-	// 			description: self.description.clone(),
-	// 			fields,
-	// 			possible_types: Default::default(),
-	// 			extends: self.extends,
-	// 			keys: if !self.keys.is_empty() {
-	// 				Some(self.keys.clone())
-	// 			} else {
-	// 				None
-	// 			},
-	// 			visible: None,
-	// 			inaccessible: self.inaccessible,
-	// 			tags: self.tags.clone(),
-	// 			rust_typename: None,
-	// 			directive_invocations: to_meta_directive_invocation(self.directives.clone()),
-	// 			requires_scopes: self.requires_scopes.clone(),
-	// 		},
-	// 	);
-
-	// 	Ok(())
-	// }
 }
 
 impl GraphQLType<Value> for Interface {
@@ -309,24 +271,49 @@ impl GraphQLType<Value> for Interface {
 	where
 		Value: 'r,
 	{
+		let implements = TYPE_REGISTRY.get_filtered(|_, ty| match &**ty {
+			Type::Object(obj) => obj.implements.contains(&info.name),
+			Type::Interface(interface) => interface.implements.contains(&info.name),
+			_ => false,
+		});
+
+		for ty in implements.values() {
+			ty.get_type(registry);
+		}
+
 		let mut fields = vec![];
 
 		for (_, field) in info.fields.iter().filter(|(_, p)| !p.inaccessible) {
-			let field = field.meta(registry);
-			fields.push(field);
+			let mut interface_field = field.meta(registry);
+			if let Some(description) = &field.description {
+				interface_field = interface_field.description(description);
+			}
+			if let DeprecationStatus::Deprecated(reason) = &field.deprecation {
+				interface_field = interface_field.deprecated(match reason {
+					None => None,
+					Some(reason) => Some(reason),
+				});
+			}
+			fields.push(interface_field);
 		}
 
 		let mut types = vec![];
 
 		for name in &info.implements {
-			let ty = match get_type(name) {
+			let ty = match TYPE_REGISTRY.get(name) {
 				Some(ty) => ty.get_type(registry),
 				None => panic!("Type {} not found", name),
 			};
 			types.push(ty);
 		}
 
-		registry.build_interface_type::<Self>(info, &fields).interfaces(&types).into_meta()
+		let mut meta_type = registry.build_interface_type::<Self>(info, &fields).interfaces(&types);
+
+		if let Some(description) = &info.description {
+			meta_type = meta_type.description(description);
+		}
+
+		meta_type.into_meta()
 	}
 }
 
@@ -340,39 +327,6 @@ impl GraphQLValue<Value> for Interface {
 	fn concrete_type_name(&self, _context: &Self::Context, info: &Self::TypeInfo) -> String {
 		info.type_name().to_string()
 	}
-
-	// fn resolve_field(
-	// 	&self,
-	// 	info: &Self::TypeInfo,
-	// 	field: &str,
-	// 	arguments: &Arguments<Value>,
-	// 	executor: &Executor<Self::Context, Value>,
-	// ) -> ExecutionResult<Value> {
-	// 	match field {
-	// 		"apiVersion" => {
-	// 			let res: &'static str = Self::api_version();
-	// 			IntoResolvable::into_resolvable(res, executor.context()).and_then(|res| match res {
-	// 				Some((ctx, r)) => executor.replaced_context(ctx).resolve_with_ctx(&(), &r),
-	// 				None => Ok(JuniperValue::null()),
-	// 			})
-	// 		}
-	// 		_ => Err(FieldError::from(format!(
-	// 			"Field `{}` not found on type `{}`",
-	// 			field,
-	// 			<Self as GraphQLType<Value>>::name(info).ok_or_else(|| "Query")?,
-	// 		))),
-	// 	}
-	// }
-
-	fn resolve_into_type(
-		&self,
-		info: &Self::TypeInfo,
-		type_name: &str,
-		selection_set: Option<&[juniper::Selection<Value>]>,
-		executor: &Executor<Self::Context, Value>,
-	) -> ExecutionResult<Value> {
-		todo!()
-	}
 }
 
 impl GraphQLValueAsync<Value> for Interface
@@ -380,37 +334,202 @@ where
 	Self::TypeInfo: Sync,
 	Self::Context: Sync,
 {
-	fn resolve_field_async<'a>(
-		&'a self,
-		info: &'a Self::TypeInfo,
-		field: &'a str,
-		arguments: &'a Arguments<Value>,
-		executor: &'a Executor<Self::Context, Value>,
-	) -> BoxFuture<'a, ExecutionResult<Value>> {
-		match field {
-			_ => Box::pin(async move {
-				Err(FieldError::from(format!(
-					"Field `{}` not found on type `{}`",
-					field,
-					<Self as GraphQLType<Value>>::name(info).ok_or_else(|| "Query")?,
-				)))
-			}),
+}
+
+#[cfg(test)]
+mod tests {
+	use std::collections::BTreeMap;
+
+	use crate::{
+		FieldFuture, FieldValue, SeaographyError, Value,
+		graphql::{
+			Field, Interface, InterfaceField, IntoFieldError, JuniperValue, Object, Schema, TypeRef,
+		},
+	};
+	use juniper::{
+		ExecutionError,
+		http::{GraphQLRequest, GraphQLResponse},
+		parser::SourcePosition,
+	};
+
+	#[tokio::test]
+	async fn basic_interface() {
+		let obj_a = Object::new("MyObjA")
+			.implement("MyInterface")
+			.field(Field::output("a", TypeRef::named(TypeRef::INT), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from(100))) })
+			}))
+			.field(Field::output("b", TypeRef::named(TypeRef::INT), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from(200))) })
+			}));
+
+		let obj_b = Object::new("MyObjB")
+			.implement("MyInterface")
+			.field(Field::output("a", TypeRef::named(TypeRef::INT), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from(300))) })
+			}))
+			.field(Field::output("c", TypeRef::named(TypeRef::INT), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from(400))) })
+			}));
+
+		let interface = Interface::new("MyInterface")
+			.field(InterfaceField::new("a", TypeRef::named(TypeRef::INT)));
+
+		let query = Object::new("Query")
+			.field(Field::output("valueA", TypeRef::named_nn(interface.type_name()), |_| {
+				FieldFuture::new(async { Ok(Some(FieldValue::NULL.with_type("MyObjA"))) })
+			}))
+			.field(Field::output("valueB", TypeRef::named_nn(interface.type_name()), |_| {
+				FieldFuture::new(async { Ok(Some(FieldValue::NULL.with_type("MyObjB"))) })
+			}));
+
+		let schema = Schema::build(query.type_name(), None, None)
+			.register(obj_a)
+			.register(obj_b)
+			.register(interface)
+			.register(query)
+			.finish()
+			.unwrap();
+
+		let query = r#"
+		fragment A on MyObjA {
+		    b
 		}
+
+		fragment B on MyObjB {
+		    c
+		}
+
+		{
+		    valueA { __typename a ...A ...B }
+		    valueB { __typename a ...A ...B }
+		}
+        "#;
+
+		let res = schema.executer(GraphQLRequest::new(query.to_string(), None, None)).await;
+
+		assert_eq!(
+			res,
+			GraphQLResponse::from_result(Ok((
+				JuniperValue::object(juniper::Object::from_iter(vec![
+					(
+						"valueA",
+						JuniperValue::scalar(Value::Map(BTreeMap::from_iter(vec![
+							(Value::from("__typename"), Value::from("MyObjA")),
+							(Value::from("a"), Value::from(100)),
+							(Value::from("b"), Value::from(200)),
+						])))
+					),
+					(
+						"valueB",
+						JuniperValue::scalar(Value::Map(BTreeMap::from_iter(vec![
+							(Value::from("__typename"), Value::from("MyObjB")),
+							(Value::from("a"), Value::from(300)),
+							(Value::from("c"), Value::from(400)),
+						])))
+					),
+				])),
+				vec![]
+			)))
+		);
 	}
 
-	fn resolve_into_type_async<'a>(
-		&'a self,
-		info: &'a Self::TypeInfo,
-		type_name: &str,
-		selection_set: Option<&'a [juniper::Selection<'a, Value>]>,
-		executor: &'a Executor<'a, 'a, Self::Context, Value>,
-	) -> BoxFuture<'a, ExecutionResult<Value>> {
-		Box::pin(future::ready(GraphQLValue::resolve_into_type(
-			self,
-			info,
-			type_name,
-			selection_set,
-			executor,
-		)))
+	#[tokio::test]
+	async fn does_not_implement() {
+		let obj_a = Object::new("MyObjA")
+			.field(Field::output("a", TypeRef::named(TypeRef::INT), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from(100))) })
+			}))
+			.field(Field::output("b", TypeRef::named(TypeRef::INT), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from(200))) })
+			}));
+
+		let interface = Interface::new("MyInterface")
+			.field(InterfaceField::new("a", TypeRef::named(TypeRef::INT)));
+
+		let query = Object::new("Query").field(Field::output(
+			"valueA",
+			TypeRef::named_nn(interface.type_name()),
+			|_| FieldFuture::new(async { Ok(Some(FieldValue::NULL.with_type("MyObjA"))) }),
+		));
+
+		let schema = Schema::build(query.type_name(), None, None)
+			.register(obj_a)
+			.register(interface)
+			.register(query)
+			.finish()
+			.unwrap();
+
+		let query = r#"
+        {
+            valueA { a }
+        }
+        "#;
+
+		let res = schema.executer(GraphQLRequest::new(query.to_string(), None, None)).await;
+
+		assert_eq!(
+			res,
+			GraphQLResponse::from_result(Ok((
+				JuniperValue::null(),
+				vec![ExecutionError::new(
+					SourcePosition::new(23, 2, 12),
+					&["valueA"],
+					SeaographyError::new(
+						"object `MyObjA` does not implement interface `MyInterface`"
+					)
+					.into_field_error()
+				)]
+			)))
+		);
+	}
+	#[tokio::test]
+	async fn query_type_condition() {
+		struct MyObjA;
+		let obj_a = Object::new("MyObjA")
+			.implement("MyInterface")
+			.field(Field::output("a", TypeRef::named(TypeRef::INT), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from(100))) })
+			}))
+			.field(Field::output("b", TypeRef::named(TypeRef::INT), |_| {
+				FieldFuture::new(async { Ok(Some(Value::from(200))) })
+			}));
+		let interface = Interface::new("MyInterface")
+			.field(InterfaceField::new("a", TypeRef::named(TypeRef::INT)));
+		let query = Object::new("Query");
+		let query =
+			query.field(Field::output("valueA", TypeRef::named_nn(obj_a.type_name()), |_| {
+				FieldFuture::new(async { Ok(Some(FieldValue::owned_any(MyObjA))) })
+			}));
+		let schema = Schema::build(query.type_name(), None, None)
+			.register(interface)
+			.register(obj_a)
+			.register(query)
+			.finish()
+			.unwrap();
+		let query = r#"
+	    {
+	        valueA { __typename
+	        b
+	        ... on MyInterface { a } }
+	    }
+	    "#;
+
+		let res = schema.executer(GraphQLRequest::new(query.to_string(), None, None)).await;
+
+		assert_eq!(
+			res,
+			GraphQLResponse::from_result(Ok((
+				JuniperValue::object(juniper::Object::from_iter(vec![(
+					"valueA",
+					JuniperValue::scalar(Value::Map(BTreeMap::from_iter(vec![
+						(Value::from("__typename"), Value::from("MyObjA")),
+						(Value::from("b"), Value::from(200)),
+						(Value::from("a"), Value::from(100)),
+					])))
+				)])),
+				vec![]
+			)))
+		);
 	}
 }

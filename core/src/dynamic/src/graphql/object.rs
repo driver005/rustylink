@@ -1,15 +1,14 @@
 use super::{
-	Arguments, Directive, ExecutionResult, Executor, Field, FieldError, GraphQLType, GraphQLValue,
-	GraphQLValueAsync, IntoResolvable, JuniperValue, MetaType, Registry, ScalarValue,
+	Arguments, DeprecationStatus, Directive, ExecutionResult, Executor, Field, FieldError,
+	GraphQLType, GraphQLValue, GraphQLValueAsync, JuniperValue, MetaType, Registry, SelectionSet,
+	TYPE_REGISTRY, to_object_accessor, type_name,
 };
-use crate::{BoxFieldFuture, ContextBase, FieldValue, ObjectAccessor, SeaographyError, Value};
+use crate::SeaResult;
+use crate::{BoxFieldFutureJson, ContextBase, FieldValue, ObjectAccessor, SeaographyError, Value};
 use futures::{FutureExt, future::BoxFuture};
 use juniper::FromInputValue;
 use juniper::IntoFieldError;
-use std::{
-	borrow::Cow,
-	collections::{BTreeMap, BTreeSet},
-};
+use std::collections::{BTreeMap, BTreeSet};
 
 /// A GraphQL object type
 ///
@@ -47,46 +46,27 @@ pub struct Object {
 	pub(crate) description: Option<String>,
 	pub(crate) fields: BTreeMap<String, Field>,
 	pub(crate) implements: BTreeSet<String>,
-	pub(crate) oneof: bool,
+	pub(crate) inaccessible: bool,
 	pub(crate) directives: Vec<Directive>,
-	keys: Vec<String>,
-	extends: bool,
-	shareable: bool,
-	resolvable: bool,
-	inaccessible: bool,
-	interface_object: bool,
-	tags: Vec<String>,
-	requires_scopes: Vec<String>,
 }
 
 impl Object {
 	/// Create a GraphQL object type
 	#[inline]
 	pub fn new(name: impl Into<String>) -> Self {
+		let name = name.into();
 		Self {
-			name: name.into(),
+			name: name.clone(),
 			description: None,
-			fields: Default::default(),
+			fields: BTreeMap::from_iter(vec![type_name(name)]),
 			implements: Default::default(),
-			oneof: false,
-			keys: Vec::new(),
-			extends: false,
-			shareable: false,
-			resolvable: true,
 			inaccessible: false,
-			interface_object: false,
-			tags: Vec::new(),
 			directives: Vec::new(),
-			requires_scopes: Vec::new(),
 		}
 	}
 
 	impl_set_description!();
-	impl_set_extends!();
-	impl_set_shareable!();
 	impl_set_inaccessible!();
-	impl_set_interface_object!();
-	impl_set_tags!();
 	impl_directive!();
 
 	/// Add an field to the object
@@ -106,55 +86,6 @@ impl Object {
 		self
 	}
 
-	/// Add an entity key
-	///
-	/// # Examples
-	///
-	/// ```
-	/// use async_graphql::{Value, dynamic::*};
-	///
-	/// let obj = Object::new("MyObj")
-	///     .field(Field::new("a", TypeRef::named(TypeRef::INT), |_| {
-	///         FieldFuture::new(async move { Ok(Some(Value::from(10))) })
-	///     }))
-	///     .field(Field::new("b", TypeRef::named(TypeRef::INT), |_| {
-	///         FieldFuture::new(async move { Ok(Some(Value::from(20))) })
-	///     }))
-	///     .field(Field::new("c", TypeRef::named(TypeRef::INT), |_| {
-	///         FieldFuture::new(async move { Ok(Some(Value::from(30))) })
-	///     }))
-	///     .key("a b")
-	///     .key("c");
-	/// ```
-	pub fn key(mut self, fields: impl Into<String>) -> Self {
-		self.keys.push(fields.into());
-		self
-	}
-
-	/// Make the entity unresolvable by the current subgraph
-	///
-	/// Most commonly used to reference an entity without contributing fields.
-	///
-	/// # Examples
-	///
-	/// ```
-	/// use async_graphql::{Value, dynamic::*};
-	///
-	/// let obj = Object::new("MyObj")
-	///     .field(Field::new("a", TypeRef::named(TypeRef::INT), |_| {
-	///         FieldFuture::new(async move { Ok(Some(Value::from(10))) })
-	///     }))
-	///     .unresolvable("a");
-	/// ```
-	///
-	/// This references the `MyObj` entity with the key `a` that cannot be
-	/// resolved by the current subgraph.
-	pub fn unresolvable(mut self, fields: impl Into<String>) -> Self {
-		self.resolvable = false;
-		self.keys.push(fields.into());
-		self
-	}
-
 	/// Get an field of the object
 	#[inline]
 	pub fn get_field(&self, name: &str) -> Option<&Field> {
@@ -167,86 +98,91 @@ impl Object {
 		&self.name
 	}
 
-	#[inline]
-	pub(crate) fn is_entity(&self) -> bool {
-		!self.keys.is_empty()
+	pub(crate) fn check(&self, type_name: &str) -> SeaResult<()> {
+		if self.inaccessible {
+			return Err(SeaographyError::new(format!(
+				"object `{}` is inaccessible",
+				self.type_name()
+			)));
+		}
+		if let Some(ty) = TYPE_REGISTRY.get(type_name) {
+			if let Some(interface) = ty.as_interface() {
+				if self.implements.get(interface.type_name()).is_some() {
+					for interface_field in interface.fields.values() {
+						match self.fields.get(&interface_field.name) {
+							Some(field) => {
+								if field.ty != interface_field.ty {
+									return Err(SeaographyError::new(format!(
+										"object `{}` field `{}` has different type `{}` than implemented type `{}`",
+										self.name, field.name, field.ty, interface_field.ty
+									)));
+								}
+								for arg in interface_field.arguments.values() {
+									if let None = field.arguments.get(&arg.name) {
+										return Err(SeaographyError::new(format!(
+											"object `{}` field `{}` does not implement argument `{}`",
+											self.name, interface_field.name, arg.name
+										)));
+									}
+								}
+							}
+							None => {
+								return Err(SeaographyError::new(format!(
+									"object `{}` does not implement field `{}`",
+									self.name, interface_field.name
+								)));
+							}
+						}
+					}
+				} else {
+					return Err(SeaographyError::new(format!(
+						"object `{}` does not implement interface `{}`",
+						self.name,
+						interface.type_name()
+					)));
+				}
+			}
+
+			if let Some(union) = ty.as_union() {
+				return union.check(self.type_name());
+			}
+
+			Ok(())
+		} else {
+			return Err(SeaographyError::new(format!(
+				"object `{}` implements unknown CUSTOM type `{}`",
+				self.name, type_name
+			)));
+		}
 	}
 
 	pub(crate) fn collect<'a>(
 		&'a self,
 		ctx: &'a ContextBase,
+		selection_set: &'a SelectionSet,
 		arguments: &'a ObjectAccessor<'a>,
 		parent_value: Option<&'a FieldValue<'a>>,
-	) -> Vec<BoxFieldFuture<'a>> {
-		self.fields.iter().map(|(_, field)| field.collect(ctx, arguments, parent_value)).collect()
+	) -> Vec<BoxFieldFutureJson<'a>> {
+		if self.inaccessible {
+			return vec![
+				async move {
+					Err(SeaographyError::new(format!(
+						"object `{}` is inaccessible",
+						self.type_name()
+					)))
+				}
+				.boxed(),
+			];
+		}
+		let mut futures = Vec::new();
+		for field in self.fields.values() {
+			if let Some(child) = selection_set.childs.iter().find(|child| child.name == field.name)
+			{
+				futures.push(field.collect(ctx, child, arguments, parent_value));
+			}
+		}
+		futures
 	}
-
-	// pub fn register(&self, registry: &mut Registry) -> Result<(), SchemaError> {
-	// 	let mut fields = IndexMap::new();
-
-	// 	for field in self.fields.values() {
-	// 		let mut args = IndexMap::new();
-
-	// 		for argument in field.arguments.values() {
-	// 			args.insert(argument.type_name().to_string(), argument.to_meta_input_value());
-	// 		}
-
-	// 		fields.insert(
-	// 			field.name.clone(),
-	// 			MetaField {
-	// 				name: field.name.clone(),
-	// 				description: field.description.clone(),
-	// 				args,
-	// 				ty: field.ty.to_string(),
-	// 				deprecation: field.deprecation.clone(),
-	// 				cache_control: Default::default(),
-	// 				external: field.external,
-	// 				requires: field.requires.clone(),
-	// 				provides: field.provides.clone(),
-	// 				visible: None,
-	// 				shareable: field.shareable,
-	// 				inaccessible: field.inaccessible,
-	// 				tags: field.tags.clone(),
-	// 				override_from: field.override_from.clone(),
-	// 				compute_complexity: None,
-	// 				directive_invocations: to_meta_directive_invocation(field.directives.clone()),
-	// 				requires_scopes: field.requires_scopes.clone(),
-	// 			},
-	// 		);
-	// 	}
-
-	// 	registry.types.insert(
-	// 		self.name.clone(),
-	// 		MetaType::Object {
-	// 			name: self.name.clone(),
-	// 			description: self.description.clone(),
-	// 			fields,
-	// 			cache_control: Default::default(),
-	// 			extends: self.extends,
-	// 			shareable: self.shareable,
-	// 			resolvable: self.resolvable,
-	// 			keys: if !self.keys.is_empty() {
-	// 				Some(self.keys.clone())
-	// 			} else {
-	// 				None
-	// 			},
-	// 			visible: None,
-	// 			inaccessible: self.inaccessible,
-	// 			interface_object: self.interface_object,
-	// 			tags: self.tags.clone(),
-	// 			is_subscription: false,
-	// 			rust_typename: None,
-	// 			directive_invocations: to_meta_directive_invocation(self.directives.clone()),
-	// 			requires_scopes: self.requires_scopes.clone(),
-	// 		},
-	// 	);
-
-	// 	for interface in &self.implements {
-	// 		registry.add_implements(self.type_name(), interface);
-	// 	}
-
-	// 	Ok(())
-	// }
 }
 
 impl GraphQLType<Value> for Object {
@@ -258,28 +194,67 @@ impl GraphQLType<Value> for Object {
 	where
 		Value: 'r,
 	{
-		println!("Object::meta -- info.name: {:#?}", info.type_name());
 		let mut output_fields = vec![];
 		let mut input_fields = vec![];
 
 		for (_, field) in &info.fields {
-			if let Some(meta) = field.meta_output(registry) {
+			if let Some(mut meta) = field.meta_output(registry) {
+				if let Some(description) = &field.description {
+					meta = meta.description(description);
+				}
+				if let DeprecationStatus::Deprecated(reason) = &field.deprecation {
+					meta = meta.deprecated(match reason {
+						None => None,
+						Some(reason) => Some(reason),
+					});
+				}
 				output_fields.push(meta);
 			}
-			if let Some(meta) = field.meta_input(registry) {
+			if let Some(mut meta) = field.meta_input(registry) {
+				if let Some(description) = &field.description {
+					meta = meta.description(description);
+				}
 				input_fields.push(meta);
 			}
 		}
 
-		if !output_fields.is_empty() {
-			return registry.build_object_type::<Self>(info, &output_fields).into_meta();
-		}
-
+		// UNDER NO CIRCUMSTANCES SHOULD THIS ORDER BE CHANGED
 		if !input_fields.is_empty() {
-			return registry.build_input_object_type::<Self>(info, &input_fields).into_meta();
-		}
+			let mut meta_type = registry.build_input_object_type::<Self>(info, &input_fields);
 
-		registry.build_object_type::<Self>(info, &vec![]).into_meta()
+			if let Some(description) = &info.description {
+				meta_type = meta_type.description(description);
+			}
+
+			return meta_type.into_meta();
+		} else if !output_fields.is_empty() {
+			let mut types = vec![];
+
+			for name in &info.implements {
+				let ty = match TYPE_REGISTRY.get(name) {
+					Some(ty) => ty.get_type(registry),
+					None => panic!("Type `{}` not found", name),
+				};
+				types.push(ty);
+			}
+
+			let mut meta_type =
+				registry.build_object_type::<Self>(info, &output_fields).interfaces(&types);
+
+			if let Some(description) = &info.description {
+				meta_type = meta_type.description(description);
+			}
+
+			return meta_type.into_meta();
+		} else {
+			let mut meta_type = registry.build_object_type::<Self>(info, &vec![]);
+
+			if let Some(description) = &info.description {
+				meta_type = meta_type.description(description);
+			}
+
+			meta_type.into_meta()
+		}
 	}
 }
 
@@ -300,31 +275,8 @@ impl GraphQLValue<Value> for Object {
 	}
 
 	fn concrete_type_name(&self, _context: &Self::Context, info: &Self::TypeInfo) -> String {
-		self.type_name().to_string()
+		info.type_name().to_string()
 	}
-
-	// fn resolve_field(
-	// 	&self,
-	// 	info: &Self::TypeInfo,
-	// 	field: &str,
-	// 	arguments: &Arguments<Value>,
-	// 	executor: &Executor<Self::Context, Value>,
-	// ) -> ExecutionResult<Value> {
-	// 	match field {
-	// 		"apiVersion" => {
-	// 			let res: &'static str = Self::api_version();
-	// 			IntoResolvable::into_resolvable(res, executor.context()).and_then(|res| match res {
-	// 				Some((ctx, r)) => executor.replaced_context(ctx).resolve_with_ctx(&(), &r),
-	// 				None => Ok(JuniperValue::null()),
-	// 			})
-	// 		}
-	// 		_ => Err(FieldError::from(format!(
-	// 			"Field `{}` not found on type `{}`",
-	// 			field,
-	// 			<Self as GraphQLType<Value>>::name(info).ok_or_else(|| "Query")?,
-	// 		))),
-	// 	}
-	// }
 }
 
 impl GraphQLValueAsync<Value> for Object
@@ -336,16 +288,20 @@ where
 		&'a self,
 		info: &'a Self::TypeInfo,
 		field_name: &'a str,
-		arguments: &'a Arguments<Value>,
+		_arguments: &'a Arguments<Value>,
 		executor: &'a Executor<Self::Context, Value>,
 	) -> BoxFuture<'a, ExecutionResult<Value>> {
 		async move {
+			let look_ahead = executor.look_ahead();
+			let selection_set = SelectionSet::from_look_ahead(&look_ahead);
+
 			match self.get_field(field_name) {
 				Some(field) => {
 					let res = field
 						.collect(
 							executor.context(),
-							&ObjectAccessor(Cow::Owned(BTreeMap::new())),
+							&selection_set,
+							&to_object_accessor(look_ahead),
 							None,
 						)
 						.await
@@ -377,5 +333,70 @@ where
 		// 	}
 		// 	_ => ,
 		// }
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use std::collections::BTreeMap;
+
+	use juniper::http::{GraphQLRequest, GraphQLResponse};
+
+	use crate::{
+		FieldFuture, FieldValue, Value,
+		graphql::{Field, JuniperValue, Object, Schema, TypeRef},
+	};
+
+	#[tokio::test]
+	async fn borrow_context() {
+		struct MyObjData {
+			value: i32,
+		}
+
+		let my_obj = Object::new("MyObj").field(Field::output(
+			"value",
+			TypeRef::named(TypeRef::INT),
+			|ctx| {
+				FieldFuture::new(async move {
+					Ok(Some(Value::from(ctx.parent_value.try_downcast_ref::<MyObjData>()?.value)))
+				})
+			},
+		));
+
+		let query = Object::new("Query").field(Field::output(
+			"obj",
+			TypeRef::named_nn(my_obj.type_name()),
+			|ctx| {
+				FieldFuture::new(async move {
+					Ok(Some(FieldValue::borrowed_any(ctx.ctx.data_unchecked::<MyObjData>())))
+				})
+			},
+		));
+
+		let schema = Schema::build(query.type_name(), None, None)
+			.register(query)
+			.register(my_obj)
+			.data(MyObjData {
+				value: 123,
+			})
+			.finish()
+			.unwrap();
+
+		let res =
+			schema.executer(GraphQLRequest::new("{ obj { value } }".to_string(), None, None)).await;
+
+		assert_eq!(
+			res,
+			GraphQLResponse::from_result(Ok((
+				JuniperValue::object(juniper::Object::from_iter(vec![(
+					"obj",
+					JuniperValue::scalar(Value::Map(BTreeMap::from_iter(vec![(
+						Value::from("value"),
+						Value::from(123)
+					),])))
+				),])),
+				vec![]
+			)))
+		);
 	}
 }

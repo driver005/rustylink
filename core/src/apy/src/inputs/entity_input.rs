@@ -1,7 +1,7 @@
 use crate::{BuilderContext, EntityObjectBuilder, TypesMapHelper};
 use dynamic::prelude::*;
 use sea_orm::{ColumnTrait, EntityTrait, Iterable};
-use std::{collections::BTreeMap, ops::Add};
+use std::collections::BTreeMap;
 
 /// The configuration structure of EntityInputBuilder
 pub struct EntityInputConfig {
@@ -98,37 +98,33 @@ impl EntityInputBuilder {
 			context: self.context,
 		};
 
-		T::Column::iter().enumerate().fold(
-			Object::new(name, IO::Input),
-			|object, (index, column)| {
-				let column_name = entity_object_builder.column_name::<T>(&column);
+		T::Column::iter().fold(Object::new(name, IO::Input), |object, column| {
+			let column_name = entity_object_builder.column_name::<T>(&column);
 
-				let full_name =
-					format!("{}.{}", entity_object_builder.type_name::<T>(), column_name);
+			let full_name = format!("{}.{}", entity_object_builder.type_name::<T>(), column_name);
 
-				let skip = if is_insert {
-					self.context.entity_input.insert_skips.contains(&full_name)
-				} else {
-					self.context.entity_input.update_skips.contains(&full_name)
-				};
+			let skip = if is_insert {
+				self.context.entity_input.insert_skips.contains(&full_name)
+			} else {
+				self.context.entity_input.update_skips.contains(&full_name)
+			};
 
-				if skip {
-					return object;
-				}
+			if skip {
+				return object;
+			}
 
-				let column_def = column.def();
+			let column_def = column.def();
 
-				let type_ref = match types_map_helper.sea_orm_column_type_to_type(
-					column_def.get_column_type(),
-					!column_def.is_null() && is_insert,
-				) {
-					Some(type_name) => type_name,
-					None => return object,
-				};
+			let type_ref = match types_map_helper.sea_orm_column_type_to_type(
+				column_def.get_column_type(),
+				!column_def.is_null() && is_insert,
+			) {
+				Some(type_name) => type_name,
+				None => return object,
+			};
 
-				object.field(Field::input(&column_name, index.add(1) as u32, type_ref))
-			},
-		)
+			object.field(Field::input(&column_name, type_ref))
+		})
 	}
 
 	pub fn parse_object<'a, T>(

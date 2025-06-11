@@ -1,10 +1,11 @@
-use binary::proto::DecoderLit;
-
-use crate::{SeaResult, SeaographyError, TypeRefTrait, Value};
+use crate::TypeRefTrait;
+use prost_types::field_descriptor_proto::{Label, Type};
 use std::{
 	borrow::Cow,
 	fmt::{self, Display},
 };
+
+use super::TYPE_REGISTRY;
 
 /// A type reference
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -88,11 +89,7 @@ impl TypeRefTrait for TypeRef {
 	/// `[Foo!]` -> `Foo`
 	#[inline(always)]
 	fn type_name(&self) -> &str {
-		match self {
-			TypeRef::Named(name) => name,
-			TypeRef::NonNull(inner) => inner.type_name(),
-			TypeRef::List(inner) => inner.type_name(),
-		}
+		self.type_name()
 	}
 
 	const DOUBLE: &'static str = TypeRef::DOUBLE;
@@ -160,22 +157,55 @@ impl TypeRef {
 	/// Protobuf bytes type
 	pub const BYTES: &'static str = "bytes";
 
-	#[inline]
-	pub(crate) fn to_proto(&self) -> String {
-		let mut type_detail = String::new();
-
-		if self.is_repeated() {
-			type_detail.push_str("repeated ");
-		} else {
-			if self.is_nullable() {
-				type_detail.push_str("optional ");
-			}
-		}
-
+	/// Returns the type name
+	///
+	/// `[Foo!]` -> `Foo`
+	#[inline(always)]
+	pub fn type_name(&self) -> &str {
 		match self {
-			TypeRef::Named(name) => format!("{}{}", type_detail, name),
-			TypeRef::NonNull(inner) => format!("{}{}", type_detail, inner.to_string()),
-			TypeRef::List(inner) => format!("{}{}", type_detail, inner.to_string()),
+			TypeRef::Named(name) => name,
+			TypeRef::NonNull(inner) => inner.type_name(),
+			TypeRef::List(inner) => inner.type_name(),
+		}
+	}
+
+	#[inline]
+	pub(crate) fn field_type(&self) -> Type {
+		match self {
+			TypeRef::Named(name) => match name.as_ref() {
+				Self::DOUBLE => Type::Double,
+				Self::FLOAT => Type::Float,
+				Self::INT32 => Type::Int32,
+				Self::INT64 => Type::Int64,
+				Self::UINT32 => Type::Uint32,
+				Self::UINT64 => Type::Uint64,
+				Self::SINT32 => Type::Sint32,
+				Self::SINT64 => Type::Sint64,
+				Self::FIXED32 => Type::Fixed32,
+				Self::FIXED64 => Type::Fixed64,
+				Self::SFIXED32 => Type::Sfixed32,
+				Self::SFIXED64 => Type::Sfixed64,
+				Self::BOOL => Type::Bool,
+				Self::STRING => Type::String,
+				Self::BYTES => Type::Bytes,
+				name => match TYPE_REGISTRY.get(name) {
+					Some(ty) => ty.field_type(),
+					None => panic!("custom types was not found"),
+				},
+			},
+			TypeRef::NonNull(inner) => inner.field_type(),
+			TypeRef::List(inner) => inner.field_type(),
+		}
+	}
+
+	#[inline]
+	pub(crate) fn field_label(&self) -> Label {
+		if self.is_repeated() {
+			Label::Repeated
+		} else if self.is_nullable() {
+			Label::Optional
+		} else {
+			Label::Required
 		}
 	}
 
@@ -183,7 +213,9 @@ impl TypeRef {
 	pub(crate) fn is_nullable(&self) -> bool {
 		match self {
 			TypeRef::Named(_) => true,
-			TypeRef::NonNull(_) => false,
+
+			//TODO: Change back to false
+			TypeRef::NonNull(_) => true,
 			TypeRef::List(_) => true,
 		}
 	}
@@ -194,6 +226,27 @@ impl TypeRef {
 			TypeRef::Named(_) => false,
 			TypeRef::NonNull(inner) => inner.is_repeated(),
 			TypeRef::List(_) => true,
+		}
+	}
+
+	pub(crate) fn is_default(&self) -> bool {
+		match self.type_name() {
+			TypeRef::DOUBLE
+			| TypeRef::FLOAT
+			| TypeRef::INT32
+			| TypeRef::INT64
+			| TypeRef::UINT32
+			| TypeRef::UINT64
+			| TypeRef::SINT32
+			| TypeRef::SINT64
+			| TypeRef::FIXED32
+			| TypeRef::FIXED64
+			| TypeRef::SFIXED32
+			| TypeRef::SFIXED64
+			| TypeRef::BOOL
+			| TypeRef::STRING
+			| TypeRef::BYTES => true,
+			_ => false,
 		}
 	}
 
@@ -213,70 +266,6 @@ impl TypeRef {
 		}
 
 		is_subtype(self, sub)
-	}
-
-	pub(crate) fn bytes(&self, buf: Vec<u8>, tag: u32) -> SeaResult<Value> {
-		// if tag != self.tag {
-		// 	return Err(Error::new(format!("invalid tag: expected {}, got {}", self.tag, tag)));
-		// }
-		match self.type_name() {
-			TypeRef::INT32 => match self.is_repeated() {
-				false => Ok(i32::from(DecoderLit::Int32(buf)).into()),
-				true => Ok(Vec::<i32>::from(DecoderLit::Int32Vec(buf)).into()),
-			},
-			TypeRef::INT64 => match self.is_repeated() {
-				false => Ok(i64::from(DecoderLit::Int64(buf)).into()),
-				true => Ok(Vec::<i64>::from(DecoderLit::Int64Vec(buf)).into()),
-			},
-			TypeRef::UINT32 => match self.is_repeated() {
-				false => Ok(u32::from(DecoderLit::UInt32(buf)).into()),
-				true => Ok(Vec::<u32>::from(DecoderLit::UInt32Vec(buf)).into()),
-			},
-			TypeRef::UINT64 => match self.is_repeated() {
-				false => Ok(u64::from(DecoderLit::UInt64(buf)).into()),
-				true => Ok(Vec::<u64>::from(DecoderLit::UInt64Vec(buf)).into()),
-			},
-			TypeRef::SINT32 => match self.is_repeated() {
-				false => Ok(i32::from(DecoderLit::SInt32(buf)).into()),
-				true => Ok(Vec::<i32>::from(DecoderLit::SInt32Vec(buf)).into()),
-			},
-			TypeRef::SINT64 => match self.is_repeated() {
-				false => Ok(i64::from(DecoderLit::SInt64(buf)).into()),
-				true => Ok(Vec::<i64>::from(DecoderLit::SInt64Vec(buf)).into()),
-			},
-			TypeRef::SFIXED32 => match self.is_repeated() {
-				false => Ok(i32::from(DecoderLit::SFixed32(buf)).into()),
-				true => Ok(Vec::<i32>::from(DecoderLit::SFixed32Vec(buf)).into()),
-			},
-			TypeRef::SFIXED64 => match self.is_repeated() {
-				false => Ok(i64::from(DecoderLit::SFixed64(buf)).into()),
-				true => Ok(Vec::<i64>::from(DecoderLit::SFixed64Vec(buf)).into()),
-			},
-			TypeRef::BOOL => match self.is_repeated() {
-				false => Ok(bool::from(DecoderLit::Bool(buf)).into()),
-				true => Ok(Vec::<bool>::from(DecoderLit::BoolVec(buf)).into()),
-			},
-			TypeRef::FLOAT => match self.is_repeated() {
-				false => Ok(f32::from(DecoderLit::Float(buf)).into()),
-				true => Ok(Vec::<f32>::from(DecoderLit::FloatVec(buf)).into()),
-			},
-			TypeRef::DOUBLE => match self.is_repeated() {
-				false => Ok(f64::from(DecoderLit::Double(buf)).into()),
-				true => Ok(Vec::<f64>::from(DecoderLit::DoubleVec(buf)).into()),
-			},
-			TypeRef::STRING => match self.is_repeated() {
-				false => Ok(String::from(DecoderLit::Bytes(buf)).into()),
-				true => Ok(String::from(DecoderLit::Bytes(buf)).into()),
-			},
-			TypeRef::BYTES => match self.is_repeated() {
-				false => Ok(Vec::<u8>::from(DecoderLit::Bytes(buf)).into()),
-				true => Ok(Vec::<u8>::from(DecoderLit::Bytes(buf)).into()),
-			},
-			name => Err(SeaographyError::new(format!(
-				"Unsupported type or wire type combination: {}",
-				name
-			))),
-		}
 	}
 }
 

@@ -62,7 +62,6 @@ impl EdgeObjectBuilder {
 		Object::new(name, IO::Output)
 			.field(Field::output(
 				&self.context.edge_object.cursor,
-				1u32,
 				Ty::named_nn(Ty::STRING),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -73,7 +72,6 @@ impl EdgeObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.edge_object.node,
-				2u32,
 				Ty::named_nn(&object_name),
 				|ctx| {
 					FieldFuture::new(async move {

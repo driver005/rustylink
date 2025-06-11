@@ -67,12 +67,12 @@ impl EntityDeleteMutationBuilder {
 
 		let context = self.context;
 
-		Field::output(&self.type_name::<T>(), 1u32, Ty::named_nn(Ty::UINT64), move |ctx| {
+		Field::output(&self.type_name::<T>(), Ty::named_nn(Ty::UINT64), move |ctx| {
 			FieldFuture::new(async move {
 				let db = ctx.data::<DatabaseConnection>()?;
 
 				let filters = ctx.args.get(&context.entity_delete_mutation.filter_field);
-				let filter_condition = get_filter_conditions::<T, F>(context, filters);
+				let filter_condition = get_filter_conditions::<T, F>(context, filters)?;
 
 				let res: DeleteResult = T::delete_many().filter(filter_condition).exec(db).await?;
 
@@ -81,7 +81,6 @@ impl EntityDeleteMutationBuilder {
 		})
 		.argument(Field::input(
 			&context.entity_delete_mutation.filter_field,
-			1u32,
 			Ty::named(entity_filter_input_builder.type_name(&object_name)),
 		))
 	}

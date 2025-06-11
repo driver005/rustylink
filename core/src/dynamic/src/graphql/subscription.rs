@@ -1,12 +1,9 @@
+use super::{DeprecationStatus, Field, TypeRef};
+use crate::{BoxResolverFn, FieldFuture, ResolverContext};
 use std::{
 	collections::BTreeMap,
 	fmt::{self, Debug},
-	sync::Arc,
 };
-
-use crate::{BoxResolverFn, ContextBase, FieldFuture, ResolverContext};
-
-use super::{Deprecation, Field, TypeRef};
 
 /// A GraphQL subscription field
 pub struct SubscriptionField {
@@ -15,7 +12,7 @@ pub struct SubscriptionField {
 	pub(crate) arguments: BTreeMap<String, Field>,
 	pub(crate) ty: TypeRef,
 	pub(crate) resolver_fn: BoxResolverFn,
-	pub(crate) deprecation: Deprecation,
+	pub(crate) deprecation: DeprecationStatus,
 }
 
 impl SubscriptionField {
@@ -32,7 +29,7 @@ impl SubscriptionField {
 			arguments: Default::default(),
 			ty: ty.into(),
 			resolver_fn: Box::new(resolver_fn),
-			deprecation: Deprecation::NoDeprecated,
+			deprecation: DeprecationStatus::Current,
 		}
 	}
 

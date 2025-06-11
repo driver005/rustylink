@@ -80,7 +80,6 @@ impl EntityUpdateMutationBuilder {
 
 		Field::output(
 			self.type_name::<T>(),
-			1u32,
 			Ty::named_nn_list_nn(entity_object_builder.basic_type_name::<T>()),
 			move |ctx| {
 				FieldFuture::new(async move {
@@ -112,10 +111,18 @@ impl EntityUpdateMutationBuilder {
 					};
 
 					let filters = ctx.args.get(&context.entity_update_mutation.filter_field);
-					let filter_condition = get_filter_conditions::<T, F>(context, filters);
+					let filter_condition = get_filter_conditions::<T, F>(context, filters)?;
 
 					let value_accessor =
-						ctx.args.get(&context.entity_update_mutation.data_field).unwrap();
+						match ctx.args.get(&context.entity_update_mutation.data_field) {
+							Some(value_accessor) => value_accessor,
+							None => {
+								return Err(SeaographyError::new(format!(
+									"{} is a required argument but not provided.",
+									context.entity_update_mutation.data_field
+								)));
+							}
+						};
 					let input_object = value_accessor.object()?;
 
 					for (column, _) in input_object.to_iter() {
@@ -164,12 +171,10 @@ impl EntityUpdateMutationBuilder {
 		)
 		.argument(Field::input(
 			&context.entity_update_mutation.data_field,
-			1u32,
 			Ty::named_nn(entity_input_builder.update_type_name::<T>()),
 		))
 		.argument(Field::input(
 			&context.entity_update_mutation.filter_field,
-			2u32,
 			Ty::named(entity_filter_input_builder.type_name(&object_name)),
 		))
 	}

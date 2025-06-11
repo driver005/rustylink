@@ -1,22 +1,22 @@
-use crate::{
-	ContextBase, FieldFutureTrait, FieldValueTrait, ObjectAccessor, ResolverContextDyn, SeaResult,
-	SeaographyError, Value,
-};
+use crate::{ContextBase, ObjectAccessor, SeaResult, SeaographyError, Value};
+use bytes::BufMut;
 use futures::{FutureExt, future::BoxFuture};
 use std::{any::Any, borrow::Cow, ops::Deref, pin::Pin};
 
-/// A value returned from the resolver function
-#[derive(Debug)]
+//// A value returned from the resolver function
 pub struct FieldValue<'a>(pub(crate) FieldValueInner<'a>);
 
-#[derive(Debug)]
 pub(crate) enum FieldValueInner<'a> {
 	/// Const value
 	Value(Value),
 	/// Borrowed any value
-	BorrowedAny(&'a (dyn Any + Send + Sync)),
+	/// The first item is the [`std::any::type_name`] of the value used for
+	/// debugging.
+	BorrowedAny(Cow<'static, str>, &'a (dyn Any + Send + Sync)),
 	/// Owned any value
-	OwnedAny(Box<dyn Any + Send + Sync>),
+	/// The first item is the [`std::any::type_name`] of the value used for
+	/// debugging.
+	OwnedAny(Cow<'static, str>, Box<dyn Any + Send + Sync>),
 	/// A list
 	List(Vec<FieldValue<'a>>),
 	/// A typed Field value
@@ -28,14 +28,36 @@ pub(crate) enum FieldValueInner<'a> {
 	},
 }
 
-impl<'a> From<()> for FieldValue<'a> {
+impl std::fmt::Debug for FieldValue<'_> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match &self.0 {
+			FieldValueInner::Value(v) => write!(f, "{}", v),
+			FieldValueInner::BorrowedAny(ty, _)
+			| FieldValueInner::OwnedAny(ty, _)
+			| FieldValueInner::WithType {
+				ty,
+				..
+			} => write!(f, "{}", ty),
+			FieldValueInner::List(list) => match list.first() {
+				Some(v) => {
+					write!(f, "[{:?}, ...]", v)
+				}
+				None => {
+					write!(f, "[()]")
+				}
+			},
+		}
+	}
+}
+
+impl From<()> for FieldValue<'_> {
 	#[inline]
 	fn from(_: ()) -> Self {
 		Self(FieldValueInner::Value(Value::Null))
 	}
 }
 
-impl<'a> From<Value> for FieldValue<'a> {
+impl From<Value> for FieldValue<'_> {
 	#[inline]
 	fn from(value: Value) -> Self {
 		Self(FieldValueInner::Value(value))
@@ -48,12 +70,9 @@ impl<'a, T: Into<FieldValue<'a>>> From<Vec<T>> for FieldValue<'a> {
 	}
 }
 
-impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
-	type Value = Value;
-	type Error = SeaographyError;
-
+impl<'a> FieldValue<'a> {
 	/// A null value equivalent to `FieldValue::Value(Value::Null)`
-	const NULL: Self = Self(FieldValueInner::Value(Value::Null));
+	pub const NULL: FieldValue<'a> = Self(FieldValueInner::Value(Value::Null));
 
 	/// A none value equivalent to `None::<FieldValue>`
 	///
@@ -69,48 +88,43 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 	///         FieldFuture::new(async move { Ok(FieldValue::NONE) })
 	///     }));
 	/// ```
-	const NONE: Option<Self> = None;
-
-	/// Returns a `Null::<FieldValue>` meaning the resolver no results.
-	fn null() -> Self {
-		Self::NULL
-	}
+	pub const NONE: Option<FieldValue<'a>> = None;
 
 	/// Returns a `None::<FieldValue>` meaning the resolver no results.
-	fn none() -> Option<Self> {
+	pub const fn none() -> Option<FieldValue<'a>> {
 		None
 	}
 
 	/// Create a FieldValue from [`Value`]
 	#[inline]
-	fn value(value: impl Into<Self::Value>) -> Self {
+	pub fn value(value: impl Into<Value>) -> Self {
 		Self(FieldValueInner::Value(value.into()))
 	}
 
 	/// Create a FieldValue from owned any value
 	#[inline]
-	fn owned_any<T: Any + Send + Sync>(obj: T) -> Self {
-		Self(FieldValueInner::OwnedAny(Box::new(obj)))
+	pub fn owned_any<T: Any + Send + Sync>(obj: T) -> Self {
+		Self(FieldValueInner::OwnedAny(std::any::type_name::<T>().into(), Box::new(obj)))
 	}
 
 	/// Create a FieldValue from unsized any value
 	#[inline]
-	fn boxed_any(obj: Box<dyn Any + Send + Sync>) -> Self {
-		Self(FieldValueInner::OwnedAny(obj))
+	pub fn boxed_any(obj: Box<dyn Any + Send + Sync>) -> Self {
+		Self(FieldValueInner::OwnedAny("Any".into(), obj))
 	}
 
 	/// Create a FieldValue from owned any value
 	#[inline]
-	fn borrowed_any(obj: &'a (dyn Any + Send + Sync)) -> Self {
-		Self(FieldValueInner::BorrowedAny(obj))
+	pub fn borrowed_any(obj: &'a (dyn Any + Send + Sync)) -> Self {
+		Self(FieldValueInner::BorrowedAny("Any".into(), obj))
 	}
 
 	/// Create a FieldValue from list
 	#[inline]
-	fn list<I, T>(values: I) -> Self
+	pub fn list<I, T>(values: I) -> Self
 	where
 		I: IntoIterator<Item = T>,
-		T: Into<Self>,
+		T: Into<FieldValue<'a>>,
 	{
 		Self(FieldValueInner::List(values.into_iter().map(Into::into).collect()))
 	}
@@ -167,72 +181,68 @@ impl<'a> FieldValueTrait<'a> for FieldValue<'a> {
 	/// );
 	/// # });
 	/// ```
-	fn with_type(self, ty: impl Into<Cow<'static, str>>) -> Self {
+	pub fn with_type(self, ty: impl Into<Cow<'static, str>>) -> Self {
 		Self(FieldValueInner::WithType {
 			value: Box::new(self),
-			ty: ty.into().clone(),
+			ty: ty.into(),
 		})
 	}
 
 	/// If the FieldValue is a value, returns the associated
 	/// Value. Returns `None` otherwise.
 	#[inline]
-	fn as_value(&self) -> Option<&Self::Value> {
+	pub fn as_value(&self) -> Option<&Value> {
 		match &self.0 {
 			FieldValueInner::Value(value) => Some(value),
 			_ => None,
 		}
 	}
 
-	/// Like `as_value`, but returns `Result`.
+	/// Like `as_value`, but returns `SeaResult`.
 	#[inline]
-	fn try_to_value(&self) -> std::result::Result<&Self::Value, Self::Error> {
-		self.as_value().ok_or_else(|| SeaographyError::new("internal: not a Value"))
+	pub fn try_to_value(&self) -> SeaResult<&Value> {
+		self.as_value()
+			.ok_or_else(|| SeaographyError::new(format!("internal: \"{:?}\" not a Value", self)))
 	}
 
 	/// If the FieldValue is a list, returns the associated
 	/// vector. Returns `None` otherwise.
 	#[inline]
-	fn as_list(&'a self) -> Option<&'a [Self]> {
+	pub fn as_list(&self) -> Option<&[FieldValue]> {
 		match &self.0 {
 			FieldValueInner::List(values) => Some(values),
 			_ => None,
 		}
 	}
 
-	/// Like `as_list`, but returns `Result`.
+	/// Like `as_list`, but returns `SeaResult`.
 	#[inline]
-	fn try_to_list(&'a self) -> std::result::Result<&'a [Self], Self::Error> {
-		self.as_list().ok_or_else(|| SeaographyError::new("internal: not a list"))
+	pub fn try_to_list(&self) -> SeaResult<&[FieldValue]> {
+		self.as_list()
+			.ok_or_else(|| SeaographyError::new(format!("internal: \"{:?}\" not a List", self)))
 	}
 
 	/// If the FieldValue is a any, returns the associated
 	/// vector. Returns `None` otherwise.
 	#[inline]
-	fn downcast_ref<T: Any>(&self) -> Option<&T> {
+	pub fn downcast_ref<T: Any>(&self) -> Option<&T> {
 		match &self.0 {
-			FieldValueInner::BorrowedAny(value) => value.downcast_ref::<T>(),
-			FieldValueInner::OwnedAny(value) => value.downcast_ref::<T>(),
+			FieldValueInner::BorrowedAny(_, value) => value.downcast_ref::<T>(),
+			FieldValueInner::OwnedAny(_, value) => value.downcast_ref::<T>(),
 			_ => None,
 		}
 	}
 
-	/// Like `downcast_ref`, but returns `Result`.
+	/// Like `downcast_ref`, but returns `SeaResult`.
 	#[inline]
-	fn try_downcast_ref<T: Any>(&self) -> std::result::Result<&T, Self::Error> {
+	pub fn try_downcast_ref<T: Any>(&self) -> SeaResult<&T> {
 		self.downcast_ref().ok_or_else(|| {
-			SeaographyError::new(format!("internal: not type \"{}\"", std::any::type_name::<T>()))
+			SeaographyError::new(format!(
+				"internal: \"{:?}\" is not of the expected type \"{}\"",
+				self,
+				std::any::type_name::<T>()
+			))
 		})
-	}
-
-	/// Convert FieldValue to Value, returns the associated
-	/// value. Returns `None` otherwise.
-	#[inline]
-	fn to_val(&self) -> Option<Self::Value> {
-		match &self.0 {
-			FieldValueInner::Value(value) => Some(value.to_owned()),
-			_ => None,
-		}
 	}
 }
 
@@ -256,24 +266,6 @@ impl<'a> Deref for ResolverContext<'a> {
 	}
 }
 
-impl<'a> ResolverContextDyn<'a> for ResolverContext<'a> {
-	type Context = ContextBase;
-	type ObjectAccessor = ObjectAccessor<'a>;
-	type FieldValue = FieldValue<'a>;
-
-	fn ctx(&'a self) -> &'a Self::Context {
-		self.ctx
-	}
-
-	fn args(self) -> Self::ObjectAccessor {
-		self.args
-	}
-
-	fn parent_value(&'a self) -> &'a Self::FieldValue {
-		self.parent_value
-	}
-}
-
 /// A future that returned from field resolver
 pub enum FieldFuture<'a> {
 	/// A pure value without any async operation
@@ -283,16 +275,12 @@ pub enum FieldFuture<'a> {
 	Future(BoxResolveFut<'a>),
 }
 
-impl<'a> FieldFutureTrait<'a> for FieldFuture<'a> {
-	type Error = SeaographyError;
-	type ValueType = Value;
-	type FieldValue = FieldValue<'a>;
-
+impl<'a> FieldFuture<'a> {
 	/// Create a `FieldFuture` from a `Future`
-	fn new<Fut, R>(future: Fut) -> Self
+	pub fn new<Fut, R>(future: Fut) -> Self
 	where
-		Fut: Future<Output = Result<Option<R>, Self::Error>> + Send + 'a,
-		R: Into<Self::FieldValue> + Send,
+		Fut: Future<Output = SeaResult<Option<R>>> + Send + 'a,
+		R: Into<FieldValue<'a>> + Send,
 	{
 		FieldFuture::Future(
 			async move {
@@ -304,58 +292,16 @@ impl<'a> FieldFutureTrait<'a> for FieldFuture<'a> {
 	}
 
 	/// Create a `FieldFuture` from a `Value`
-	fn from_value(value: Option<Self::ValueType>) -> Self {
+	pub fn from_value(value: Option<Value>) -> Self {
 		FieldFuture::Value(value.map(FieldValue::from))
 	}
 }
 
-// impl<'a> FieldFuture<'a> {
-// 	pub fn to_graphql(self) -> GraphQLFieldFuture<'a> {
-// 		match self {
-// 			FieldFuture::Value(value) => match value {
-// 				Some(data) => GraphQLFieldFuture::Value(Some(data.to_graphql())),
-// 				None => GraphQLFieldFuture::Value(Some(GraphQLFieldValue::NULL)),
-// 			},
-// 			FieldFuture::Future(fut) => GraphQLFieldFuture::Future(
-// 				async move {
-// 					match fut.await {
-// 						Ok(data) => Ok(match data {
-// 							Some(data) => Some(data.to_graphql()),
-// 							None => GraphQLFieldValue::NONE,
-// 						}),
-// 						Err(err) => Err(GraphQLError::from(err)),
-// 					}
-// 				}
-// 				.boxed(),
-// 			),
-// 		}
-// 	}
-// }
-
-// impl<'a> FieldFuture<'a> {
-// 	/// Create a `FieldFuture` from a `Future`
-// 	pub fn new<Fut, R>(future: Fut) -> Self
-// 	where
-// 		Fut: Future<Output = Result<Option<R>>> + Send + 'a,
-// 		R: Into<FieldValue<'a>> + Send,
-// 	{
-// 		FieldFuture::Future(
-// 			async move {
-// 				let res = future.await?;
-// 				Ok(res.map(Into::into))
-// 			}
-// 			.boxed(),
-// 		)
-// 	}
-
-// 	/// Create a `FieldFuture` from a `Value`
-// 	pub fn from_value(value: Option<Value>) -> Self {
-// 		FieldFuture::Value(value.map(FieldValue::from))
-// 	}
-// }
-
 pub(crate) type BoxResolverFn =
 	Box<(dyn for<'a> Fn(ResolverContext<'a>) -> FieldFuture<'a> + Send + Sync)>;
 
-pub(crate) type BoxFieldFuture<'a> =
+pub(crate) type BoxFieldFutureJson<'a> =
 	Pin<Box<dyn Future<Output = SeaResult<(Value, Value)>> + 'a + Send>>;
+
+pub(crate) type BoxFieldFutureByte<'a, B: BufMut> =
+	Pin<Box<dyn Future<Output = SeaResult<(usize, B)>> + 'a + Send>>;

@@ -1,5 +1,6 @@
-use super::Result;
-use crate::{ProtoRegistry, ProtobufKind, ScalarValidatorFn, SchemaError, Value};
+use crate::{
+	ProtoRegistry, ProtobufKind, ScalarValidatorFn, SchemaError, SeaResult, SeaographyError, Value,
+};
 use std::{
 	fmt::{self, Debug},
 	sync::Arc,
@@ -48,6 +49,13 @@ impl Scalar {
 			Some(validator) => (validator)(value),
 			None => true,
 		}
+	}
+
+	pub(crate) fn to_value(&self, value: &Value) -> SeaResult<Value> {
+		if self.validate(&value) {
+			return Ok(value.to_owned());
+		}
+		Err(SeaographyError::new(format!("invalid value `{}` for scalar `{}`", value, self.name)))
 	}
 
 	/// Returns the type name

@@ -1,3 +1,4 @@
+use dynamic::{SeaResult, SeaographyError};
 use itertools::Itertools;
 #[allow(unused_imports)]
 use sea_orm::CursorTrait;
@@ -16,7 +17,7 @@ pub async fn apply_pagination<T>(
 	db: &DatabaseConnection,
 	stmt: Select<T>,
 	pagination: PaginationInput,
-) -> Result<Connection<T>, sea_orm::error::DbErr>
+) -> SeaResult<Connection<T>>
 where
 	T: EntityTrait,
 	<T as EntityTrait>::Model: Sync,
@@ -27,7 +28,7 @@ where
 
 		fn apply_stmt_cursor_by<T>(
 			stmt: sea_orm::entity::prelude::Select<T>,
-		) -> sea_orm::Cursor<sea_orm::SelectModel<T::Model>>
+		) -> SeaResult<sea_orm::Cursor<sea_orm::SelectModel<T::Model>>>
 		where
 			T: EntityTrait,
 			<T as EntityTrait>::Model: Sync,
@@ -37,25 +38,33 @@ where
 				let column = T::PrimaryKey::iter()
 					.map(|variant| variant.into_column())
 					.collect::<Vec<T::Column>>()[0];
-				stmt.cursor_by(column)
+				Ok(stmt.cursor_by(column))
 			} else if size == 2 {
-				let columns = T::PrimaryKey::iter()
+				let columns = match T::PrimaryKey::iter()
 					.map(|variant| variant.into_column())
 					.collect_tuple::<(T::Column, T::Column)>()
-					.unwrap();
-				stmt.cursor_by(columns)
+				{
+					Some(columns) => columns,
+					None => return Err(SeaographyError::new("cursors of size 2 not found")),
+				};
+				Ok(stmt.cursor_by(columns))
 			} else if size == 3 {
-				let columns = T::PrimaryKey::iter()
+				let columns = match T::PrimaryKey::iter()
 					.map(|variant| variant.into_column())
 					.collect_tuple::<(T::Column, T::Column, T::Column)>()
-					.unwrap();
-				stmt.cursor_by(columns)
+				{
+					Some(columns) => columns,
+					None => return Err(SeaographyError::new("cursors of size 3 not found")),
+				};
+				Ok(stmt.cursor_by(columns))
 			} else {
-				panic!("seaography does not support cursors with size greater than 3")
+				return Err(SeaographyError::new(
+					"seaography does not support cursors with size greater than 3",
+				));
 			}
 		}
 
-		let mut stmt = apply_stmt_cursor_by(stmt);
+		let mut stmt = apply_stmt_cursor_by(stmt)?;
 
 		if let Some(cursor) = cursor_object.cursor {
 			let values = decode_cursor(&cursor)?;
@@ -65,10 +74,10 @@ where
 			stmt.after(cursor_values);
 		}
 
-		let data = stmt.first(cursor_object.limit).all(db).await.unwrap();
+		let data = stmt.first(cursor_object.limit).all(db).await?;
 
 		let has_next_page: bool = {
-			let mut next_stmt = apply_stmt_cursor_by(next_stmt);
+			let mut next_stmt = apply_stmt_cursor_by(next_stmt)?;
 
 			let last_node = data.last();
 
@@ -78,7 +87,7 @@ where
 
 				let values = map_cursor_values(values);
 
-				let next_data = next_stmt.first(1).after(values).all(db).await.unwrap();
+				let next_data = next_stmt.first(1).after(values).all(db).await?;
 
 				!next_data.is_empty()
 			} else {
@@ -87,7 +96,7 @@ where
 		};
 
 		let has_previous_page: bool = {
-			let mut previous_stmt = apply_stmt_cursor_by(previous_stmt);
+			let mut previous_stmt = apply_stmt_cursor_by(previous_stmt)?;
 
 			let first_node = data.first();
 
@@ -97,7 +106,7 @@ where
 
 				let values = map_cursor_values(values);
 
-				let previous_data = previous_stmt.first(1).before(values).all(db).await.unwrap();
+				let previous_data = previous_stmt.first(1).before(values).all(db).await?;
 
 				!previous_data.is_empty()
 			} else {
@@ -272,7 +281,7 @@ where
 pub fn apply_memory_pagination<T>(
 	values: Option<Vec<T::Model>>,
 	pagination: PaginationInput,
-) -> Connection<T>
+) -> SeaResult<Connection<T>>
 where
 	T: EntityTrait,
 	T::Model: Sync,
@@ -319,7 +328,7 @@ where
 		let start_cursor = edges.first().map(|edge| edge.cursor.clone());
 		let end_cursor = edges.last().map(|edge| edge.cursor.clone());
 
-		Connection {
+		Ok(Connection {
 			edges,
 			page_info: PageInfo {
 				has_previous_page: !first_cursor.eq(&start_cursor),
@@ -333,21 +342,21 @@ where
 				offset: current * cursor_object.limit,
 				total,
 			}),
-		}
+		})
 	} else if let Some(page_object) = pagination.page {
 		let total = edges.len() as u64;
 		let pages = f64::ceil(total as f64 / page_object.limit as f64) as u64;
 
 		let edges: Vec<Edge<T>> = edges
 			.into_iter()
-			.skip((page_object.page * page_object.limit).try_into().unwrap())
-			.take(page_object.limit.try_into().unwrap())
+			.skip((page_object.page * page_object.limit).try_into()?)
+			.take(page_object.limit.try_into()?)
 			.collect();
 
 		let start_cursor = edges.first().map(|edge| edge.cursor.clone());
 		let end_cursor = edges.last().map(|edge| edge.cursor.clone());
 
-		Connection {
+		Ok(Connection {
 			edges,
 			page_info: PageInfo {
 				has_previous_page: page_object.page != 0,
@@ -361,7 +370,7 @@ where
 				offset: page_object.page * page_object.limit,
 				total,
 			}),
-		}
+		})
 	} else if let Some(offset_object) = pagination.offset {
 		let total = edges.len() as u64;
 		let pages = f64::ceil(total as f64 / offset_object.limit as f64) as u64;
@@ -369,14 +378,14 @@ where
 
 		let edges: Vec<Edge<T>> = edges
 			.into_iter()
-			.skip((offset_object.offset).try_into().unwrap())
-			.take(offset_object.limit.try_into().unwrap())
+			.skip(offset_object.offset.try_into()?)
+			.take(offset_object.limit.try_into()?)
 			.collect();
 
 		let start_cursor = edges.first().map(|edge| edge.cursor.clone());
 		let end_cursor = edges.last().map(|edge| edge.cursor.clone());
 
-		Connection {
+		Ok(Connection {
 			edges,
 			page_info: PageInfo {
 				has_previous_page: offset_object.offset != 0,
@@ -390,14 +399,14 @@ where
 				offset: offset_object.offset,
 				total,
 			}),
-		}
+		})
 	} else {
 		let start_cursor = edges.first().map(|edge| edge.cursor.clone());
 		let end_cursor = edges.last().map(|edge| edge.cursor.clone());
 
 		let total = edges.len() as u64;
 
-		Connection {
+		Ok(Connection {
 			edges,
 			page_info: PageInfo {
 				has_previous_page: false,
@@ -411,6 +420,6 @@ where
 				offset: 0,
 				total,
 			}),
-		}
+		})
 	}
 }

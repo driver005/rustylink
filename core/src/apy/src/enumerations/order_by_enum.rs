@@ -53,7 +53,7 @@ impl OrderByEnumBuilder {
 		E: EnumTrait,
 	{
 		E::new(self.type_name())
-			.item(E::Item::new(self.asc_variant(), 0u32))
-			.item(E::Item::new(self.desc_variant(), 1u32))
+			.item(E::Item::new(self.asc_variant()))
+			.item(E::Item::new(self.desc_variant()))
 	}
 }

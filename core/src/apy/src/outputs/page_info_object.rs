@@ -57,7 +57,6 @@ impl PageInfoObjectBuilder {
 		Object::new(&self.context.page_info_object.type_name, IO::Output)
 			.field(Field::output(
 				&self.context.page_info_object.has_previous_page,
-				1u32,
 				Ty::named_nn(Ty::BOOL),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -68,7 +67,6 @@ impl PageInfoObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.page_info_object.has_next_page,
-				2u32,
 				Ty::named_nn(Ty::BOOL),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -79,7 +77,6 @@ impl PageInfoObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.page_info_object.start_cursor,
-				3u32,
 				Ty::named(Ty::STRING),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -95,7 +92,6 @@ impl PageInfoObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.page_info_object.end_cursor,
-				4u32,
 				Ty::named(Ty::STRING),
 				|ctx| {
 					FieldFuture::new(async move {

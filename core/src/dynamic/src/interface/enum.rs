@@ -1,6 +1,6 @@
 use crate::{
-	prelude::{GraphQLEnum, GraphQLEnumItem, GraphQLType, ProtoEnum, ProtoEnumItem, ProtoType},
 	EnumTrait,
+	prelude::{GraphQLEnum, GraphQLEnumItem, GraphQLType, ProtoEnum, ProtoEnumItem, ProtoType},
 };
 
 pub struct EnumItems {

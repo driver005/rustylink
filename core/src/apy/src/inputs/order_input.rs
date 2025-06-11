@@ -1,5 +1,3 @@
-use std::ops::Add;
-
 use crate::{BuilderContext, EntityObjectBuilder};
 use dynamic::prelude::*;
 use sea_orm::{EntityTrait, Iterable};
@@ -45,22 +43,18 @@ impl OrderInputBuilder {
 		let object_name = entity_object_builder.type_name::<T>();
 		let name = self.type_name(&object_name);
 
-		T::Column::iter().enumerate().fold(
-			Object::new(name, IO::Input),
-			|object, (index, column)| {
-				object.field(Field::input(
-					entity_object_builder.column_name::<T>(&column),
-					index.add(1) as u32,
-					Ty::named(&self.context.order_by_enum.type_name),
-				))
-			},
-		)
+		T::Column::iter().fold(Object::new(name, IO::Input), |object, column| {
+			object.field(Field::input(
+				entity_object_builder.column_name::<T>(&column),
+				Ty::named(&self.context.order_by_enum.type_name),
+			))
+		})
 	}
 
 	pub fn parse_object<'a, T>(
 		&self,
 		value: Option<ValueAccessor<'a>>,
-	) -> Vec<(T::Column, sea_orm::sea_query::Order)>
+	) -> SeaResult<Vec<(T::Column, sea_orm::sea_query::Order)>>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
@@ -73,16 +67,18 @@ impl OrderInputBuilder {
 					context: self.context,
 				};
 
-				let order_by = value.object().unwrap();
+				let order_by = value.object()?;
 
 				for col in T::Column::iter() {
 					let column_name = entity_object.column_name::<T>(&col);
 
 					if let Some(order) = order_by.get(&column_name) {
-						let order = order.enum_name().unwrap();
+						let order = order.enum_name()?;
 
 						let asc_variant = &self.context.order_by_enum.asc_variant;
 						let desc_variant = &self.context.order_by_enum.desc_variant;
+
+						println!("order: {:?}", order);
 
 						if order.eq(asc_variant) {
 							data.push((col, sea_orm::Order::Asc));
@@ -94,9 +90,9 @@ impl OrderInputBuilder {
 					}
 				}
 
-				data
+				Ok(data)
 			}
-			None => Vec::new(),
+			None => Ok(Vec::new()),
 		}
 	}
 }

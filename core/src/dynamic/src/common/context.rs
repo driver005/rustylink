@@ -132,20 +132,7 @@ pub enum ApiType {
 #[derive(Debug)]
 pub struct ContextBase {
 	pub r#type: ApiType,
-	// /// The current path node being resolved.
-	// pub path_node: Option<QueryPathNode<'a>>,
-	// /// If `true` means the current field is for introspection.
-	// pub(crate) is_for_introspection: bool,
-	// #[doc(hidden)]
-	// pub item: T,
-	// #[doc(hidden)]
-	// pub schema_env: &'a SchemaEnv,
-	// #[doc(hidden)]
-	// pub query_env: &'a QueryEnv,
-	// #[doc(hidden)]
 	pub execute_data: Option<Arc<Data>>,
-	// #[doc(hidden)]
-	// pub custom: T,
 }
 
 impl juniper::Context for ContextBase {}

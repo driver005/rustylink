@@ -4,10 +4,7 @@ use crate::{
 };
 use dynamic::prelude::*;
 use sea_orm::{ColumnTrait, ColumnType, Condition, EntityTrait};
-use std::{
-	collections::{BTreeMap, BTreeSet},
-	ops::Add,
-};
+use std::collections::{BTreeMap, BTreeSet};
 
 pub type FnFilterCondition =
 	Box<dyn Fn(Condition, &ObjectAccessor) -> SeaResult<Condition> + Send + Sync>;
@@ -25,61 +22,60 @@ impl FilterInfo {
 	where
 		Ty: TypeRefTrait,
 	{
-		self.supported_operations.iter().enumerate().fold(
+		self.supported_operations.iter().fold(
 			Object::new(self.type_name.to_string(), IO::Input),
-			|object, (index, cur)| {
-				let tag = index.add(1) as u32;
+			|object, cur| {
 				let field = match cur {
 					FilterOperation::Equals => {
-						Field::input("eq", tag, Ty::named(self.base_type.clone()))
+						Field::input("eq", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::NotEquals => {
-						Field::input("ne", tag, Ty::named(self.base_type.clone()))
+						Field::input("ne", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::GreaterThan => {
-						Field::input("gt", tag, Ty::named(self.base_type.clone()))
+						Field::input("gt", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::GreaterThanEquals => {
-						Field::input("gte", tag, Ty::named(self.base_type.clone()))
+						Field::input("gte", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::LessThan => {
-						Field::input("lt", tag, Ty::named(self.base_type.clone()))
+						Field::input("lt", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::LessThanEquals => {
-						Field::input("lte", tag, Ty::named(self.base_type.clone()))
+						Field::input("lte", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::IsIn => {
-						Field::input("is_in", tag, Ty::named_nn_list(self.base_type.clone()))
+						Field::input("is_in", Ty::named_nn_list(self.base_type.clone()))
 					}
 					FilterOperation::IsNotIn => {
-						Field::input("is_not_in", tag, Ty::named_nn_list(self.base_type.clone()))
+						Field::input("is_not_in", Ty::named_nn_list(self.base_type.clone()))
 					}
 					FilterOperation::IsNull => {
-						Field::input("is_null", tag, Ty::named(self.base_type.clone()))
+						Field::input("is_null", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::IsNotNull => {
-						Field::input("is_not_null", tag, Ty::named(self.base_type.clone()))
+						Field::input("is_not_null", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::Contains => {
-						Field::input("contains", tag, Ty::named(self.base_type.clone()))
+						Field::input("contains", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::StartsWith => {
-						Field::input("starts_with", tag, Ty::named(self.base_type.clone()))
+						Field::input("starts_with", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::EndsWith => {
-						Field::input("ends_with", tag, Ty::named(self.base_type.clone()))
+						Field::input("ends_with", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::Like => {
-						Field::input("like", tag, Ty::named(self.base_type.clone()))
+						Field::input("like", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::NotLike => {
-						Field::input("not_like", tag, Ty::named(self.base_type.clone()))
+						Field::input("not_like", Ty::named(self.base_type.clone()))
 					}
 					FilterOperation::Between => {
-						Field::input("between", tag, Ty::named_nn_list(self.base_type.clone()))
+						Field::input("between", Ty::named_nn_list(self.base_type.clone()))
 					}
 					FilterOperation::NotBetween => {
-						Field::input("not_between", tag, Ty::named_nn_list(self.base_type.clone()))
+						Field::input("not_between", Ty::named_nn_list(self.base_type.clone()))
 					}
 				};
 				object.field(field)
@@ -1144,15 +1140,15 @@ impl FilterTypesMapHelper {
 		<T as EntityTrait>::Model: Sync,
 		F: FilterTypeTrait,
 	{
-		let entity_object_builder = EntityObjectBuilder {
-			context: self.context,
-		};
+		//TODO: implment overwrites
+		// let entity_object_builder = EntityObjectBuilder {
+		// 	context: self.context,
+		// };
 
-		let entity_name = entity_object_builder.type_name::<T>();
-		let column_name = entity_object_builder.column_name::<T>(column);
+		// let entity_name = entity_object_builder.type_name::<T>();
+		// let column_name = entity_object_builder.column_name::<T>(column);
 
 		// used to honor overwrites
-		//TODO: implment overwrites
 		// if let Some(ty) =
 		// 	self.context.filter_types.overwrites.get(&format!("{entity_name}.{column_name}"))
 		// {
@@ -1166,11 +1162,7 @@ impl FilterTypesMapHelper {
 	}
 
 	/// used to get the GraphQL input value field for a SeaORM entity column
-	pub fn get_column_filter_input_value<T, Ty, F>(
-		&self,
-		column: &T::Column,
-		tag: u32,
-	) -> Option<Field<Ty>>
+	pub fn get_column_filter_input_value<T, Ty, F>(&self, column: &T::Column) -> Option<Field<Ty>>
 	where
 		T: EntityTrait,
 		<T as EntityTrait>::Model: Sync,
@@ -1185,7 +1177,7 @@ impl FilterTypesMapHelper {
 		let filter_type = self.get_column_filter_type::<T, F>(column);
 
 		match filter_type {
-			Some(filter_type) => Some(self.to_value(&column_name, tag, &filter_type, self.context)),
+			Some(filter_type) => Some(self.to_value(&column_name, &filter_type, self.context)),
 			None => None,
 		}
 	}
@@ -1248,7 +1240,6 @@ impl FilterTypesMapHelper {
 	pub fn to_value<Ty, F>(
 		&self,
 		column_name: &String,
-		tag: u32,
 		filter_type: &F,
 		context: &'static BuilderContext,
 	) -> Field<Ty>
@@ -1256,6 +1247,6 @@ impl FilterTypesMapHelper {
 		Ty: TypeRefTrait,
 		F: FilterTypeTrait,
 	{
-		Field::input(column_name, tag, Ty::named(filter_type.to_value(context)))
+		Field::input(column_name, Ty::named(filter_type.to_value(context)))
 	}
 }

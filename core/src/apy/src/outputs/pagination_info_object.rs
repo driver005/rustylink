@@ -57,7 +57,6 @@ impl PaginationInfoObjectBuilder {
 		Object::new(&self.context.pagination_info_object.type_name, IO::Output)
 			.field(Field::output(
 				&self.context.pagination_info_object.pages,
-				1u32,
 				Ty::named_nn(Ty::UINT64),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -69,7 +68,6 @@ impl PaginationInfoObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.pagination_info_object.current,
-				2u32,
 				Ty::named_nn(Ty::UINT64),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -81,7 +79,6 @@ impl PaginationInfoObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.pagination_info_object.offset,
-				3u32,
 				Ty::named_nn(Ty::UINT64),
 				|ctx| {
 					FieldFuture::new(async move {
@@ -93,7 +90,6 @@ impl PaginationInfoObjectBuilder {
 			))
 			.field(Field::output(
 				&self.context.pagination_info_object.total,
-				4u32,
 				Ty::named_nn(Ty::UINT64),
 				|ctx| {
 					FieldFuture::new(async move {

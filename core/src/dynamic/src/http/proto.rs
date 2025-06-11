@@ -1,30 +1,31 @@
-use actix_web::{
-	guard,
-	web::{self, Bytes, Data, Path},
-	HttpResponse,
-};
+use tokio::signal;
+use tonic::transport::Server;
+use tonic_health::server::health_reporter;
+use tonic_reflection::server::Builder;
+use tonic_web::GrpcWebLayer;
 
-use crate::prelude::Proto;
+use crate::proto::{Proto, WrapperMutation, WrapperQuery};
 
-async fn index(proto: Data<Proto>, name: Path<String>, req: Bytes) -> HttpResponse {
-	println!("{}", name);
-	let bytes = match proto.execute_once(req.to_vec(), &name).await {
-		Ok(bytes) => bytes,
-		Err(e) => {
-			println!("Error: {:?}", e);
-			return HttpResponse::InternalServerError().body(format!("{:?}", e));
-		}
-	};
+pub async fn grpc_server(proto: Proto) {
+	let reflection = Builder::configure()
+		.register_encoded_file_descriptor_set(tonic_health::pb::FILE_DESCRIPTOR_SET)
+		.register_file_descriptor_set(proto.registry())
+		.build_v1alpha()
+		.unwrap();
 
-	println!("{:?}", bytes);
+	let (mut _health_reporter, health_service) = health_reporter();
 
-	HttpResponse::Ok().body(bytes)
-}
-
-pub fn http_proto(cfg: &mut web::ServiceConfig, proto: Proto) {
-	cfg.service(
-		web::scope("/proto")
-			.app_data(Data::new(proto.clone()))
-			.service(web::resource("/{name}").guard(guard::Post()).to(index)),
-	);
+	println!("Visit gRPC at grpc://127.0.0.1:50051");
+	Server::builder()
+		.accept_http1(true)
+		.layer(GrpcWebLayer::new())
+		.add_service(reflection)
+		.add_service(WrapperQuery::new(proto.get_data()))
+		.add_service(WrapperMutation::new(proto.get_data()))
+		.add_service(health_service)
+		.serve_with_shutdown("0.0.0.0:50051".parse().unwrap(), async {
+			signal::ctrl_c().await.expect("failed to listen for ctrl_c");
+		})
+		.await
+		.unwrap();
 }

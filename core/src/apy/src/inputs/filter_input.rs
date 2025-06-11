@@ -1,7 +1,6 @@
 use crate::{BuilderContext, EntityObjectBuilder, FilterTypeTrait, FilterTypesMapHelper};
 use dynamic::prelude::*;
 use sea_orm::{EntityTrait, Iterable};
-use std::ops::Add;
 
 /// The configuration structure for FilterInputBuilder
 pub struct FilterInputConfig {
@@ -49,20 +48,16 @@ impl FilterInputBuilder {
 		let entity_name = entity_object_builder.type_name::<T>();
 		let filter_name = self.type_name(&entity_name);
 
-		let object = T::Column::iter().enumerate().fold(
-			Object::new(&filter_name, IO::Input),
-			|object, (index, column)| match filter_types_map_helper
-				.get_column_filter_input_value::<T, Ty, F>(&column, index.add(1) as u32)
-			{
-				Some(field) => object.field(field),
-				None => object,
-			},
-		);
-
-		let length = object.field_len();
+		let object =
+			T::Column::iter().fold(Object::new(&filter_name, IO::Input), |object, column| {
+				match filter_types_map_helper.get_column_filter_input_value::<T, Ty, F>(&column) {
+					Some(field) => object.field(field),
+					None => object,
+				}
+			});
 
 		object
-			.field(Field::input("and", length.add(2) as u32, Ty::named_nn_list(&filter_name)))
-			.field(Field::input("or", length.add(3) as u32, Ty::named_nn_list(&filter_name)))
+			.field(Field::input("and", Ty::named_nn_list(&filter_name)))
+			.field(Field::input("or", Ty::named_nn_list(&filter_name)))
 	}
 }

@@ -1,8 +1,12 @@
 use std::sync::Arc;
 
-use crate::prelude::{GraphQLServerError, ProtoError};
+use crate::{
+	Value,
+	prelude::{GraphQLServerError, ProtoError},
+};
 use binary::proto::{DecoderError, EncoderError};
 use juniper::{FieldError, IntoFieldError};
+use sea_orm::sqlx::types::uuid;
 use thiserror::Error;
 
 /// An error can occur when building dynamic schema
@@ -22,6 +26,10 @@ pub enum SeaographyError {
 	TryFromIntError(#[from] std::num::TryFromIntError),
 	#[error("[parsing] {0}")]
 	ParseIntError(#[from] std::num::ParseIntError),
+	#[error("[parsing] {0}")]
+	ParseUuidError(#[from] uuid::Error),
+	#[error("[parsing] {0}")]
+	ParseStringError(#[from] std::string::ParseError),
 	#[error("[type conversion: {1}] {0}")]
 	TypeConversionError(String, String),
 	#[error("[array conversion] postgres array can not be nested type of array")]
@@ -82,8 +90,14 @@ impl From<Arc<sea_orm::DbErr>> for SeaographyError {
 	fn from(value: Arc<sea_orm::DbErr>) -> Self {
 		match Arc::try_unwrap(value) {
 			Ok(inner) => SeaographyError::DB(inner),
-			Err(arc) => SeaographyError::new("couldnot unwrap db error"),
+			Err(_) => SeaographyError::new("couldnot unwrap db error"),
 		}
+	}
+}
+
+impl From<FieldError<Value>> for SeaographyError {
+	fn from(value: FieldError<Value>) -> Self {
+		SeaographyError::Custom(format!("{:?}", value))
 	}
 }
 
