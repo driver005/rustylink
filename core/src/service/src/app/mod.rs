@@ -42,21 +42,21 @@ impl App {
 		self
 	}
 
-	pub fn get_http(&self, database: &DatabaseConnection) -> Result<Schema, SchemaError> {
-		if let Some(service) = &self.http {
+	pub fn get_http(
+		&mut self,
+		database: &DatabaseConnection,
+		config: &ServerConfig,
+	) -> Result<Schema, SchemaError> {
+		if let Some(service) = self.http.as_mut() {
+			service.config_schema(config.limit.unwrap_or(0), config.complexity.unwrap_or(0));
 			return service.root(database);
 		}
 
 		Err(SchemaError("Please add the HTTP service to your App instance".to_string()))
 	}
 
-	pub fn get_grpc(
-		&mut self,
-		database: &DatabaseConnection,
-		config: &ServerConfig,
-	) -> Result<Proto, SchemaError> {
-		if let Some(service) = self.grpc.as_mut() {
-			service.config_schema(config.limit.unwrap_or(0), config.complexity.unwrap_or(0));
+	pub fn get_grpc(&self, database: &DatabaseConnection) -> Result<Proto, SchemaError> {
+		if let Some(service) = self.grpc.as_ref() {
 			return service.root(database);
 		}
 
@@ -72,11 +72,11 @@ impl App {
 		for service in &servers {
 			match service.name {
 				ServerType::Grpc => {
-					let query_root = self.get_grpc(&database, service)?;
+					let query_root = self.get_grpc(&database)?;
 					services.push(tokio::spawn(grpc_server(query_root, service.clone())));
 				}
 				ServerType::Http => {
-					let query_root = self.get_http(&database)?;
+					let query_root = self.get_http(&database, service)?;
 					services.push(tokio::spawn(http_server(query_root, service.clone())));
 				}
 			};
