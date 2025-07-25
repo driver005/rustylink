@@ -10,7 +10,7 @@ pub use crate::graphql::{
 pub use crate::proto::{
 	Enum as ProtoEnum, EnumItem as ProtoEnumItem, Error as ProtoError, Field as ProtoField,
 	Message as ProtoMessage, Proto, ProtoBuilder, ProtoInner, Scalar as ProtoScalar,
-	Type as ProtoType, TypeRef as ProtoTypeRef,
+	Type as ProtoType, TypeRef as ProtoTypeRef, WrapperMutation, WrapperQuery,
 };
 
 pub use crate::common::*;

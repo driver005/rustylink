@@ -2,7 +2,7 @@
 mod macros;
 
 mod common;
-pub mod graphql;
+mod graphql;
 mod http;
 mod interface;
 pub mod prelude;

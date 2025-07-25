@@ -199,7 +199,7 @@ impl FromStr for WithSerde {
 			v => {
 				return Err(crate::error::Error::TransformError(format!(
 					"Unsupported enum variant '{v}'"
-				)))
+				)));
 			}
 		})
 	}

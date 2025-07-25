@@ -16,7 +16,6 @@ path = "bin/rest.rs"
 [dependencies]
 juniper = { workspace = true }
 tokio = { workspace = true }
-tonic = { workspace = true }
 tonic-build = { workspace = true }
 tower-service = { workspace = true }
 futures = { workspace = true }
@@ -31,6 +30,12 @@ serde = { workspace = true }
 actix-web = { workspace = true }
 sea-orm = { workspace = true }
 lazy_static = { workspace = true }
+
+toml = { workspace = true }
+tonic = { workspace = true }
+tonic-reflection = { workspace = true }
+tonic-health = { workspace = true }
+tonic-web = "0.13"
 
 [build-dependencies]
 #local

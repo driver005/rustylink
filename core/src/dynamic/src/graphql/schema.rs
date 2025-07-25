@@ -95,8 +95,8 @@ pub struct SchemaBuilder {
 	validation_mode: ValidationMode,
 	recursive_depth: usize,
 	max_directives: Option<usize>,
-	complexity: Option<usize>,
-	depth: Option<usize>,
+	complexity: Option<u16>,
+	depth: Option<u16>,
 	enable_suggestions: bool,
 	introspection_mode: IntrospectionMode,
 	enable_federation: bool,
@@ -123,14 +123,14 @@ impl SchemaBuilder {
 	/// Set the maximum complexity a query can have. By default, there is no
 	/// limit.
 	#[must_use]
-	pub fn limit_complexity(mut self, complexity: usize) -> Self {
+	pub fn limit_complexity(mut self, complexity: u16) -> Self {
 		self.complexity = Some(complexity);
 		self
 	}
 
 	/// Set the maximum depth a query can have. By default, there is no limit.
 	#[must_use]
-	pub fn limit_depth(mut self, depth: usize) -> Self {
+	pub fn limit_depth(mut self, depth: u16) -> Self {
 		self.depth = Some(depth);
 		self
 	}

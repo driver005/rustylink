@@ -11,12 +11,12 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-	tonic_build::configure()
-		.compile_well_known_types(true)
-		.build_client(false)
-		.build_server(true)
-		.build_transport(false)
-		.compile_protos(&["./src/voting.proto"], &["proto"])?;
+	// tonic_build::configure()
+	// 	.compile_well_known_types(true)
+	// 	.build_client(false)
+	// 	.build_server(true)
+	// 	.build_transport(false)
+	// 	.compile_protos(&["./voting.proto"], &["proto"])?;
 
 	dotenv().ok();
 

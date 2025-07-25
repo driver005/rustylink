@@ -1,5 +1,14 @@
-use dynamic::SeaResult;
+use dynamic::{SchemaError, SeaResult};
 use itertools::Itertools;
+use sea_orm::DatabaseConnection;
+
+pub trait QueryRoot<T> {
+	fn config_schema(&mut self, _depth: u16, _complexity: u16) {
+		panic!("not implemented")
+	}
+
+	fn root(&self, database: &DatabaseConnection) -> Result<T, SchemaError>;
+}
 
 /// used to encode the primary key values of a SeaORM entity to a String
 pub fn encode_cursor(values: Vec<sea_orm::Value>) -> String {

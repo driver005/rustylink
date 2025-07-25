@@ -1,0 +1,18 @@
+[database]
+host = "localhost"
+port = 5432
+user = "postgres"
+password = "postgres"
+name = "postgres"
+
+[[servers]]
+name = "Grpc"
+host = "0.0.0.0"
+port = 50051
+limit = 10
+complexity = 5
+
+[[servers]]
+name = "Http"
+host = "localhost"
+port = 8000

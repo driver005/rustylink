@@ -62,7 +62,7 @@ impl Writer {
 		if context.seaography {
 			files.push(self.write_index_file(&GeneratorType::Api, context, false));
 			// files.push(self.write_graphql_main(context));
-			files.push(self.write_graphql_query_root(context));
+			files.push(self.write_query_root(context));
 		}
 
 		if context.proto {
@@ -318,7 +318,7 @@ impl Writer {
 		}
 	}
 
-	pub fn write_graphql_query_root(&self, context: &WriterContext) -> OutputFile {
+	pub fn write_query_root(&self, context: &WriterContext) -> OutputFile {
 		let mut lines = Vec::new();
 		Self::write_doc_comment(&mut lines);
 

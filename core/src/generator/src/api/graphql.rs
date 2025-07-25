@@ -49,9 +49,9 @@ impl Graphql {
 
 		quote! {
 			use #name::entities::*;
-			use ::apy::{Builder, BuilderContext, FilterTypeTrait, GraphQlFilterType, ProtoFilterType};
+			use ::apy::{Builder, BuilderContext, QueryRoot, FilterTypeTrait, GraphQlFilterType, ProtoFilterType};
 			use ::dynamic::{
-				prelude::{Proto, Schema, SchemaError, DynamicBuilder, GraphQLTypeRef, ProtoTypeRef, GraphQLEnum, ProtoEnum, TypeRefTrait, EnumTrait},
+				prelude::{Proto as DynamicProto, Schema as DynamicSchema, SchemaError, DynamicBuilder, GraphQLTypeRef, ProtoTypeRef, GraphQLEnum, ProtoEnum, TypeRefTrait, EnumTrait},
 			};
 			use sea_orm::DatabaseConnection;
 
@@ -81,36 +81,63 @@ impl Graphql {
 				builder.builder()
 			}
 
-			pub fn schema(
-				database: &DatabaseConnection,
-				depth: Option<usize>,
-				complexity: Option<usize>,
-			) -> Result<Schema, SchemaError> {
-				let builder = builder::<GraphQLTypeRef, GraphQLEnum, GraphQlFilterType>(database);
-
-				let schema = builder.builder();
-
-				let schema = if let Some(depth) = depth {
-					schema.limit_depth(depth)
-				} else {
-					schema
-				};
-
-				let schema = if let Some(complexity) = complexity {
-					schema.limit_complexity(complexity)
-				} else {
-					schema
-				};
-
-				schema.data(database.clone()).finish()
+			pub struct Schema {
+				depth: Option<u16>,
+				complexity: Option<u16>,
 			}
 
-			pub fn proto(database: &DatabaseConnection) -> Result<Proto, SchemaError> {
-				let builder = builder::<ProtoTypeRef, ProtoEnum, ProtoFilterType>(database);
+			impl Schema {
+				pub fn new() -> Self {
+					Self {
+						depth: None,
+						complexity: None,
+					}
+				}
+			}
 
-				let proto = builder.builder();
+			impl QueryRoot<DynamicSchema> for Schema {
+				fn config_schema(&mut self, depth: u16, complexity: u16) {
+					self.depth = Some(depth);
+					self.complexity = Some(complexity);
+				}
 
-				proto.data(database.clone()).finish()
+				fn root(&self, database: &DatabaseConnection)-> Result<DynamicSchema, SchemaError> {
+					let builder = builder::<GraphQLTypeRef, GraphQLEnum, GraphQlFilterType>(database);
+
+					let schema = builder.builder();
+
+					let schema = if let Some(depth) = self.depth {
+						schema.limit_depth(depth)
+					} else {
+						schema
+					};
+
+					let schema = if let Some(complexity) = self.complexity {
+						schema.limit_complexity(complexity)
+					} else {
+						schema
+					};
+
+					schema.data(database.clone()).finish()
+				}
+			}
+
+			pub struct Proto {}
+
+			impl Proto {
+				pub fn new() -> Self {
+					Self {}
+				}
+			}
+
+			impl QueryRoot<DynamicProto> for Proto {
+				fn root(&self, database: &DatabaseConnection)-> Result<DynamicProto, SchemaError> {
+					let builder = builder::<ProtoTypeRef, ProtoEnum, ProtoFilterType>(database);
+
+					let proto = builder.builder();
+
+					proto.data(database.clone()).finish()
+				}
 			}
 		}
 	}
